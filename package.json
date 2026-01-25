@@ -1,20 +1,12 @@
 {
   "name": "lesterslist",
   "version": "1.0.0",
-  "description": "LestersList backend (Express + MySQL)",
+  "description": "Bluegrass community directory",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "mysql2": "^3.9.7"
-  },
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "author": "greg5444",
-  "license": "MIT"
+    "express": "^4.19.2"
+  }
 }
