@@ -1,28 +1,85 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Admin – Lester's List</title>
+<title>Lesterslist Admin Panel</title>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-<header>
-<h1>Lester's List – The Bluegrass Community Directory</h1>
-<p class="tagline">Find Your Circle – Connecting Bluegrass Musicians, Fans & Events.</p>
-<nav>
-<a href="index.html">Home</a> |
-<a href="artists.html">Artists</a> |
-<a href="concerts.html">Concerts</a> |
-<a href="festivals.html">Festivals</a> |
-<a href="camps.html">Camps & Workshops</a> |
-<a href="jams.html">Local Jams</a> |
-<a href="instruction.html">Online Instruction</a> |
-<a href="venues.html">Venues</a> |
-<a href="login.html">Login / Sign Up</a>
-</nav>
-</header>
-<main><p style='color:gray;font-size:small;'>Admin-only functionality (not yet restricted)</p><h2>Lesterslist Admin Panel</h2><h3>Uploads</h3><pre>----Venues----\nUpload Venue CSV [Browse][Upload]\n----Concerts----\nUpload Concert CSV [Browse][Upload]\n----Festivals----\nUpload Festival CSV [Browse][Upload]\n----Workshops / Camps----\nUpload Workshop CSV [Browse][Upload]\n----Bands----\nUpload Band CSV [Browse][Upload]</pre><h3>Users</h3><table border='1' cellpadding='4'><tr><th>Name</th><th>User</th><th>Contributor</th><th>Admin</th></tr><tr><td>George Washington</td><td>[x]</td><td>[ ]</td><td>[ ]</td></tr><tr><td>Abraham Lincoln</td><td>[ ]</td><td>[x]</td><td>[ ]</td></tr></table><button>Save Changes</button></main>
+<p style="color:gray;font-size:small;">Admin-only functionality (not yet restricted)</p>
+<h1>Lesterslist Admin Panel</h1>
+<div class="uploads">
+<h2>CSV Upload Tools</h2>
+<section>
+<h3>Venues</h3>
+<form id="form_Venues" enctype="multipart/form-data">
+  <input type="hidden" name="table" value="Venues">
+  <input type="file" name="csvFile" accept=".csv">
+  <button type="submit">Upload Venue CSV</button>
+</form>
+<div class="result-message" id="result_Venues"></div>
+
+<h3>Concerts</h3>
+<form id="form_Concerts" enctype="multipart/form-data">
+  <input type="hidden" name="table" value="Concerts">
+  <input type="file" name="csvFile" accept=".csv">
+  <button type="submit">Upload Concert CSV</button>
+</form>
+<div class="result-message" id="result_Concerts"></div>
+
+<h3>Festivals</h3>
+<form id="form_Festivals" enctype="multipart/form-data">
+  <input type="hidden" name="table" value="Festivals">
+  <input type="file" name="csvFile" accept=".csv">
+  <button type="submit">Upload Festival CSV</button>
+</form>
+<div class="result-message" id="result_Festivals"></div>
+
+<h3>Workshops / Camps</h3>
+<form id="form_Workshops" enctype="multipart/form-data">
+  <input type="hidden" name="table" value="Camps">
+  <input type="file" name="csvFile" accept=".csv">
+  <button type="submit">Upload Workshop CSV</button>
+</form>
+<div class="result-message" id="result_Workshops"></div>
+
+<h3>Bands</h3>
+<form id="form_Bands" enctype="multipart/form-data">
+  <input type="hidden" name="table" value="Artists">
+  <input type="file" name="csvFile" accept=".csv">
+  <button type="submit">Upload Band CSV</button>
+</form>
+<div class="result-message" id="result_Bands"></div>
+</section>
+</div>
+
+<section class="users">
+<h2>Users (Placeholder)</h2>
+<table border="1" cellpadding="5">
+<tr><th>Name</th><th>User</th><th>Contributor</th><th>Admin</th></tr>
+<tr><td>George Washington</td><td>[x]</td><td>[ ]</td><td>[ ]</td></tr>
+<tr><td>Abraham Lincoln</td><td>[ ]</td><td>[x]</td><td>[ ]</td></tr>
+</table>
+</section>
+
 <footer>
-<p>©2026 Lester's List • <span class="tagline">Find Your Circle</span> • <a href="admin.html">Admin Screen</a></p>
+<p>© 2026 Lester's List • <span class="tagline">Find Your Circle</span> • <a href="/admin.html">Admin Screen</a></p>
 </footer>
+
+<script>
+async function handleForm(id) {
+ const form=document.getElementById(id);
+ form.addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const resEl=document.getElementById('result_'+id.split('_')[1]);
+  const data=new FormData(form);
+  const resp=await fetch('/upload',{method:'POST',body:data});
+  const json=await resp.json();
+  if(json.error){resEl.textContent='⚠️ '+json.error;}
+  else{resEl.textContent='✅ '+json.imported+' records imported; '+json.duplicates+' duplicates skipped.';}
+ });
+}
+['form_Venues','form_Concerts','form_Festivals','form_Workshops','form_Bands'].forEach(handleForm);
+</script>
 </body></html>

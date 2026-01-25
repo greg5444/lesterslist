@@ -1,1 +1,1 @@
-body{font-family:Arial,sans-serif;background:#fff;color:#008E97;margin:0;}header{background:#F26A24;color:#fff;padding:1em;text-align:center;}nav a{color:#005778;margin:0 .5em;text-decoration:none;font-weight:bold;}main{padding:1em;}footer{background:#f5f5f5;text-align:center;padding:1em;color:#005778;}.tagline{color:#008E97;font-style:italic;}a:hover{text-decoration:underline;color:#008E97;}
+body{font-family:Arial,sans-serif;color:#008E97;} a{color:#005778;} button{margin-top:6px;} .result-message{margin:4px 0;color:#005778;} footer{margin-top:20px;font-size:small;}
