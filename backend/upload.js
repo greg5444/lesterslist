@@ -9,7 +9,7 @@ const upload=multer({dest:'uploads/'});
 const pool=mysql.createPool({
  host:'localhost',
  user:'u611894795_onelesterslist',
- password:'DB_PASSWORD_HERE',
+ password:'j6wa47f62B',
  database:'u611894795_onelesterslist'
 });
 router.post('/',upload.single('csvFile'),(req,res)=>{
