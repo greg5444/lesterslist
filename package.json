@@ -1,12 +1,13 @@
 {
-  "name": "lesterslist",
+  "name": "lesterslist-complete",
   "version": "1.0.0",
-  "description": "Bluegrass community directory",
+  "description": "Full Bluegrass directory website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mysql2": "^3.9.4"
   }
 }
