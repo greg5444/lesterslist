@@ -1,41 +1,9 @@
--- Lesterslist.com MySQL Schema
-CREATE TABLE Artists(
-  BandNumber VARCHAR(10) PRIMARY KEY,
-  BandName VARCHAR(255),
-  BandWebsite VARCHAR(255),
-  PictureURL VARCHAR(255)
-);
-CREATE TABLE Venues(
-  VenueNumber VARCHAR(10) PRIMARY KEY,
-  VenueName VARCHAR(255),
-  StreetAddress VARCHAR(255),
-  CityStateZip VARCHAR(255),
-  GoogleMapAddress VARCHAR(255),
-  VenueURL VARCHAR(255),
-  FullState VARCHAR(100)
-);
-CREATE TABLE Concerts(
-  JDNumber VARCHAR(10) PRIMARY KEY,
-  ConcertName VARCHAR(255),
-  ConcertDate DATE,
-  BandNumber VARCHAR(10),
-  VenueNumber VARCHAR(10),
-  FestivalNumber VARCHAR(10),
-  FOREIGN KEY (BandNumber) REFERENCES Artists(BandNumber),
-  FOREIGN KEY (VenueNumber) REFERENCES Venues(VenueNumber)
-);
-CREATE TABLE Festivals(
-  FestivalNumber VARCHAR(10) PRIMARY KEY,
-  FestivalName VARCHAR(255),
-  VenueNumber VARCHAR(10),
-  StartDate DATE,
-  EndDate DATE,
-  FOREIGN KEY (VenueNumber) REFERENCES Venues(VenueNumber)
-);
-CREATE TABLE LocalJams(
-  JamID INT AUTO_INCREMENT PRIMARY KEY,
-  JamName VARCHAR(255),
-  VenueNumber VARCHAR(10),
-  Schedule VARCHAR(255),
-  FOREIGN KEY (VenueNumber) REFERENCES Venues(VenueNumber)
-);
+-- Lesterslist Database Schema (complete)
+CREATE TABLE Artists(BandNumber VARCHAR(10) PRIMARY KEY,BandName VARCHAR(255),BandWebsite VARCHAR(255),PictureURL VARCHAR(255));
+CREATE TABLE Venues(VenueNumber VARCHAR(10) PRIMARY KEY,VenueName VARCHAR(255),StreetAddress VARCHAR(255),CityStateZip VARCHAR(255),GoogleMapAddress VARCHAR(255),VenueURL VARCHAR(255),FullState VARCHAR(100));
+CREATE TABLE Concerts(JDNumber VARCHAR(10) PRIMARY KEY,ConcertName VARCHAR(255),ConcertDate DATE,DateRange VARCHAR(255),ExpireDate DATE,BandNumber VARCHAR(10),FestivalNumber VARCHAR(10),VenueNumber VARCHAR(10),SimpleConcertName VARCHAR(255),ImageURL VARCHAR(255),ArtistWebsite VARCHAR(255),FestivalWebsite VARCHAR(255),FOREIGN KEY(BandNumber) REFERENCES Artists(BandNumber),FOREIGN KEY(VenueNumber) REFERENCES Venues(VenueNumber));
+CREATE TABLE Festivals(FestivalNumber VARCHAR(10) PRIMARY KEY,FestivalName VARCHAR(255),VenueNumber VARCHAR(10),StartDate DATE,EndDate DATE,DateRange VARCHAR(255),FestivalWebsite VARCHAR(255),FestivalFlyerURL VARCHAR(255),FeaturedImageURL VARCHAR(255),ExpireDate DATE,FOREIGN KEY(VenueNumber) REFERENCES Venues(VenueNumber));
+CREATE TABLE Camps(WorkshopNumber VARCHAR(10) PRIMARY KEY,EventName VARCHAR(255),StartDate DATE,EndDate DATE,DateRange VARCHAR(255),VenueNumber VARCHAR(10),VenueName VARCHAR(255),ContactPerson VARCHAR(255),ExternalURL VARCHAR(255),FullState VARCHAR(100),ImageURL VARCHAR(255),FOREIGN KEY(VenueNumber) REFERENCES Venues(VenueNumber));
+CREATE TABLE LocalJams(JamID INT AUTO_INCREMENT PRIMARY KEY,JamName VARCHAR(255),VenueNumber VARCHAR(10),Schedule VARCHAR(255),Notes VARCHAR(500),City VARCHAR(100),State VARCHAR(50),Zip VARCHAR(20),GoogleMapLink VARCHAR(255),FOREIGN KEY(VenueNumber) REFERENCES Venues(VenueNumber));
+CREATE TABLE Users(UserID INT AUTO_INCREMENT PRIMARY KEY,Name VARCHAR(255),Email VARCHAR(255),Role ENUM('Visitor','Member','Contributor','Admin') DEFAULT 'Visitor',PasswordHash VARCHAR(255),JoinDate DATETIME DEFAULT CURRENT_TIMESTAMP,LastLogin DATETIME,Status ENUM('Active','Suspended') DEFAULT 'Active');
+CREATE TABLE VerificationStatus(RecordID INT AUTO_INCREMENT PRIMARY KEY,TableName VARCHAR(100),VerificationStatus ENUM('Verification Needed','Approved','Returned'),SearchURL VARCHAR(255),VerifiedBy VARCHAR(100),VerifiedDate DATETIME);
