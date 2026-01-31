@@ -8,5 +8,18 @@ html
     main
       section
         h2 Camps & Workshops
-        p Camp and workshop listings coming soon.
+        if error
+          p.error= error
+        if camps && camps.length
+          ul.camp-list
+            each camp in camps
+              li
+                strong= camp.EventName
+                |  - 
+                span= camp.DateRange
+                if camp.ImageURL
+                  br
+                  img(src=camp.ImageURL, alt=camp.EventName, style='max-width:120px;')
+        else
+          p No camps or workshops found.
     include ./_footer.pug

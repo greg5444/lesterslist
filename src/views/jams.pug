@@ -8,5 +8,18 @@ html
     main
       section
         h2 Local Jams
-        p Jam listings coming soon.
+        if error
+          p.error= error
+        if jams && jams.length
+          ul.jam-list
+            each jam in jams
+              li
+                strong= jam.JamName
+                |  - 
+                span= jam.MeetingDetails
+                if jam.ContactPerson
+                  br
+                  span Contact: #{jam.ContactPerson}
+        else
+          p No jams found.
     include ./_footer.pug

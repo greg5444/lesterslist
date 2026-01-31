@@ -8,5 +8,18 @@ html
     main
       section
         h2 Festivals
-        p Festival listings coming soon.
+        if error
+          p.error= error
+        if festivals && festivals.length
+          ul.festival-list
+            each festival in festivals
+              li
+                strong= festival.FestivalName
+                |  - 
+                span= festival.StartDate
+                if festival.FlyerImage
+                  br
+                  img(src=festival.FlyerImage, alt=festival.FestivalName, style='max-width:120px;')
+        else
+          p No festivals found.
     include ./_footer.pug

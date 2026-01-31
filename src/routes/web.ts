@@ -14,18 +14,10 @@ export function setWebRoutes(app) {
 
     router.get('/bands', mainController.bandsPage.bind(mainController));
     router.get('/concerts', mainController.concertsPage.bind(mainController));
-    router.get('/festivals', (req, res) => {
-        res.render('festivals');
-    });
-    router.get('/camps', (req, res) => {
-        res.render('camps');
-    });
-    router.get('/jams', (req, res) => {
-        res.render('jams');
-    });
-    router.get('/learn', (req, res) => {
-        res.render('learn');
-    });
+    router.get('/festivals', mainController.festivalsPage.bind(mainController));
+    router.get('/camps', mainController.campsPage.bind(mainController));
+    router.get('/jams', mainController.jamsPage.bind(mainController));
+    router.get('/learn', mainController.learnPage.bind(mainController));
     router.get('/about', (req, res) => {
         res.render('about');
     });

@@ -8,5 +8,18 @@ html
     main
       section
         h2 Learn to Play
-        p Learn to Play resources coming soon.
+        if error
+          p.error= error
+        if learn && learn.length
+          ul.learn-list
+            each item in learn
+              li
+                strong= item.InstructorName
+                |  - 
+                span= item.CourseDescription
+                if item.ExternalLink
+                  br
+                  a(href=item.ExternalLink, target='_blank') More Info
+        else
+          p No Learn to Play resources found.
     include ./_footer.pug
