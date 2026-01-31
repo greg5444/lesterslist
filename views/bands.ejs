@@ -1,0 +1,24 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title><%= title %></title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header><h1>Lester's List • Find Your Circle</h1></header>
+<main class="grid">
+  <% bands.forEach(function(band,i){ %>
+    <div class="card">
+      <img src="<%= band.PictureURL || placeholders[i % placeholders.length] %>" alt="<%= band.BandName %>">
+      <h2><%= band.BandName %></h2>
+      <% if(band.BandWebsite){ %>
+        <a href="<%= band.BandWebsite %>" target="_blank">Visit Site</a>
+      <% } %>
+    </div>
+  <% }) %>
+</main>
+<footer>© 2026 Lester's List • Find Your Circle</footer>
+</body>
+</html>
