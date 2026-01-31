@@ -1,0 +1,15 @@
+//- _header.pug - shared navigation for all pages
+header
+  if logo
+    img.logo(src=logo, alt='Lesterslist Logo')
+  else
+    h1 Lesterslist
+  nav
+    ul
+      li: a(href='/') Home
+      li: a(href='/bands') Bands
+      li: a(href='/concerts') Concerts
+      li: a(href='/festivals') Festivals
+      li: a(href='/jams') Jams
+      li: a(href='/camps') Camps and Workshops
+      li: a(href='/learn') Learn to Play
