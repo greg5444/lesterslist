@@ -8,5 +8,18 @@ html
     main
       section
         h2 Concerts
-        p Concert listings coming soon.
+        if error
+          p.error= error
+        if concerts && concerts.length
+          ul.concert-list
+            each concert in concerts
+              li
+                strong= concert.concert_name
+                |  - 
+                span= concert.concert_date
+                if concert.image
+                  br
+                  img(src=concert.image, alt=concert.concert_name, style='max-width:120px;')
+        else
+          p No concerts found.
     include ./_footer.pug

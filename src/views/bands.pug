@@ -8,5 +8,19 @@ html
     main
       section
         h2 Bands
-        p Band listings coming soon.
+        if error
+          p.error= error
+        if bands && bands.length
+          ul.band-list
+            each band in bands
+              li
+                strong= band.BandName
+                if band.BandWebsite
+                  |  - 
+                  a(href=band.BandWebsite, target='_blank') Website
+                if band.PictureURL
+                  br
+                  img(src=band.PictureURL, alt=band.BandName, style='max-width:120px;')
+        else
+          p No bands found.
     include ./_footer.pug

@@ -1,19 +1,19 @@
 import { Router } from 'express';
+
 import ListingsController from '../controllers/listingsController';
+import { MainController } from '../controllers/mainController';
 
 const router = Router();
+
 const listingsController = new ListingsController();
+const mainController = new MainController();
 
 export function setWebRoutes(app) {
     router.get('/', listingsController.getAllListings);
     router.get('/listing/:id', listingsController.getListingById);
 
-    router.get('/bands', (req, res) => {
-        res.render('bands');
-    });
-    router.get('/concerts', (req, res) => {
-        res.render('concerts');
-    });
+    router.get('/bands', mainController.bandsPage.bind(mainController));
+    router.get('/concerts', mainController.concertsPage.bind(mainController));
     router.get('/festivals', (req, res) => {
         res.render('festivals');
     });
