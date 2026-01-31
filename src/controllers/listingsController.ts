@@ -1,21 +1,22 @@
 export class ListingsController {
     async createListing(req, res) {
-        // Logic for creating a new listing
+        res.status(501).send('Not implemented');
     }
 
     async getListing(req, res) {
-        // Logic for retrieving a specific listing
+        res.status(501).send('Not implemented');
     }
 
     async updateListing(req, res) {
-        // Logic for updating an existing listing
+        res.status(501).send('Not implemented');
     }
 
     async deleteListing(req, res) {
-        // Logic for deleting a listing
+        res.status(501).send('Not implemented');
     }
 
     async getAllListings(req, res) {
-        // Logic for retrieving all listings
+        // Render homepage with navigation and logo
+        res.render('index', { logo: '/img/logo.png' });
     }
 }
