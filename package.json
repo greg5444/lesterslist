@@ -1,0 +1,36 @@
+{
+  "name": "directory-website",
+  "version": "1.0.0",
+  "description": "A directory website for managing listings.",
+  "main": "src/server.ts",
+  "scripts": {
+    "start": "ts-node src/server.ts",
+    "build": "tsc",
+    "test": "jest",
+    "deploy": "bash scripts/deploy-ftp.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/directory-website.git"
+  },
+  "keywords": [
+    "directory",
+    "listings",
+    "website"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "knex": "^0.95.0",
+    "pg": "^8.6.0",
+    "dotenv": "^10.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.3",
+    "ts-node": "^10.4.0",
+    "jest": "^27.0.6",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.9.1"
+  }
+}

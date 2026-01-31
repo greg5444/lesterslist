@@ -1,0 +1,47 @@
+doctype html
+html
+  head
+    title Lesterslist.com | Music & Event Listings
+    link(rel='stylesheet', href='/css/main.css')
+  body
+    header
+      if logo
+        img.logo(src=logo, alt='Lesterslist Logo')
+      else
+        h1 Lesterslist
+      nav
+        ul
+          li: a(href='/') Home
+          li: a(href='/bands') Bands
+          li: a(href='/concerts') Concerts
+          li: a(href='/festivals') Festivals
+          li: a(href='/jams') Jams
+          li: a(href='/camps') Camps and Workshops
+          li: a(href='/learn') Learn to Play
+    main
+      section.hero
+        if heroImage
+          img(src=heroImage, alt='Lesterslist Hero Banner')
+        h2 Your Source for Bluegrass, Folk, and Roots Events
+        p Discover concerts, festivals, jams, and more across the region.
+      section
+        h2 Upcoming Concerts
+        //- TODO: Insert dynamic feed for next 5 concerts
+        div.listings
+          p No concerts available at the moment.
+      section
+        h2 Upcoming Festivals
+        //- TODO: Insert dynamic feed for next 5 festivals
+        div.listings
+          p No festivals available at the moment.
+    footer
+      .footer-content
+        p
+          | © 2026 Lesterslist.com. All rights reserved. |
+          a(href='/about') About
+          |  |
+          a(href='https://facebook.com/lesterslist' target='_blank') Facebook
+          |  |
+          a(href='mailto:info@lesterslist.com') Contact
+        p
+          | Site by Greg Lester. Powered by Node.js/Express.
