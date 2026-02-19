@@ -1,6 +1,6 @@
 // src/models/userModel.js
 import pool from '../config/database.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 export default class User {
     static async create({ username, password, role = 'admin' }) {
         const password_hash = await bcrypt.hash(password, 10);
