@@ -1,0 +1,113 @@
+<% layout('layout') %>
+
+<style>
+  #map {
+    width: 100%;
+    height: 85vh;
+    border-radius: 8px;
+    margin: 0;
+    padding: 0;
+  }
+</style>
+
+<div id="map"></div>
+
+<script>
+  function initMap() {
+    // Initialize map centered on USA
+    const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 5,
+      center: { lat: 39.8283, lng: -98.5795 }, // Center of USA
+      mapTypeControl: true,
+      streetViewControl: false,
+      fullscreenControl: true
+    });
+
+    // Parse event data from server
+    const events = <%- JSON.stringify(mapData) %>;
+    const infoWindow = new google.maps.InfoWindow();
+
+    console.log(`📍 Rendering ${events.length} events on map`);
+
+    // Create markers for each event
+    events.forEach(event => {
+      if (!event.lat || !event.lng) return; // Skip if no coordinates
+
+      // Determine icon URL based on event type
+      let iconUrl;
+      if (event.type === 'concert') {
+        iconUrl = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'; // Closest to Teal
+      } else if (event.type === 'festival') {
+        iconUrl = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+      } else if (event.type === 'jam') {
+        iconUrl = 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'; // Closest to Orange
+      } else if (event.type === 'camp') {
+        iconUrl = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+      }
+
+      const marker = new google.maps.Marker({
+        position: { lat: parseFloat(event.lat), lng: parseFloat(event.lng) },
+        map: map,
+        title: event.title,
+        icon: iconUrl
+      });
+
+      // Format date
+      let dateStr = 'Date TBD';
+      if (event.date) {
+        const date = new Date(event.date);
+        dateStr = date.toLocaleDateString('en-US', { 
+          weekday: 'short',
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        });
+      }
+
+      // Info window content
+      const content = `
+        <div style="padding:8px; color:#333; font-family:Arial, sans-serif; max-width:250px;">
+          <h3 style="margin:0 0 8px 0; font-size:16px; color:#225675;">${event.title}</h3>
+          ${event.venue ? `<p style="margin:0 0 4px 0; font-size:13px;"><strong>📍 ${event.venue}</strong></p>` : ''}
+          <p style="margin:0 0 10px 0; font-size:13px; color:#666;">📅 ${dateStr}</p>
+          <a href="${event.url}" style="display:inline-block; padding:6px 12px; background:#3D8C95; color:white; text-decoration:none; border-radius:4px; font-size:13px; font-weight:600;">View Details →</a>
+        </div>
+      `;
+
+      // Click listener
+      marker.addListener("click", () => {
+        infoWindow.setContent(content);
+        infoWindow.open(map, marker);
+      });
+    });
+
+    // Fit map to show all markers
+    if (events.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      events.forEach(event => {
+        if (event.lat && event.lng) {
+          bounds.extend({ lat: event.lat, lng: event.lng });
+        }
+      });
+      map.fitBounds(bounds);
+      
+      // Prevent over-zooming
+      const listener = google.maps.event.addListener(map, 'idle', () => {
+        if (map.getZoom() > 15) map.setZoom(15);
+        google.maps.event.removeListener(listener);
+      });
+    }
+  }
+
+  // Handle map load errors
+  window.gm_authFailure = function() {
+    document.getElementById('map').innerHTML = 
+      '<div style="padding:2rem;text-align:center;color:#DC3545;">' +
+      '<h3>Map Load Error</h3>' +
+      '<p>Unable to load Google Maps. Please check the API key configuration.</p>' +
+      '</div>';
+  };
+</script>
+
+<!-- Load Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= GOOGLE_MAPS_API_KEY %>&callback=initMap" async defer></script>

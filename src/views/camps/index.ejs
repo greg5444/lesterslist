@@ -1,0 +1,88 @@
+<% layout('layout') %>
+<%
+  // State abbreviation to full name map
+  const stateNames = {
+    'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California','CO':'Colorado','CT':'Connecticut',
+    'DE':'Delaware','FL':'Florida','GA':'Georgia','HI':'Hawaii','ID':'Idaho','IL':'Illinois','IN':'Indiana','IA':'Iowa',
+    'KS':'Kansas','KY':'Kentucky','LA':'Louisiana','ME':'Maine','MD':'Maryland','MA':'Massachusetts','MI':'Michigan',
+    'MN':'Minnesota','MS':'Mississippi','MO':'Missouri','MT':'Montana','NE':'Nebraska','NV':'Nevada','NH':'New Hampshire',
+    'NJ':'New Jersey','NM':'New Mexico','NY':'New York','NC':'North Carolina','ND':'North Dakota','OH':'Ohio','OK':'Oklahoma',
+    'OR':'Oregon','PA':'Pennsylvania','RI':'Rhode Island','SC':'South Carolina','SD':'South Dakota','TN':'Tennessee',
+    'TX':'Texas','UT':'Utah','VT':'Vermont','VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming'
+  };
+%>
+
+<div style="max-width:1200px;margin:2rem auto;padding:0 1.5rem;">
+  <!-- Header -->
+  <header style="margin-bottom:2rem;border-bottom:3px solid var(--color-primary-teal);padding-bottom:1rem;">
+    <h1 style="font-family:var(--font-display);font-size:2.5rem;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;">
+      🏕️ Camps & Workshops
+    </h1>
+    <p style="color:#666;font-size:1.1rem;margin:0;">Learn from the masters at bluegrass camps and workshops across the country.</p>
+  </header>
+
+  <% if (camps.length === 0) { %>
+    <div style="text-align:center;padding:4rem 1rem;background:#f9f9f9;border-radius:12px;">
+      <div style="font-size:4rem;margin-bottom:1rem;">🎸</div>
+      <p style="font-size:1.2rem;color:#666;margin:0;">No camps or workshops are currently listed.</p>
+      <p style="font-size:0.95rem;color:#888;margin-top:0.5rem;">Check back soon for upcoming events!</p>
+    </div>
+  <% } else { %>
+    
+    <!-- List Layout -->
+    <div style="display:grid;gap:1.5rem;">
+      <% camps.forEach(camp => { %>
+        <div style="position:relative;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);overflow:hidden;height:220px;display:grid;grid-template-columns:85px 1fr 180px;transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)';">
+          
+          <!-- Column 1: Date Badge (Fixed 85px) -->
+          <div style="background:var(--color-secondary-blue);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;">
+            <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.25rem;opacity:0.9;">
+              <%= camp.StartDate ? new Date(camp.StartDate).toLocaleDateString('en-US', { month: 'short' }) : 'TBD' %>
+            </div>
+            <div style="font-size:2rem;font-weight:700;line-height:1;">
+              <%= camp.StartDate ? new Date(camp.StartDate).getDate() : '?' %>
+            </div>
+            <% if (camp.EndDate) { %>
+              <div style="font-size:0.65rem;margin-top:0.35rem;opacity:0.8;text-align:center;line-height:1.2;">
+                to<br><%= new Date(camp.EndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Column 2: Content (Flexible 1fr) -->
+          <div style="padding:15px;display:flex;flex-direction:column;justify-content:center;min-width:0;">
+            <h3 style="font-family:var(--font-display);font-size:1.3rem;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.2;font-weight:700;">
+              <a href="/camps/<%= camp.JDNumber %>" class="stretched-link" style="color:var(--color-secondary-blue);text-decoration:none;">
+                <%= camp.EventName %>
+              </a>
+            </h3>
+            
+            <div style="display:flex;flex-direction:column;gap:0.35rem;color:#666;font-size:0.9rem;">
+              <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                <%= camp.VenueName || '' %>
+              </div>
+              
+              <div>
+                <%= camp.City || '' %><% if (camp.City && camp.State) { %>, <% } %><%= camp.State ? camp.State.trim() : '' %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 3: State Outline Visual (Fixed 180px) -->
+          <div style="position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f9f9f9;padding:15px;">
+            <% if (camp.State && camp.State.trim()) { %>
+              <img src="https://raw.githubusercontent.com/djaiss/mapsicon/master/us/<%= camp.State.trim().toLowerCase() %>/512.png" 
+                   alt="<%= camp.State.trim() %>" 
+                   onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" 
+                   style="width:100%;max-width:140px;height:auto;object-fit:contain;opacity:0.2;margin-bottom:8px;">
+              <div style="font-size:0.75rem;color:#666;font-weight:600;text-align:center;text-transform:uppercase;letter-spacing:0.5px;">
+                <%= stateNames[camp.State.trim()] || camp.State.trim() %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+  <% } %>
+</div>

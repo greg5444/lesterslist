@@ -1,0 +1,147 @@
+// src/controllers/homeController.js
+import pool from '../config/database.js';
+import SiteSettings from '../models/siteSettingsModel.js';
+
+export async function showHome(req, res) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Parallel queries for community statistics
+    const [
+      [tickerConcerts],
+      [[featuredBand]],
+      [[featuredFestival]],
+      [[featuredConcert]],
+      [upcomingConcerts],
+      [upcomingFestivals],
+      [sidebarJams],
+      [sidebarCamps],
+      [[{ concertCount }]],
+      [[{ festivalCount }]],
+      [[{ jamCount }]],
+      [[{ campCount }]]
+    ] = await Promise.all([
+      // Ticker Data: Latest 5 Concerts
+      pool.query('SELECT ConcertNumber, ConcertName, VenueName FROM Concerts ORDER BY ConcertNumber DESC LIMIT 5'),
+      
+      // Discovery Trio - Query A: Random Active Band with Photo
+      pool.query('SELECT BandNumber, BandName, PictureURL FROM Bands WHERE Active = 1 AND PictureURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
+      
+      // Discovery Trio - Query B: Random Upcoming Festival with Featured Image
+      pool.query('SELECT FestivalNumber, FestivalName, StartDate, EndDate, FeaturedImageURL FROM Festivals WHERE StartDate >= CURDATE() AND FeaturedImageURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
+      
+      // Discovery Trio - Query C: Random Upcoming Concert with Band Photo
+      pool.query(`
+        SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
+               COALESCE(v.VenueName, c.VenueName) as VenueName,
+               COALESCE(v.City, c.City) as City,
+               COALESCE(v.State, c.State) as State,
+               b.PictureURL as BandPhoto
+        FROM Concerts c
+        LEFT JOIN Bands b ON c.BandNumber = b.BandNumber
+        LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
+        WHERE c.ConcertDate >= CURDATE()
+        ORDER BY RAND()
+        LIMIT 1
+      `),
+      
+      // Main Feed: Next 20 Upcoming Concerts
+      pool.query(
+        `SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, 
+                COALESCE(v.VenueName, c.VenueName) as VenueName,
+                COALESCE(v.City, c.City) as City,
+                COALESCE(v.State, c.State) as State,
+                c.ConcertImage
+         FROM Concerts c
+         LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
+        WHERE c.ConcertDate >= CURDATE()
+         ORDER BY c.ConcertDate ASC
+         LIMIT 20`
+      ),
+
+      // Main Feed: Next 20 Upcoming Festivals
+      pool.query(
+        `SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.DateRange,
+                COALESCE(v.City, f.City) as City,
+                COALESCE(v.State, f.State) as State
+         FROM Festivals f
+         LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
+         WHERE f.StartDate >= CURDATE()
+         ORDER BY f.StartDate ASC
+         LIMIT 20`
+      ),
+      
+      // Sidebar Jams: Latest 5 Published Jams
+      pool.query("SELECT JamID, JamName, City, State, Schedule FROM LocalJams WHERE Status = 'Published' ORDER BY JamID DESC LIMIT 5"),
+      
+      // Sidebar Camps: Next 3 Upcoming Camps
+      pool.query('SELECT JDNumber, EventName, DateRange FROM Camps ORDER BY StartDate ASC LIMIT 3'),
+      
+      // Community Stats: Upcoming Concerts (Date >= Today)
+      pool.query('SELECT COUNT(*) AS concertCount FROM Concerts WHERE ConcertDate >= ?', [today]),
+      
+      // Community Stats: Active Festivals (EndDate >= Today)
+      pool.query('SELECT COUNT(*) AS festivalCount FROM Festivals WHERE EndDate >= ?', [today]),
+      
+      // Community Stats: Active Jams
+      pool.query("SELECT COUNT(*) AS jamCount FROM LocalJams WHERE Status = 'Published'"),
+      
+      // Community Stats: Total Camps
+      pool.query('SELECT COUNT(*) AS campCount FROM Camps')
+    ]);
+    
+    // Get ticker settings from database
+    const tickerSettings = await SiteSettings.getTickerSettings();
+    let tickerMessages = [];
+    
+    // Parse ticker messages JSON
+    try {
+      tickerMessages = JSON.parse(tickerSettings.ticker_text || '[]');
+      
+      // Replace placeholders with actual counts in each message
+      tickerMessages = tickerMessages.map(msg => ({
+        text: msg.text
+          .replace(/{concertCount}/g, concertCount)
+          .replace(/{festivalCount}/g, festivalCount)
+          .replace(/{jamCount}/g, jamCount)
+          .replace(/{campCount}/g, campCount),
+        url: msg.url || ''
+      }));
+    } catch (e) {
+      console.error('Error parsing ticker messages:', e);
+    }
+    
+    res.render('index', {
+      title: "Lester's List - Bluegrass Events",
+      tickerEnabled: tickerSettings.ticker_enabled !== false,
+      tickerMessages: tickerMessages,
+      tickerSpeed: tickerSettings.ticker_speed || 'medium',
+      tickerConcerts,
+      featuredBand: featuredBand || null,
+      featuredFestival: featuredFestival || null,
+      featuredConcert: featuredConcert || null,
+      upcomingConcerts,
+      upcomingFestivals,
+      sidebarJams,
+      sidebarCamps,
+      concertCount,
+      festivalCount,
+      jamCount,
+      campCount
+    });
+  } catch (err) {
+    console.error('Error loading homepage:', err);
+    res.status(500).render('500', { message: 'Server error' });
+  }
+}
+
+export async function showContact(req, res) {
+  try {
+    res.render('contact', {
+      title: "Contact Us - Lester's List"
+    });
+  } catch (err) {
+    console.error('Error loading contact page:', err);
+    res.status(500).render('500', { message: 'Server error' });
+  }
+}

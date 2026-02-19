@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Server Error</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <%- include('_header') %>
+  <main style="text-align:center; padding:4rem 1rem;">
+    <h1 style="color:var(--color-primary);">500 - Server Error</h1>
+    <p><%= typeof error !== 'undefined' ? error : (typeof message !== 'undefined' ? message : 'An unexpected error occurred.') %></p>
+    <a href="/" style="color:var(--color-primary);text-decoration:underline;">Return Home</a>
+  </main>
+  <%- include('_footer') %>
+</body>
+</html>
+

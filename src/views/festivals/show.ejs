@@ -1,0 +1,143 @@
+<% /* Festival Detail Page - BoldWP Structure */ %>
+<% layout('layout') %>
+
+<%
+  // Smart Title Logic - Strip year from festival name if present (e.g., "Festival Name 2026" → "Festival Name")
+  let cleanFestivalName = festival.FestivalName;
+  const yearMatch = festival.FestivalName.match(/\s+(\d{4})$/);
+  if (yearMatch) {
+    cleanFestivalName = festival.FestivalName.replace(/\s+\d{4}$/, '').trim();
+  }
+%>
+
+<article class="boldwp-post-singular boldwp-box detail-page-card" style="max-width:1100px;margin:2.5rem auto 0 auto;width:100%;">
+  <div class="boldwp-box-inside">
+    <header class="entry-header" style="text-align:center;">
+      <div class="entry-header-inside">
+        <div style="margin:1rem 0;">
+          <img src="<%= heroImage %>" alt="<%= cleanFestivalName %>" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';" style="width:100%;max-width:700px;height:340px;object-fit:cover;border-radius:14px;box-shadow:0 2px 12px rgba(34,86,117,0.08);">
+        </div>
+        
+        <!-- Clean Festival Name (Year Stripped) -->
+        <h1 class="entry-title" style="font-size:2.7rem;margin:1rem 0;color:#2d3748;"><%= cleanFestivalName %></h1>
+        
+        <!-- Date Range - Prominent Block -->
+        <h3 style="font-size:1.4rem;font-weight:700;color:#3D8C95;margin:0.8rem 0;line-height:1.4;">
+          <%= new Date(festival.StartDate).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) %>
+          &ndash;
+          <%= new Date(festival.EndDate).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) %>
+        </h3>
+        
+        <!-- Venue & Location - Prominent Block -->
+        <% if (festival.VenueName) { %>
+        <h3 style="font-size:1.3rem;font-weight:600;color:#225675;margin:0.8rem 0 1.5rem 0;line-height:1.4;">
+          <%= festival.VenueName %>
+          <% if (festival.City && festival.State) { %>
+            <span style="font-weight:500;color:#4a5568;"> &mdash; <%= festival.City %>, <%= festival.State %></span>
+          <% } %>
+        </h3>
+        <% } %>
+      </div>
+    </header>
+    
+    <!-- Call-to-Action Button (High Priority) -->
+    <% if (festival.FestivalWebsite && festival.FestivalWebsite.trim()) { %>
+    <div style="text-align:center;margin:2rem 0;">
+      <% 
+        const festivalWebsiteRaw = festival.FestivalWebsite.trim();
+        const festivalWebsiteUrl = festivalWebsiteRaw.startsWith('http') ? festivalWebsiteRaw : 'https://' + festivalWebsiteRaw;
+        const festivalWebsiteDisplay = festivalWebsiteRaw.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+        const festivalWebsiteText = festivalWebsiteDisplay.length <= 38
+          ? `🎵 Visit ${festivalWebsiteDisplay} website`
+          : `🎵 Visit the ${cleanFestivalName} Website`;
+      %>
+      <div style="max-width:720px;margin:0 auto 1rem auto;color:#4a5568;font-size:1.05rem;line-height:1.6;">
+        Find more information about tickets, schedules, full lineups, camping information, and more at the <strong><%= cleanFestivalName %></strong> website.
+      </div>
+      <a href="<%= festivalWebsiteUrl %>" target="_blank" rel="noopener" style="display:inline-block;padding:1.2rem 2.5rem;background:#E6873C;color:#fff;font-weight:700;border-radius:10px;text-decoration:none;font-size:1.2rem;transition:all 0.2s;text-shadow:0 1px 3px rgba(0,0,0,0.3);box-shadow:0 4px 12px rgba(230,135,60,0.3);" onmouseover="this.style.opacity='0.9';this.style.transform='translateY(-2px)'" onmouseout="this.style.opacity='1';this.style.transform='translateY(0)'">
+        <%= festivalWebsiteText %>
+      </a>
+    </div>
+    <% } %>
+
+    <!-- Location Section -->
+    <section class="boldwp-box detail-page-section" style="max-width:980px;margin:1.5rem auto 2rem auto;width:100%;">
+      <div class="boldwp-box-inside">
+        <% if (mapAddress && googleMapsApiKey) { %>
+          <div style="display:flex;flex-wrap:wrap;gap:2rem;align-items:flex-start;">
+            <div style="flex:2 1 340px;min-width:260px;">
+              <iframe
+                width="100%"
+                height="260"
+                style="max-width:500px;border:0;border-radius:10px;box-shadow:0 2px 12px rgba(34,86,117,0.08);"
+                loading="lazy"
+                allowfullscreen
+                referrerpolicy="no-referrer-when-downgrade"
+                src="https://www.google.com/maps/embed/v1/place?key=<%= googleMapsApiKey %>&q=<%= encodeURIComponent(mapAddress) %>">
+              </iframe>
+            </div>
+            <div style="flex:1 1 220px;min-width:180px;color:var(--color-secondary);font-size:1.08rem;">
+              <div style="font-weight:800;margin-bottom:0.6rem;color:#1f2d3d;">Venue Information</div>
+              <% if (festival.VenueName) { %>
+                <div style="font-weight:700;margin-bottom:0.5rem;color:#225675;"><%= festival.VenueName %></div>
+              <% } %>
+              <% if (festival.VenueStreetAddress) { %>
+                <div><%= festival.VenueStreetAddress %></div>
+              <% } %>
+              <div><%= festival.City %>, <%= festival.State %> <%= festival.Zip || '' %></div>
+              <% if (festival.VenueURL && festival.VenueURL.trim()) { %>
+                <% 
+                  const festivalVenueWebsiteRaw = festival.VenueURL.trim();
+                  const festivalVenueWebsiteUrl = festivalVenueWebsiteRaw.startsWith('http') ? festivalVenueWebsiteRaw : 'https://' + festivalVenueWebsiteRaw;
+                  const festivalVenueWebsiteDisplay = festivalVenueWebsiteRaw.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+                  const festivalVenueWebsiteText = festivalVenueWebsiteDisplay.length <= 38
+                    ? `Visit ${festivalVenueWebsiteDisplay} website`
+                    : 'Visit Venue Website';
+                %>
+                <div style="margin-top:0.6rem;">
+                  <a href="<%= festivalVenueWebsiteUrl %>" target="_blank" rel="noopener" style="color:var(--color-primary-teal);font-weight:600;text-decoration:underline;">
+                    <%= festivalVenueWebsiteText %>
+                  </a>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </section>
+    
+    <% if (festival.FestivalFlyerURL && festival.FestivalFlyerURL.trim()) { %>
+    <div class="flyer-container" style="margin:2rem auto;padding:2rem;text-align:center;background:#f8f9fa;border-radius:8px;">
+      <h3 style="color:var(--color-secondary-blue);font-size:1.8rem;margin-bottom:1.5rem;font-family:var(--font-display);">Official Flyer</h3>
+      <a href="<%= festival.FestivalFlyerURL %>" target="_blank" rel="noopener">
+        <img src="<%= festival.FestivalFlyerURL %>" alt="<%= festival.FestivalName %> Flyer" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="max-width:100%;height:auto;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      </a>
+      <br>
+      <a href="<%= festival.FestivalFlyerURL %>" target="_blank" rel="noopener" style="display:inline-block;margin-top:1.5rem;padding:0.8rem 2rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:6px;text-decoration:none;transition:background 0.2s;">View Full Size Flyer</a>
+    </div>
+    <% } %>
+    
+    <div class="entry-content">
+      <h2 style="color:var(--color-primary-teal);margin:2rem 0 1.5rem;text-align:center;font-size:2rem;">Performing Bands</h2>
+      <% if (bands && bands.length > 0) { %>
+        <div class="band-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem;">
+          <% bands.forEach(band => { %>
+            <a href="/bands/<%= band.BandNumber %>" class="boldwp-box" style="display:block;text-align:center;text-decoration:none;color:var(--color-text-main);transition:box-shadow 0.2s;">
+              <div class="boldwp-box-inside">
+                <img src="<%= band.imageUrl %>" alt="<%= band.BandName %>" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:100%;max-width:140px;height:140px;object-fit:cover;border-radius:8px;margin:1.2rem auto 0.5rem auto;background:#f8f9fa;">
+                <div style="font-weight:600;font-size:1.08rem;margin-bottom:1.2rem;color:var(--color-secondary-blue);"><%= band.BandName %></div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div style="text-align:center;padding:3rem 1rem;background:#f8f9fa;border-radius:8px;color:#666;font-size:1.1rem;">
+          <div style="font-size:3rem;margin-bottom:1rem;">🎸</div>
+          <p style="margin:0;">Lineup coming soon.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+  </div>
+</article>
+

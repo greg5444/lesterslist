@@ -1,0 +1,296 @@
+<% layout('layout') %>
+<!-- Tier 1: Animated Ticker -->
+<% if (tickerEnabled && tickerMessages && tickerMessages.length > 0) { %>
+<div class="ticker-wrap">
+  <div class="ticker-move" style="animation-duration:<%= tickerSpeed === 'slow' ? '30s' : tickerSpeed === 'fast' ? '10s' : '20s' %>;">
+    <% tickerMessages.forEach((msg, index) => { %>
+      <% if (msg.url) { %>
+        <a href="<%= msg.url %>" style="color: inherit; text-decoration: none; margin-right: 4rem;"><%= msg.text %></a>
+      <% } else { %>
+        <span style="margin-right: 4rem;"><%= msg.text %></span>
+      <% } %>
+    <% }); %>
+    <!-- Repeat for continuous scroll -->
+    <% tickerMessages.forEach((msg, index) => { %>
+      <% if (msg.url) { %>
+        <a href="<%= msg.url %>" style="color: inherit; text-decoration: none; margin-right: 4rem;"><%= msg.text %></a>
+      <% } else { %>
+        <span style="margin-right: 4rem;"><%= msg.text %></span>
+      <% } %>
+    <% }); %>
+  </div>
+</div>
+<% } %>
+
+<!-- Tier 2: Discovery Trio (Magazine Style - 3 Column Grid) -->
+<section class="discovery-trio" style="max-width:1100px;margin:2.5rem auto 0 auto;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:2rem;overflow:hidden;">
+    <% 
+      const discoverySlots = [];
+      if (featuredBand) discoverySlots.push({ type: 'artist', data: featuredBand });
+      if (featuredFestival) discoverySlots.push({ type: 'festival', data: featuredFestival });
+      if (featuredConcert) discoverySlots.push({ type: 'concert', data: featuredConcert });
+
+      const randomizedSlots = [...discoverySlots];
+
+      if (randomizedSlots.length === 3) {
+        const permutations = [
+          [0, 1, 2], // A-F-C
+          [0, 2, 1], // A-C-F
+          [1, 0, 2], // F-A-C
+          [1, 2, 0], // F-C-A
+          [2, 0, 1], // C-A-F
+          [2, 1, 0]  // C-F-A
+        ];
+
+        const selectedOrder = permutations[Math.floor(Math.random() * permutations.length)];
+        const snapshot = [...randomizedSlots];
+
+        for (let i = 0; i < selectedOrder.length; i++) {
+          randomizedSlots[i] = snapshot[selectedOrder[i]];
+        }
+      } else if (randomizedSlots.length > 1) {
+        for (let i = randomizedSlots.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [randomizedSlots[i], randomizedSlots[j]] = [randomizedSlots[j], randomizedSlots[i]];
+        }
+      }
+    %>
+
+    <% randomizedSlots.forEach((slot) => { %>
+      <% if (slot.type === 'artist') { %>
+        <a href="/bands/<%= slot.data.BandNumber %>" style="position:relative;display:block;height:360px;border-radius:8px;overflow:hidden;text-decoration:none;box-shadow:0 4px 12px rgba(34,86,117,0.1);transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+          <img src="<%= slot.data.PictureURL %>" alt="<%= slot.data.BandName %>" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%);"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;color:#fff;">
+            <div style="display:inline-block;font-size:0.9rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.5rem;color:#fff;font-weight:900;background:rgba(230,135,60,0.95);padding:0.4rem 1rem;border-radius:4px;text-shadow:0 2px 4px rgba(0,0,0,0.5);">Spotlight Artist</div>
+            <h3 style="font-size:1.4rem;font-weight:700;margin:0;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.8);"><%= slot.data.BandName %></h3>
+          </div>
+        </a>
+      <% } %>
+
+      <% if (slot.type === 'festival') { %>
+        <a href="/festivals/<%= slot.data.FestivalNumber %>" style="position:relative;display:block;height:360px;border-radius:8px;overflow:hidden;text-decoration:none;box-shadow:0 4px 12px rgba(34,86,117,0.1);transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+          <img src="<%= slot.data.FeaturedImageURL %>" alt="<%= slot.data.FestivalName %>" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%);"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;color:#fff;">
+            <h3 style="font-size:1.4rem;font-weight:700;margin:0 0 0.5rem 0;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.8);"><%= slot.data.FestivalName %></h3>
+            <div style="font-size:0.95rem;opacity:0.95;text-shadow:0 2px 4px rgba(0,0,0,0.7);">
+              <%= new Date(slot.data.StartDate).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) %>
+              <% if (slot.data.EndDate) { %> - <%= new Date(slot.data.EndDate).toLocaleDateString('en-US', { month:'long', day:'numeric' }) %><% } %>
+            </div>
+          </div>
+        </a>
+      <% } %>
+
+      <% if (slot.type === 'concert') { %>
+        <% 
+          const concertDisplayImage = (slot.data.ConcertImage && slot.data.ConcertImage.trim()) 
+            ? slot.data.ConcertImage 
+            : (slot.data.BandPhoto && slot.data.BandPhoto.trim()) 
+              ? slot.data.BandPhoto 
+              : 'https://images.lesterslist.com/media/All-bluegrass.jpg';
+        %>
+        <a href="/concerts/<%= slot.data.ConcertNumber %>" style="position:relative;display:block;height:360px;border-radius:8px;overflow:hidden;text-decoration:none;box-shadow:0 4px 12px rgba(34,86,117,0.1);transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+          <img src="<%= concertDisplayImage %>" alt="<%= slot.data.ConcertName %>" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%);"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;color:#fff;">
+            <h3 style="font-size:1.4rem;font-weight:700;margin:0 0 0.5rem 0;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.8);"><%= slot.data.ConcertName %></h3>
+            <div style="font-size:0.95rem;opacity:0.95;text-shadow:0 2px 4px rgba(0,0,0,0.7);">
+              <%= new Date(slot.data.ConcertDate).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) %>
+              <% if (slot.data.VenueName) { %> • <%= slot.data.VenueName %><% } %>
+            </div>
+          </div>
+        </a>
+      <% } %>
+    <% }) %>
+    
+  </div>
+</section>
+<!-- Tier 3: Split Feed -->
+<section class="split-feed" style="display:flex;flex-wrap:wrap;gap:2.5rem;max-width:1100px;margin:2.5rem auto 0 auto;">
+  <!-- Left: Upcoming Concerts -->
+  <div style="flex:2 1 420px;min-width:300px;">
+    <style>
+      .event-tabs { display:flex; gap:0.5rem; margin-bottom:1.2rem; border-bottom:1px solid #e6e6e6; }
+      .event-tab { padding:0.6rem 1rem; font-weight:700; font-size:0.95rem; color:#777; cursor:pointer; border-bottom:3px solid transparent; }
+      .event-tab.active { color:var(--color-primary-teal); border-color:var(--color-primary-teal); }
+      .event-list { list-style:none; padding:0; margin:0; }
+      .event-item { position:relative; padding:12px 0; border-bottom:1px solid #eee; display:flex; align-items:center; gap:1rem; transition:background 0.2s; }
+      .event-item:hover { background:#f9f9f9; }
+      .event-date-badge { width:60px; flex-shrink:0; text-align:center; }
+      .event-date-badge .month { color:#E6873C; font-weight:700; font-size:0.8rem; letter-spacing:0.5px; }
+      .event-date-badge .day { color:#E6873C; font-weight:700; font-size:1.6rem; line-height:1.2; }
+      .event-details { flex:1; min-width:0; }
+      .event-title { color:#225675; font-weight:600; font-size:1.05rem; text-decoration:none; display:block; line-height:1.3; margin-bottom:0.2rem; }
+      .event-meta { color:#888; font-size:0.9rem; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .meta-sep { margin: 0 0.45rem; }
+      .event-chevron { color:#3D8C95; font-size:1.5rem; padding:0 8px; }
+    </style>
+
+    <div class="event-tabs">
+      <div class="event-tab active" data-target="concerts-list">Upcoming Concerts</div>
+      <div class="event-tab" data-target="festivals-list">Upcoming Festivals</div>
+    </div>
+
+    <div id="concerts-list">
+      <% if (upcomingConcerts.length === 0) { %>
+        <div style="color:#888;">No upcoming concerts.</div>
+      <% } else { %>
+        <ul class="event-list">
+          <% upcomingConcerts.forEach(c => { %>
+            <li class="event-item">
+              <div class="event-date-badge">
+                <div class="month"><%= new Date(c.ConcertDate).toLocaleDateString('en-US', { month:'short' }).toUpperCase() %></div>
+                <div class="day"><%= new Date(c.ConcertDate).getDate() %></div>
+              </div>
+              <div class="event-details">
+                <a href="/concerts/<%= c.ConcertNumber %>" class="event-title"><%= c.ConcertName %></a>
+                <div class="event-meta">
+                  <%= c.VenueName || 'TBA' %>
+                  <% if (c.City && c.State) { %>
+                    <span class="meta-sep">•</span>
+                    <%= c.City %>, <%= c.State %>
+                  <% } %>
+                </div>
+              </div>
+              <div class="event-chevron">›</div>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </div>
+
+    <div id="festivals-list" style="display:none;">
+      <% if (!upcomingFestivals || upcomingFestivals.length === 0) { %>
+        <div style="color:#888;">No upcoming festivals.</div>
+      <% } else { %>
+        <ul class="event-list">
+          <% upcomingFestivals.forEach(f => { %>
+            <li class="event-item">
+              <div class="event-date-badge">
+                <div class="month"><%= new Date(f.StartDate).toLocaleDateString('en-US', { month:'short' }).toUpperCase() %></div>
+                <div class="day"><%= new Date(f.StartDate).getDate() %></div>
+              </div>
+              <div class="event-details">
+                <a href="/festivals/<%= f.FestivalNumber %>" class="event-title"><%= f.FestivalName %></a>
+                <div class="event-meta">
+                  <% if (f.DateRange) { %><%= f.DateRange %><% } %>
+                  <% if (f.DateRange && (f.City || f.State)) { %>
+                    <span class="meta-sep">•</span>
+                  <% } %>
+                  <% if (f.City && f.State) { %><%= f.City %>, <%= f.State %><% } else if (!f.DateRange) { %>Location TBA<% } %>
+                </div>
+              </div>
+              <div class="event-chevron">›</div>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+  
+  <!-- Right: Sidebar -->
+  <aside class="boldwp-sidebar-widget-areas" style="flex:1 1 220px;min-width:220px;">
+    <div class="widget boldwp-widget boldwp-box" style="margin-bottom:2rem; cursor:pointer;" onclick="location.href='/jams';" role="link" tabindex="0" onkeydown="if(event.key==='Enter'){location.href='/jams';}">
+      <div class="boldwp-box-inside">
+        <h3 class="boldwp-widget-title" style="font-size:1.8rem;font-weight:700;font-family:Georgia,'Playfair Display',serif;">
+          <span class="boldwp-widget-title-inside">Find a Jam</span>
+        </h3>
+        <div class="boldwp-widget-content">
+          <% if (sidebarJams.length === 0) { %>
+            <div style="color:#888;font-size:0.95rem;">No jams available yet.</div>
+          <% } else { %>
+            <% sidebarJams.forEach(jam => { %>
+              <div style="margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid #eee;">
+                <div style="font-weight:600;color:#225675;margin-bottom:0.3rem;"><%= jam.JamName %></div>
+                <% if (jam.City && jam.State) { %>
+                  <div style="color:#888;font-size:0.9rem;"><%= jam.City %>, <%= jam.State %></div>
+                <% } %>
+                <div style="color:#666;font-size:0.9rem;"><%= jam.Schedule %></div>
+              </div>
+            <% }) %>
+          <% } %>
+          <a href="/jams" style="color:#E6873C;text-decoration:underline;font-weight:600;">See all Jams →</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="widget boldwp-widget boldwp-box" style="margin-bottom:2rem; cursor:pointer;" onclick="location.href='/camps';" role="link" tabindex="0" onkeydown="if(event.key==='Enter'){location.href='/camps';}">
+      <div class="boldwp-box-inside">
+        <h3 class="boldwp-widget-title" style="font-size:1.8rem;font-weight:700;font-family:Georgia,'Playfair Display',serif;">
+          <span class="boldwp-widget-title-inside">Workshops</span>
+        </h3>
+        <div class="boldwp-widget-content">
+          <% sidebarCamps.forEach(camp => { %>
+            <div style="margin-bottom:1.1rem;">
+              <div style="font-weight:600;color:var(--color-secondary-blue);"><%= camp.EventName %></div>
+              <div style="color:#888;font-size:0.97rem;">Dates: <%= camp.DateRange %></div>
+            </div>
+          <% }) %>
+          <a href="/camps" style="color:var(--color-highlight-orange);text-decoration:underline;font-weight:600;">See all Workshops</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="widget boldwp-widget boldwp-box" style="margin-bottom:2rem;">
+      <div class="boldwp-box-inside">
+        <h3 class="boldwp-widget-title">
+          <span class="boldwp-widget-title-inside">Community Stats</span>
+        </h3>
+        <div class="boldwp-widget-content">
+          <div class="stats-grid">
+            <div class="stats-card">
+              <div class="stats-number"><%= concertCount %></div>
+              <div class="stats-label">Concerts</div>
+            </div>
+            <div class="stats-card">
+              <div class="stats-number"><%= festivalCount %></div>
+              <div class="stats-label">Festivals</div>
+            </div>
+            <div class="stats-card">
+              <div class="stats-number"><%= jamCount %></div>
+              <div class="stats-label">Jams</div>
+            </div>
+            <div class="stats-card">
+              <div class="stats-number"><%= campCount %></div>
+              <div class="stats-label">Camps</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="widget boldwp-widget boldwp-box" style="background:var(--color-secondary-blue);">
+      <div class="boldwp-box-inside" style="text-align:center;">
+        <div style="font-size:1.15rem;font-weight:700;margin-bottom:0.7rem;color:#fff;">Want to be listed?</div>
+        <a href="/jams/new" style="display:inline-block;padding:0.7rem 1.5rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:6px;text-decoration:none;">Submit a Jam</a>
+        <span style="display:inline-block;width:1.5rem;"></span>
+        <a href="/learn/new" style="display:inline-block;padding:0.7rem 1.5rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:6px;text-decoration:none;">Submit a Resource</a>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.event-tab');
+    const panels = {
+      'concerts-list': document.getElementById('concerts-list'),
+      'festivals-list': document.getElementById('festivals-list')
+    };
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        Object.keys(panels).forEach(function(key) {
+          panels[key].style.display = key === tab.dataset.target ? 'block' : 'none';
+        });
+      });
+    });
+  });
+</script>
+
+

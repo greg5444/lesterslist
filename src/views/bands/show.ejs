@@ -1,0 +1,56 @@
+<% /* Band Profile Detail Page - BoldWP Structure */ %>
+<% layout('layout') %>
+
+<article class="boldwp-post-singular boldwp-box detail-page-card" style="max-width:900px;margin:2.5rem auto 0 auto;width:100%;">
+  <div class="boldwp-box-inside">
+    <header class="entry-header" style="text-align:center;">
+      <div class="entry-header-inside">
+        <h1 class="entry-title" style="font-size:2.5rem;margin:0.5rem 0;"><%= band.BandName %></h1>
+      </div>
+    </header>
+    
+    <div class="entry-content" style="text-align:center;">
+      <div style="display:flex;justify-content:center;align-items:center;margin:1.5rem 0;">
+        <img src="<%= imageUrl %>" alt="<%= band.BandName %>" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:100%;max-width:420px;height:260px;object-fit:cover;object-position:top;border-radius:12px;box-shadow:0 2px 12px rgba(34,86,117,0.08);background:#fff;" loading="lazy">
+      </div>
+      <% if (band.BandWebsite && band.BandWebsite.trim()) { %>
+        <% 
+          const bandWebsiteRaw = band.BandWebsite.trim();
+          const normalizedBandUrl = bandWebsiteRaw.startsWith('http') ? bandWebsiteRaw : 'https://' + bandWebsiteRaw;
+          const bandWebsiteDisplay = bandWebsiteRaw.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+          const bandWebsiteButtonText = bandWebsiteDisplay.length <= 38
+            ? `🎵 Visit ${bandWebsiteDisplay} website`
+            : '🎵 Visit Band Website';
+        %>
+        <a href="<%= normalizedBandUrl %>" target="_blank" rel="noopener" style="display:inline-block;margin-top:1rem;padding:1rem 2rem;background:#3D8C95;color:#fff;font-weight:700;border-radius:8px;text-decoration:none;font-size:1.1rem;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+          <%= bandWebsiteButtonText %>
+        </a>
+      <% } %>
+    </div>
+  </div>
+</article>
+
+<section class="boldwp-box detail-page-section" style="max-width:900px;margin:2rem auto 0 auto;width:100%;">
+  <div class="boldwp-box-inside">
+    <h2 style="color:var(--color-secondary);margin-bottom:1rem;">Upcoming Appearances</h2>
+    <% if (concerts.length === 0) { %>
+      <div style="color:#888;">No appearances listed yet.</div>
+    <% } else { %>
+      <ul style="list-style:none;padding:0;">
+        <% concerts.forEach(concert => { %>
+          <li class="boldwp-box" style="margin-bottom:0.8rem;">
+            <div class="boldwp-box-inside" style="padding:1rem;">
+              <a href="/concerts/<%= concert.ConcertNumber %>" style="color:var(--color-secondary);font-weight:600;text-decoration:none;font-size:1.05rem;"><%= concert.ConcertName %></a>
+              <div style="color:#888;font-size:0.95rem;margin-top:0.3rem;">
+                <%= new Date(concert.ConcertDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %>
+                <% if (concert.VenueName) { %> @ <%= concert.VenueName %><% } %>
+                <% if (concert.City && concert.State) { %> (<%= concert.City %>, <%= concert.State %>)<% } %>
+              </div>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</section>
+

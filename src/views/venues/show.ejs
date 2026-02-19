@@ -1,0 +1,53 @@
+<% /* Venue Profile Detail Page - BoldWP Structure */ %>
+<% layout('layout') %>
+
+<article class="boldwp-post-singular boldwp-box detail-page-card" style="max-width:900px;margin:2.5rem auto 0 auto;width:100%;">
+  <div class="boldwp-box-inside">
+    <header class="entry-header">
+      <div class="entry-header-inside" style="text-align:center;">
+        <h1 class="entry-title" style="font-size:2.3rem;margin:0.5rem 0;"><%= venue.VenueName %></h1>
+        <div class="entry-meta" style="font-size:1.1rem;margin-bottom:0.5rem;">
+          <%= venue.VenueStreetAddress %>, <%= venue.City %>, <%= venue.State %> <%= venue.Zip %>
+        </div>
+      </div>
+    </header>
+    
+    <div class="entry-content">
+      <!-- Google Map -->
+      <div style="display:flex;justify-content:center;margin:1.5rem 0;">
+        <iframe
+          width="100%"
+          height="340"
+          style="max-width:600px;border:0;border-radius:10px;box-shadow:0 2px 12px rgba(34,86,117,0.08);"
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps/embed/v1/place?key=<%= googleMapsApiKey %>&q=<%= encodeURIComponent(venue.GoogleMapAddress) %>">
+        </iframe>
+      </div>
+      
+      <!-- Upcoming Events -->
+      <div style="margin-top:2rem;">
+        <h2 style="color:var(--color-secondary-blue);margin-bottom:1rem;">Upcoming Events</h2>
+        <% if (concerts.length === 0) { %>
+          <div style="color:#888;">No events listed yet.</div>
+        <% } else { %>
+          <ul style="list-style:none;padding:0;">
+            <% concerts.forEach(concert => { %>
+              <li class="boldwp-box" style="margin-bottom:0.8rem;">
+                <div class="boldwp-box-inside" style="padding:1rem;">
+                  <a href="/concerts/<%= concert.ConcertNumber %>" style="color:var(--color-secondary-blue);font-weight:600;text-decoration:none;font-size:1.05rem;"><%= concert.ConcertName %></a>
+                  <div style="color:#888;font-size:0.95rem;margin-top:0.3rem;">
+                    <%= new Date(concert.ConcertDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %>
+                    <% if (concert.BandName) { %> featuring <a href="/bands/<%= concert.BandNumber %>" style="color:var(--color-highlight-orange);text-decoration:underline;"><%= concert.BandName %></a><% } %>
+                  </div>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</article>
+

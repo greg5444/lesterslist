@@ -1,0 +1,113 @@
+<% /* Camp/Workshop Detail Page - BoldWP Structure */ %>
+<% layout('layout') %>
+<%
+  // Format date for badge (use StartDate only)
+  const startDate = camp.StartDate ? new Date(camp.StartDate) : null;
+  const campMonth = startDate ? startDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : '';
+  const campDay = startDate ? startDate.toLocaleDateString('en-US', { day: 'numeric' }) : '';
+%>
+
+<article class="boldwp-post-singular boldwp-box detail-page-card" style="max-width:1100px;margin:2.5rem auto 0 auto;width:100%;">
+  <div class="boldwp-box-inside">
+    <header class="entry-header">
+      <div class="entry-header-inside">
+        <h1 class="entry-title" style="font-size:2.1rem;margin:0.5rem 0;color:var(--color-secondary-blue);"><%= camp.EventName %></h1>
+      </div>
+    </header>
+    
+    <div class="entry-content" style="display:flex;flex-wrap:wrap;gap:2.5rem;margin-top:1.5rem;">
+      <!-- Left: Poster with Date Badge -->
+      <div style="flex:1 1 320px;min-width:280px;display:flex;align-items:flex-start;justify-content:center;">
+        <div style="position:relative;width:100%;max-width:340px;">
+          <img src="<%= imageUrl %>" alt="Camp/Workshop Image" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';" style="width:100%;height:340px;object-fit:cover;border-radius:10px;background:#f8f9fa;box-shadow:0 2px 8px rgba(34,86,117,0.06);">
+          <!-- Date Badge Overlay (ORANGE) -->
+          <% if (campMonth && campDay) { %>
+          <div class="date-badge">
+            <div class="date-month"><%= campMonth %></div>
+            <div class="date-day"><%= campDay %></div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Right: Info -->
+      <div style="flex:2 1 400px;min-width:260px;">
+        <!-- Date Range Display -->
+        <% if (camp.DateRange) { %>
+          <div style="margin-bottom:1.5rem;font-size:1.15rem;color:var(--color-primary-teal);font-weight:600;">
+            <%= camp.DateRange %>
+          </div>
+        <% } %>
+        
+        <!-- Venue Name (Prominent & Bold) -->
+        <div style="margin-bottom:1.5rem;">
+          <% if (camp.VenueName && camp.VenueName.trim()) { %>
+            <h3 class="venue-name"><%= camp.VenueName %></h3>
+          <% } %>
+          <div style="color:#666;font-size:0.95rem;">
+            <% if (camp.Street && camp.Street.trim()) { %><%= camp.Street %><br><% } %>
+            <%= camp.City || '' %><% if (camp.City && camp.State) { %>, <% } %><%= camp.State ? camp.State.trim() : '' %> <%= camp.Zip || '' %>
+          </div>
+        </div>
+        
+        <!-- Contact Info -->
+        <% if (camp.Contact) { %>
+          <div style="margin-bottom:1.5rem;">
+            <strong style="color:var(--color-text-main);">Contact:</strong>
+            <span style="color:var(--color-secondary);margin-left:0.3rem;"><%= camp.Contact %></span>
+          </div>
+        <% } %>
+        
+        <!-- Action Buttons -->
+        <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+          <% if (camp.ExternalURL) { %>
+            <% 
+              const campWebsiteRaw = camp.ExternalURL.trim();
+              const campWebsiteUrl = campWebsiteRaw.startsWith('http') ? campWebsiteRaw : 'https://' + campWebsiteRaw;
+              const campWebsiteDisplay = campWebsiteRaw.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+              const campWebsiteText = campWebsiteDisplay.length <= 38
+                ? `🎵 Visit ${campWebsiteDisplay} website`
+                : '🎵 Visit Website';
+            %>
+            <a href="<%= campWebsiteUrl %>" target="_blank" rel="noopener" style="display:inline-block;background:var(--color-highlight-orange);color:#fff;font-weight:700;border-radius:8px;padding:1rem 2rem;font-size:1.1rem;transition:opacity 0.2s;text-shadow:0 1px 2px rgba(0,0,0,0.2);text-decoration:none;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+              <%= campWebsiteText %>
+            </a>
+          <% } %>
+          <% if (camp.Contact && camp.Contact.includes('@')) { %>
+            <a href="mailto:<%= camp.Contact %>" style="display:inline-block;background:var(--color-primary-teal);color:#fff;font-weight:700;border-radius:8px;padding:1rem 2rem;font-size:1.1rem;transition:opacity 0.2s;text-decoration:none;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+              ✉️ Email Organizer
+            </a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- Location Section -->
+<% if (mapAddress && googleMapsApiKey) { %>
+<section class="boldwp-box detail-page-section" style="max-width:1100px;margin:2rem auto 0 auto;width:100%;">
+  <div class="boldwp-box-inside">
+    <div style="display:flex;flex-wrap:wrap;gap:2rem;align-items:flex-start;">
+      <div style="flex:2 1 340px;min-width:260px;">
+        <iframe
+          width="100%"
+          height="260"
+          style="border:0;border-radius:10px;box-shadow:0 2px 12px rgba(34,86,117,0.08);"
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps/embed/v1/place?key=<%= googleMapsApiKey %>&q=<%= encodeURIComponent(mapAddress) %>">
+        </iframe>
+      </div>
+      <div style="flex:1 1 220px;min-width:180px;color:var(--color-secondary);font-size:1.08rem;">
+        <% if (camp.Street && camp.Street.trim()) { %>
+          <div><%= camp.Street %></div>
+        <% } %>
+        <div><%= camp.City || '' %><% if (camp.City && camp.State) { %>, <% } %><%= camp.State ? camp.State.trim() : '' %> <%= camp.Zip || '' %></div>
+      </div>
+    </div>
+  </div>
+</section>
+<% } %>
+

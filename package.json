@@ -1,0 +1,27 @@
+{
+  "name": "lesterslist",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed:admin": "node src/db/seedAdmin.js",
+    "fix:concert-dates": "node scripts/fix-concert-dates.js",
+    "fix:concert-dates:apply": "node scripts/fix-concert-dates.js --apply"
+  },
+  "dependencies": {
+    "axios": "^1.13.4",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.6.1",
+    "ejs": "^3.1.9",
+    "ejs-mate": "^4.0.0",
+    "express": "^4.18.2",
+    "express-session": "^1.18.0",
+    "mysql2": "^3.9.7",
+    "nodemailer": "^7.0.13"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ticker Settings - Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body style="background: var(--color-background);">
+  <header style="background: var(--color-secondary); color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <h1 style="margin: 0; font-size: 1.5rem;">Homepage Ticker Settings</h1>
+    <div>
+      <a href="/admin/dashboard" style="color: #fff; text-decoration: underline; margin-right: 1.5rem;">← Back to Dashboard</a>
+      <a href="/admin/logout" style="color: var(--color-primary); text-decoration: underline;">Logout</a>
+    </div>
+  </header>
+  
+  <main style="max-width: 1100px; margin: 2.5rem auto; padding: 0 1rem;">
+    <div style="display: flex; gap: 2rem; align-items: flex-start;">
+      <%- include('_sidebar') %>
+      <div style="flex: 1; min-width: 0;">
+        
+        <% if (typeof success !== 'undefined' && success) { %>
+          <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            ✓ Ticker settings saved successfully!
+          </div>
+        <% } %>
+        
+        <!-- Ticker Settings Form -->
+        <section style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,86,117,0.06); padding: 2.5rem;">
+      <h2 style="color: var(--color-primary); margin-bottom: 1.5rem;">Homepage Ticker Content</h2>
+      <p style="color: #666; margin-bottom: 2rem;">Configure up to 6 ticker messages. Each message scrolls continuously across the top of the homepage.</p>
+      
+      <form action="/admin/ticker/save" method="POST">
+        
+        <!-- Enable/Disable Toggle -->
+        <div style="margin-bottom: 2rem;">
+          <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
+            <input type="checkbox" name="enabled" value="true" <%= ticker.enabled ? 'checked' : '' %> style="width: 20px; height: 20px; cursor: pointer;">
+            <span style="font-weight: 600; font-size: 1.1rem;">Enable Ticker</span>
+          </label>
+          <p style="color: #888; font-size: 0.9rem; margin-top: 0.5rem; margin-left: 2rem;">Uncheck to hide the ticker completely</p>
+        </div>
+        
+        <!-- Ticker Messages Grid -->
+        <div style="margin-bottom: 2rem;">
+          <h3 style="color: var(--color-secondary); margin-bottom: 1rem; font-size: 1.2rem;">Ticker Messages</h3>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; border: 2px solid #ddd;">
+              <thead>
+                <tr style="background: var(--color-primary); color: #fff;">
+                  <th style="padding: 0.8rem; text-align: center; width: 50px;">#</th>
+                  <th style="padding: 0.8rem; text-align: left;">Message Text</th>
+                  <th style="padding: 0.8rem; text-align: left; width: 280px;">Link URL (Optional)</th>
+                  <th style="padding: 0.8rem; text-align: center; width: 150px;">Insert Variable</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% 
+                  const messages = ticker.messages || [];
+                  for (let i = 0; i < 6; i++) {
+                    const msg = messages[i] || { text: '', url: '' };
+                %>
+                <tr style="border-bottom: 1px solid #ddd; <%= i % 2 === 0 ? 'background: #f8f9fa;' : '' %>">
+                  <td style="padding: 0.8rem; text-align: center; font-weight: 600; color: var(--color-secondary);"><%= i + 1 %></td>
+                  <td style="padding: 0.8rem;">
+                    <input 
+                      type="text" 
+                      id="message-<%= i %>"
+                      name="messages[<%= i %>][text]" 
+                      value="<%= msg.text %>"
+                      placeholder="Enter ticker message..."
+                      style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;">
+                  </td>
+                  <td style="padding: 0.8rem;">
+                    <input 
+                      type="url" 
+                      name="messages[<%= i %>][url]" 
+                      value="<%= msg.url %>"
+                      placeholder="https://example.com"
+                      style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;">
+                  </td>
+                  <td style="padding: 0.8rem; text-align: center;">
+                    <select 
+                      style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; cursor: pointer; background: #fff;"
+                      onchange="insertVariable(this, <%= i %>)">
+                      <option value="">+ Variable</option>
+                      <option value="{concertCount}">Concerts</option>
+                      <option value="{festivalCount}">Festivals</option>
+                      <option value="{jamCount}">Jams</option>
+                      <option value="{campCount}">Camps</option>
+                    </select>
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+          <p style="color: #888; font-size: 0.9rem; margin-top: 0.8rem;">💡 Tip: Use variables like {concertCount} in your messages. They'll be replaced with live numbers.</p>
+        </div>
+        
+        <!-- Preview Section -->
+        <div style="margin-bottom: 2rem; background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 2px dashed #ccc;">
+          <h3 style="margin: 0 0 1rem 0; color: var(--color-secondary); font-size: 1.1rem;">Live Preview:</h3>
+          <div style="background: var(--color-primary); color: #fff; padding: 0.8rem; border-radius: 6px; overflow: hidden; white-space: nowrap;">
+            <div id="tickerPreview" style="display: inline-block; animation: ticker 20s linear infinite;">
+              Loading preview...
+            </div>
+          </div>
+        </div>
+        
+        <!-- Animation Speed -->
+        <div style="margin-bottom: 2rem;">
+          <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-secondary);">Animation Speed:</label>
+          <select name="speed" style="width: 100%; padding: 0.8rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+            <option value="slow" <%= ticker.speed === 'slow' ? 'selected' : '' %>>Slow (30s)</option>
+            <option value="medium" <%= ticker.speed === 'medium' ? 'selected' : '' %>>Medium (20s)</option>
+            <option value="fast" <%= ticker.speed === 'fast' ? 'selected' : '' %>>Fast (10s)</option>
+          </select>
+        </div>
+        
+        <!-- Save Button -->
+        <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
+          <button 
+            type="submit" 
+            style="flex: 1; background: var(--color-primary); color: #fff; font-weight: 700; border: none; padding: 1rem 2rem; font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: opacity 0.2s;"
+            onmouseover="this.style.opacity='0.85'" 
+            onmouseout="this.style.opacity='1'">
+            💾 Save Ticker Settings
+          </button>
+          <a 
+            href="/" 
+            target="_blank" 
+            style="background: var(--color-secondary); color: #fff; font-weight: 600; border: none; padding: 1rem 2rem; font-size: 1rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; transition: opacity 0.2s;"
+            onmouseover="this.style.opacity='0.85'" 
+            onmouseout="this.style.opacity='1'">
+            👁️ View Live Site
+          </a>
+        </div>
+      </form>
+        </section>
+        
+        <!-- Tips Section -->
+        <section style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,86,117,0.06); padding: 2rem; margin-top: 2rem;">
+          <h3 style="color: var(--color-primary); margin-bottom: 1rem;">💡 Tips for Effective Ticker Content:</h3>
+          <ul style="color: #555; line-height: 1.8;">
+            <li>Keep it concise - users only see it briefly as it scrolls</li>
+            <li>Use the bullet separator (•) to break up different messages</li>
+            <li>Include calls to action like "Find Events Near You!"</li>
+            <li>Use dynamic placeholders to show live stats: {concertCount}, {festivalCount}, etc.</li>
+            <li>Test different speeds to find what works best for your content length</li>
+            <li>Avoid special characters that might break the display</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </main>
+  
+  <style>
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+  </style>
+  
+  <script>
+    function insertVariable() {
+      const picker = documenselectElement, rowIndex) {
+      const variable = selectElement.value;
+      if (!variable) return;
+      
+      const input = document.getElementById('message-' + rowIndex);
+      const startPos = input.selectionStart;
+      const endPos = input.selectionEnd;
+      const textBefore = input.value.substring(0, startPos);
+      const textAfter = input.value.substring(endPos);
+      
+      // Insert variable at cursor position
+      input.value = textBefore + variable + textAfter;
+      
+      // Set cursor position after inserted variable
+      const newCursorPos = startPos + variable.length;
+      input.selectionStart = newCursorPos;
+      input.selectionEnd = newCursorPos;
+      
+      // Focus back on input
+      input.focus();
+      
+      // Reset dropdown
+      selectElement.value = '';
+      
+      // Update preview
+      updatePreview();
+    }
+    
+    function updatePreview() {
+      const messages = [];
+      for (let i = 0; i < 6; i++) {
+        const text = document.querySelector(`input[name="messages[${i}][text]"]`).value.trim();
+        if (text) {
+          messages.push(text
+            .replace(/{concertCount}/g, '42')
+            .replace(/{festivalCount}/g, '15')
+            .replace(/{jamCount}/g, '89')
+            .replace(/{campCount}/g, '23')
+          );
+        }
+      }
+      
+      const preview = document.getElementById('tickerPreview');
+      if (messages.length === 0) {
+        preview.textContent = 'Add messages above to see preview...';
+      } else {
+        preview.textContent = messages.join(' • ') + ' • ' + messages.join(' • ');
+      }
+    }
+    
+    // Update preview on page load and when inputs change
+    document.addEventListener('DOMContentLoaded', function() {
+      updatePreview();
+      
+      // Add change listeners to all message inputs
+      for (let i = 0; i < 6; i++) {
+        const input = document.querySelector(`input[name="messages[${i}][text]"]`);
+        input.addEventListener('input', updatePreview);
+      }
+    });cript>
+</body>
+</html>

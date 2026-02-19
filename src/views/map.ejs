@@ -1,0 +1,244 @@
+<% /* Events Map */ %>
+<% layout('layout') %>
+
+<style>
+  /* Full screen map container */
+  #map {
+    height: 85vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Map info panel */
+  .map-info {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .map-info h2 {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-primary);
+  }
+
+  .map-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .map-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .stat-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+  }
+
+  .stat-icon.concert { background-color: #DC3545; }
+  .stat-icon.festival { background-color: #0D6EFD; }
+  .stat-icon.camp { background-color: #FD7E14; }
+  .stat-icon.jam { background-color: #198754; }
+
+  /* Info window styling */
+  .gm-style .gm-style-iw-c {
+    padding: 0 !important;
+  }
+
+  .gm-style .gm-style-iw-d {
+    overflow: hidden !important;
+  }
+
+  .info-content {
+    padding: 1rem;
+    min-width: 200px;
+  }
+
+  .info-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-primary);
+    font-size: 1.1rem;
+  }
+
+  .info-content p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .info-content a {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
+  .info-content a:hover {
+    background: var(--color-secondary);
+  }
+</style>
+
+<div class="map-info">
+  <h2>Events on Map</h2>
+  <div class="map-stats">
+    <div class="map-stat">
+      <div class="stat-icon concert"></div>
+      <span><strong><%= eventCounts.concerts %></strong> Concerts</span>
+    </div>
+    <div class="map-stat">
+      <div class="stat-icon festival"></div>
+      <span><strong><%= eventCounts.festivals %></strong> Festivals</span>
+    </div>
+    <div class="map-stat">
+      <div class="stat-icon camp"></div>
+      <span><strong><%= eventCounts.camps %></strong> Camps</span>
+    </div>
+    <div class="map-stat">
+      <div class="stat-icon jam"></div>
+      <span><strong><%= eventCounts.jams %></strong> Jams</span>
+    </div>
+    <div class="map-stat">
+      <span>Total: <strong><%= eventCounts.total %></strong> events</span>
+    </div>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<script>
+  // Map data from server
+  const mapData = <%- mapData %>;
+
+  // Initialize map
+  function initMap() {
+    // Default center (USA center)
+    const defaultCenter = { lat: 37.0902, lng: -95.7129 };
+    
+    // Create map
+    const map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 4,
+      center: defaultCenter,
+      mapTypeControl: true,
+      streetViewControl: false,
+      fullscreenControl: true
+    });
+
+    // Bounds for auto-fitting
+    const bounds = new google.maps.LatLngBounds();
+
+    // Custom marker icons
+    const markerIcons = {
+      concert: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#DC3545',
+        fillOpacity: 0.9,
+        strokeWeight: 2,
+        strokeColor: '#FFFFFF',
+        scale: 8
+      },
+      festival: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#0D6EFD',
+        fillOpacity: 0.9,
+        strokeWeight: 2,
+        strokeColor: '#FFFFFF',
+        scale: 8
+      },
+      camp: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#FD7E14',
+        fillOpacity: 0.9,
+        strokeWeight: 2,
+        strokeColor: '#FFFFFF',
+        scale: 8
+      },
+      jam: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#198754',
+        fillOpacity: 0.9,
+        strokeWeight: 2,
+        strokeColor: '#FFFFFF',
+        scale: 8
+      }
+    };
+
+    // Create info window (reuse for all markers)
+    const infoWindow = new google.maps.InfoWindow();
+
+    // Create markers
+    mapData.forEach(event => {
+      const position = { lat: event.lat, lng: event.lng };
+      
+      const marker = new google.maps.Marker({
+        position: position,
+        map: map,
+        title: event.title,
+        icon: markerIcons[event.type],
+        animation: google.maps.Animation.DROP
+      });
+
+      // Format date
+      let dateStr = '';
+      if (event.date) {
+        const date = new Date(event.date);
+        dateStr = date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        });
+      }
+
+      // Create info window content
+      const infoContent = `
+        <div class="info-content">
+          <h3>${event.title}</h3>
+          ${dateStr ? `<p><strong>Date:</strong> ${dateStr}</p>` : ''}
+          ${event.venue ? `<p><strong>Venue:</strong> ${event.venue}</p>` : ''}
+          <a href="${event.url}">View Details</a>
+        </div>
+      `;
+
+      // Add click listener
+      marker.addListener('click', () => {
+        infoWindow.setContent(infoContent);
+        infoWindow.open(map, marker);
+      });
+
+      // Extend bounds
+      bounds.extend(position);
+    });
+
+    // Fit map to show all markers
+    if (mapData.length > 0) {
+      map.fitBounds(bounds);
+      
+      // Prevent over-zooming on single marker
+      const listener = google.maps.event.addListener(map, 'idle', () => {
+        if (map.getZoom() > 15) map.setZoom(15);
+        google.maps.event.removeListener(listener);
+      });
+    }
+  }
+
+  // Handle map load errors
+  window.gm_authFailure = function() {
+    document.getElementById('map').innerHTML = 
+      '<div style="padding:2rem;text-align:center;color:#DC3545;">' +
+      '<h3>Map Load Error</h3>' +
+      '<p>Unable to load Google Maps. Please check the API key configuration.</p>' +
+      '</div>';
+  };
+</script>
+
+<!-- Load Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY %>&callback=initMap" async defer></script>

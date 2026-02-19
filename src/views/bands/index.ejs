@@ -1,0 +1,195 @@
+<% /* Bands Directory - Hybrid View (Gallery/List) with Pagination */ %>
+<% layout('layout') %>
+<%
+  // Build query params for pagination/view links
+  function buildQueryString(params) {
+    const query = new URLSearchParams();
+    if (currentLetter && currentLetter !== 'All') query.set('letter', currentLetter);
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null) query.set(key, params[key]);
+    });
+    return query.toString() ? '?' + query.toString() : '';
+  }
+%>
+
+<article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:2.5rem auto 0 auto;">
+  <div class="boldwp-box-inside">
+    <header class="entry-header" style="text-align:center;">
+      <div class="entry-header-inside">
+        <h1 class="entry-title" style="font-size:2.5rem;margin:1rem 0;"><%= title %></h1>
+      </div>
+    </header>
+    
+    <!-- A-Z Alphabet Filter Navigation -->
+    <nav class="alphabet-filter" style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.5rem;padding:1.5rem 0;border-bottom:2px solid #eee;margin-bottom:1.5rem;">
+      <%
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        const allLetters = ['All', ...alphabet];
+        allLetters.forEach(letter => {
+          const isActive = currentLetter === letter;
+          const activeStyle = isActive 
+            ? 'color:var(--color-highlight-orange);font-weight:700;text-decoration:underline;' 
+            : 'color:var(--color-secondary-blue);';
+      %>
+        <a href="/bands<%= buildQueryString({ letter: letter === 'All' ? undefined : letter, view: currentView, limit: itemsPerPage }) %>" 
+           style="<%= activeStyle %>text-decoration:none;padding:0.5rem 0.75rem;border-radius:4px;font-size:1rem;transition:all 0.2s;min-width:40px;text-align:center;" 
+           onmouseover="if('<%= isActive %>' !== 'true') this.style.color='var(--color-primary-teal)'" 
+           onmouseout="if('<%= isActive %>' !== 'true') this.style.color='var(--color-secondary-blue)'">
+          <%= letter %>
+        </a>
+      <% }); %>
+    </nav>
+
+    <!-- Toolbar: Pagination + View Toggle + Items Per Page -->
+    <div class="toolbar" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 0;margin-bottom:1.5rem;border-bottom:1px solid #eee;flex-wrap:wrap;gap:1rem;">
+      <div class="pagination-info" style="color:#666;font-size:0.95rem;">
+        Page <strong><%= currentPage %></strong> of <strong><%= totalPages || 1 %></strong>
+        <span style="margin-left:0.5rem;color:#999;">(<%= totalCount %> total)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <label style="color:#666;font-size:0.9rem;font-weight:600;">Show:</label>
+          <select onchange="window.location.href='/bands<%= buildQueryString({ page: 1, view: currentView, limit: undefined }) %>&limit=' + this.value" 
+                  style="padding:0.4rem 0.7rem;border:1px solid #ddd;border-radius:4px;font-size:0.9rem;font-weight:600;cursor:pointer;background:#fff;">
+            <option value="25" <%= itemsPerPage === 25 ? 'selected' : '' %>>25</option>
+            <option value="40" <%= itemsPerPage === 40 ? 'selected' : '' %>>40</option>
+            <option value="55" <%= itemsPerPage === 55 ? 'selected' : '' %>>55</option>
+          </select>
+        </div>
+        <div class="view-toggle" style="display:flex;gap:0.5rem;">
+          <a href="/bands<%= buildQueryString({ page: currentPage, view: 'gallery', limit: itemsPerPage }) %>" 
+             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'gallery' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
+             title="Gallery View">
+            ⊞ Gallery
+          </a>
+          <a href="/bands<%= buildQueryString({ page: currentPage, view: 'list', limit: itemsPerPage }) %>" 
+             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'list' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
+             title="List View">
+            ☰ List
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="entry-content">
+      <% if (bands.length === 0) { %>
+        <div style="color:#888;text-align:center;padding:2rem;">
+          No bands found<%= currentLetter !== 'All' ? ` starting with "${currentLetter}"` : '' %>.
+        </div>
+      <% } else if (currentView === 'gallery') { %>
+        <!-- Gallery Mode: Image Cards -->
+        <div class="band-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem;">
+          <% bands.forEach(band => { %>
+            <a href="/bands/<%= band.BandNumber %>" class="gallery-card" style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;"
+               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
+               onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+              <div style="width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
+                <img src="<%= band.imageUrl %>" alt="<%= band.BandName %>" 
+                     onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
+                     style="width:100%;height:100%;object-fit:cover;object-position:top;">
+              </div>
+              <div style="padding:1rem;text-align:center;">
+                <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0;"><%= band.BandName %></h3>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <!-- List Mode: Striped Table -->
+        <table class="list-table" style="width:100%;border-collapse:collapse;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <thead>
+            <tr style="background:var(--color-secondary-blue);color:#fff;">
+              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Band Name</th>
+              <th style="padding:1rem;text-align:right;font-weight:600;font-size:0.95rem;width:120px;">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% bands.forEach((band, index) => { %>
+              <tr style="<%= index % 2 === 0 ? 'background:#fff;' : 'background:#f9f9f9;' %>border-bottom:1px solid #eee;">
+                <td style="padding:1rem;">
+                  <div style="display:flex;align-items:center;gap:1rem;">
+                    <img src="<%= band.imageUrl %>" alt="<%= band.BandName %>"
+                         onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
+                         style="width:50px;height:50px;object-fit:cover;border-radius:4px;flex-shrink:0;">
+                    <span style="font-weight:600;color:var(--color-secondary-blue);font-size:1rem;"><%= band.BandName %></span>
+                  </div>
+                </td>
+                <td style="padding:1rem;text-align:right;">
+                  <a href="/bands/<%= band.BandNumber %>" 
+                     style="display:inline-block;padding:0.5rem 1.2rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:4px;text-decoration:none;font-size:0.85rem;transition:opacity 0.2s;"
+                     onmouseover="this.style.opacity='0.85'"
+                     onmouseout="this.style.opacity='1'">
+                    View
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+
+    <!-- Pagination Controls -->
+    <% if (totalPages > 1) { %>
+      <nav class="pagination" style="display:flex;justify-content:center;gap:0.5rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee;">
+        <% if (currentPage > 1) { %>
+          <a href="/bands<%= buildQueryString({ page: currentPage - 1, view: currentView, limit: itemsPerPage }) %>" 
+             style="padding:0.5rem 1rem;background:#f0f0f0;color:#333;font-weight:600;border-radius:4px;text-decoration:none;transition:background 0.2s;"
+             onmouseover="this.style.background='#e0e0e0'"
+             onmouseout="this.style.background='#f0f0f0'">
+            ← Prev
+          </a>
+        <% } %>
+        
+        <% for (let i = 1; i <= totalPages; i++) { 
+          if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
+            <a href="/bands<%= buildQueryString({ page: i, view: currentView, limit: itemsPerPage }) %>" 
+               style="padding:0.5rem 0.85rem;border-radius:4px;text-decoration:none;font-weight:600;<%= i === currentPage ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#333;' %>transition:background 0.2s;"
+               <% if (i !== currentPage) { %>
+                 onmouseover="this.style.background='#e0e0e0'"
+                 onmouseout="this.style.background='#f0f0f0'"
+               <% } %>>
+              <%= i %>
+            </a>
+          <% } else if (i === currentPage - 3 || i === currentPage + 3) { %>
+            <span style="padding:0.5rem 0.5rem;color:#999;">...</span>
+          <% } %>
+        <% } %>
+        
+        <% if (currentPage < totalPages) { %>
+          <a href="/bands<%= buildQueryString({ page: currentPage + 1, view: currentView, limit: itemsPerPage }) %>" 
+             style="padding:0.5rem 1rem;background:#f0f0f0;color:#333;font-weight:600;border-radius:4px;text-decoration:none;transition:background 0.2s;"
+             onmouseover="this.style.background='#e0e0e0'"
+             onmouseout="this.style.background='#f0f0f0'">
+            Next →
+          </a>
+        <% } %>
+      </nav>
+    <% } %>
+  </div>
+</article>
+
+<style>
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem;
+  }
+  .alphabet-filter {
+    gap: 0.25rem !important;
+  }
+  .alphabet-filter a {
+    min-width: 32px !important;
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.9rem !important;
+  }
+  .list-table {
+    font-size: 0.9rem !important;
+  }
+  .list-table th, .list-table td {
+    padding: 0.75rem !important;
+  }
+}
+</style>
+

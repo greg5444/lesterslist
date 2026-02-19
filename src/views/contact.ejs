@@ -1,0 +1,63 @@
+<%- include('_header') %>
+
+<article class="boldwp-post-singular boldwp-box" style="max-width:800px;margin:2.5rem auto;padding:2rem;">
+  <div class="boldwp-box-inside">
+    <header class="entry-header" style="text-align:center;margin-bottom:2rem;">
+      <h1 class="entry-title" style="font-size:2.5rem;color:#225675;font-family:Georgia,'Playfair Display',serif;margin-bottom:0.5rem;">Contact Us</h1>
+      <p style="color:#666;font-size:1.1rem;">We'd love to hear from you!</p>
+    </header>
+    
+    <div class="entry-content" style="color:#333;line-height:1.8;">
+      <p style="font-size:1.1rem;margin-bottom:2rem;">
+        Have a question about an event, want to submit a concert or festival, or just want to say hello? 
+        We're here to help connect the bluegrass community.
+      </p>
+      
+      <div style="background:#f9f9f9;padding:2rem;border-radius:8px;margin-bottom:2rem;border-left:4px solid #3D8C95;">
+        <h3 style="color:#225675;margin-bottom:1rem;font-size:1.3rem;">Get in Touch</h3>
+        <p style="margin-bottom:0.5rem;"><strong>Email:</strong> <a href="mailto:support@lesterslist.com" style="color:#3D8C95;text-decoration:underline;">support@lesterslist.com</a></p>
+        <p style="margin-bottom:0;"><strong>Response Time:</strong> We typically respond within 24-48 hours</p>
+      </div>
+      
+      <h3 style="color:#225675;margin-bottom:1rem;font-size:1.5rem;">Contact Form</h3>
+      <form action="/contact" method="POST" style="display:flex;flex-direction:column;gap:1.5rem;">
+        <div>
+          <label for="name" style="display:block;margin-bottom:0.5rem;font-weight:600;color:#225675;">Your Name *</label>
+          <input type="text" id="name" name="name" required style="width:100%;padding:0.8rem;border:1px solid #ddd;border-radius:4px;font-size:1rem;">
+        </div>
+        
+        <div>
+          <label for="email" style="display:block;margin-bottom:0.5rem;font-weight:600;color:#225675;">Your Email *</label>
+          <input type="email" id="email" name="email" required style="width:100%;padding:0.8rem;border:1px solid #ddd;border-radius:4px;font-size:1rem;">
+        </div>
+        
+        <div>
+          <label for="subject" style="display:block;margin-bottom:0.5rem;font-weight:600;color:#225675;">Subject *</label>
+          <input type="text" id="subject" name="subject" required style="width:100%;padding:0.8rem;border:1px solid #ddd;border-radius:4px;font-size:1rem;">
+        </div>
+        
+        <div>
+          <label for="message" style="display:block;margin-bottom:0.5rem;font-weight:600;color:#225675;">Message *</label>
+          <textarea id="message" name="message" rows="6" required style="width:100%;padding:0.8rem;border:1px solid #ddd;border-radius:4px;font-size:1rem;resize:vertical;"></textarea>
+        </div>
+        
+        <div>
+          <button type="submit" style="background:#3D8C95;color:#fff;padding:1rem 2rem;border:none;border-radius:6px;font-size:1.1rem;font-weight:600;cursor:pointer;transition:background 0.2s;">
+            Send Message
+          </button>
+        </div>
+      </form>
+      
+      <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid #eee;">
+        <h3 style="color:#225675;margin-bottom:1rem;font-size:1.3rem;">Other Ways to Connect</h3>
+        <ul style="list-style:none;padding:0;">
+          <li style="margin-bottom:0.8rem;"><strong>Submit an Event:</strong> Use our <a href="/admin" style="color:#3D8C95;text-decoration:underline;">event submission form</a></li>
+          <li style="margin-bottom:0.8rem;"><strong>Report an Issue:</strong> Let us know if you see incorrect information</li>
+          <li style="margin-bottom:0.8rem;"><strong>Advertising:</strong> Interested in reaching the bluegrass community? Contact us for opportunities</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</article>
+
+<%- include('_footer') %>
