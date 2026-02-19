@@ -102,10 +102,8 @@ server.on('error', (err) => {
 });
 process.on('uncaughtException', (err) => {
     console.error('Uncaught exception:', err);
-    process.exit(1);
 });
 process.on('unhandledRejection', (reason) => {
     console.error('Unhandled rejection:', reason);
-    process.exit(1);
 });
 exports.default = app;
