@@ -108,3 +108,4 @@ process.on('unhandledRejection', (reason) => {
     console.error('Unhandled rejection:', reason);
     process.exit(1);
 });
+exports.default = app;
