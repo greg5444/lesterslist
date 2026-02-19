@@ -1,6 +1,17 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Ensure .env is loaded from project root even when CWD differs
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
+// Startup diagnostic — logged to stderr.log on Hostinger
+console.log('[DB Config] DB_HOST:', process.env.DB_HOST || '(not set)');
+console.log('[DB Config] DB_USER:', process.env.DB_USER || '(not set)');
+console.log('[DB Config] DB_NAME:', process.env.DB_NAME || '(not set)');
+console.log('[DB Config] DB_PORT:', process.env.DB_PORT || '(not set)');
+console.log('[DB Config] DB_PASSWORD set:', process.env.DB_PASSWORD ? 'YES' : 'NO');
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,

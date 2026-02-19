@@ -1,4 +1,5 @@
 // src/server.js
+// NOTE: dotenv.config() is called in database.js (imported below) before the pool is created.
 import express from 'express';
 import session from 'express-session';
 import engine from 'ejs-mate';
@@ -16,9 +17,6 @@ import searchRoutes from './routes/searchRoutes.js';
 import homeRoutes from './routes/homeRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import pool from './config/database.js';
-
-// Load env vars
-dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;

@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // src/server.js
+// NOTE: dotenv.config() is called in database.js (imported below) before the pool is created.
 const express_1 = __importDefault(require("express"));
 const express_session_1 = __importDefault(require("express-session"));
 const ejs_mate_1 = __importDefault(require("ejs-mate"));
@@ -21,8 +22,6 @@ const searchRoutes_js_1 = __importDefault(require("./routes/searchRoutes.js"));
 const homeRoutes_js_1 = __importDefault(require("./routes/homeRoutes.js"));
 const adminRoutes_js_1 = __importDefault(require("./routes/adminRoutes.js"));
 const database_js_1 = __importDefault(require("./config/database.js"));
-// Load env vars
-dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT) || 3000;
 // Middleware
