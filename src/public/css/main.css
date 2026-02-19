@@ -318,6 +318,7 @@ ul, ol {
 
 .ticker-move {
   display: inline-block;
+  white-space: nowrap;
   padding-left: 100%;
   animation: ticker 35s linear infinite;
 }
