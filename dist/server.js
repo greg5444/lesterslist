@@ -40,6 +40,8 @@ app.use((0, express_session_1.default)({
 app.engine('ejs', ejs_mate_1.default);
 app.set('view engine', 'ejs');
 app.set('views', path_1.default.join(__dirname, '../src/views'));
+// Health check (must be before all other routes)
+app.get('/health', (req, res) => res.status(200).send('OK'));
 // Homepage route (must be first)
 app.use('/', homeRoutes_js_1.default);
 // Admin routes
@@ -91,7 +93,9 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).render('500', { message: 'Server error' });
 });
-const server = app.listen(PORT, '0.0.0.0');
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server started on port ${PORT}`);
+});
 server.on('error', (err) => {
     console.error('Server failed to start:', err);
     process.exit(1);

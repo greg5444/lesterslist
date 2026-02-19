@@ -41,6 +41,9 @@ app.engine('ejs', engine);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../src/views'));
 
+// Health check (must be before all other routes)
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
 // Homepage route (must be first)
 app.use('/', homeRoutes);
 
@@ -119,7 +122,9 @@ app.use((err, req, res, next) => {
   res.status(500).render('500', { message: 'Server error' });
 });
 
-const server = app.listen(PORT, '0.0.0.0');
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server started on port ${PORT}`);
+});
 
 server.on('error', (err) => {
   console.error('Server failed to start:', err);
