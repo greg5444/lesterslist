@@ -1,6 +1,7 @@
 // src/server.js
 // NOTE: dotenv.config() is called in database.js (imported below) before the pool is created.
 import express from 'express';
+import helmet from 'helmet';
 import session from 'express-session';
 import engine from 'ejs-mate';
 import dotenv from 'dotenv';
@@ -22,6 +23,7 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../src/public')));
@@ -31,7 +33,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+  cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 } // 24 hours; secure=true in production (HTTPS only)
 }));
 
 // EJS setup

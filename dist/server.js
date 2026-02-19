@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // src/server.js
 // NOTE: dotenv.config() is called in database.js (imported below) before the pool is created.
 const express_1 = __importDefault(require("express"));
+const helmet_1 = __importDefault(require("helmet"));
 const express_session_1 = __importDefault(require("express-session"));
 const ejs_mate_1 = __importDefault(require("ejs-mate"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -25,6 +26,7 @@ const database_js_1 = __importDefault(require("./config/database.js"));
 const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT) || 3000;
 // Middleware
+app.use((0, helmet_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.static(path_1.default.join(__dirname, '../src/public')));
@@ -33,7 +35,7 @@ app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 } // 24 hours; secure=true in production (HTTPS only)
 }));
 // EJS setup
 app.engine('ejs', ejs_mate_1.default);
