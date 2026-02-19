@@ -23,21 +23,23 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware
-app.use(helmet({
-  // HSTS is handled by LiteSpeed on Hostinger; disable locally to avoid browser HTTPS enforcement
-  hsts: process.env.NODE_ENV === 'production',
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https://images.lesterslist.com", "https://maps.googleapis.com", "https://maps.gstatic.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      frameSrc: ["https://www.google.com"],
-      connectSrc: ["'self'"],
+// Only apply helmet security headers in production — locally it blocks images, fonts, maps etc.
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet({
+    hsts: true,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https://images.lesterslist.com", "https://maps.googleapis.com", "https://maps.gstatic.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        frameSrc: ["https://www.google.com"],
+        connectSrc: ["'self'"],
+      }
     }
-  }
-}));
+  }));
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../src/public')));
