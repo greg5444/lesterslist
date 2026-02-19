@@ -23,7 +23,10 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  // HSTS is handled by LiteSpeed on Hostinger; disable locally to avoid browser HTTPS enforcement
+  hsts: process.env.NODE_ENV === 'production'
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../src/public')));

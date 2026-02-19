@@ -26,7 +26,10 @@ const database_js_1 = __importDefault(require("./config/database.js"));
 const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT) || 3000;
 // Middleware
-app.use((0, helmet_1.default)());
+app.use((0, helmet_1.default)({
+    // HSTS is handled by LiteSpeed on Hostinger; disable locally to avoid browser HTTPS enforcement
+    hsts: process.env.NODE_ENV === 'production'
+}));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.static(path_1.default.join(__dirname, '../src/public')));
