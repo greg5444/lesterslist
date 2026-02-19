@@ -89,9 +89,7 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).render('500', { message: 'Server error' });
 });
-const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
+const server = app.listen(PORT, '0.0.0.0');
 server.on('error', (err) => {
     console.error('Server failed to start:', err);
     process.exit(1);
