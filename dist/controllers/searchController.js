@@ -1,5 +1,11 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.search = search;
 // src/controllers/searchController.js
-import pool from '../config/database.js';
+const database_js_1 = __importDefault(require("../config/database.js"));
 // All 50 US state codes for strict matching
 const STATE_CODES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
 // State name to code mapping for smart search
@@ -30,7 +36,7 @@ const monthMap = {
     'november': 11, 'nov': 11,
     'december': 12, 'dec': 12
 };
-export async function search(req, res) {
+async function search(req, res) {
     try {
         const query = req.query.q || '';
         if (!query.trim()) {
@@ -58,7 +64,7 @@ export async function search(req, res) {
                 // Bands have no state - return empty
                 Promise.resolve([[]]),
                 // Concerts - strict state match only
-                pool.query(`
+                database_js_1.default.query(`
           SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
                  v.VenueName, v.City, v.State
           FROM Concerts c
@@ -68,7 +74,7 @@ export async function search(req, res) {
           LIMIT 50
         `, [strictStateCode]),
                 // Festivals - strict state match only
-                pool.query(`
+                database_js_1.default.query(`
           SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
                  v.VenueName, v.City, v.State
           FROM Festivals f
@@ -78,7 +84,7 @@ export async function search(req, res) {
           LIMIT 50
         `, [strictStateCode]),
                 // Jams - strict state match only
-                pool.query(`
+                database_js_1.default.query(`
           SELECT JamID, JamName, City, State, Schedule
           FROM LocalJams
           WHERE Status = 'Published' AND State = ?
@@ -203,9 +209,9 @@ export async function search(req, res) {
         // Run 4 parallel queries (removed venues)
         const [bandsResult, concertsResult, festivalsResult, jamsResult] = await Promise.all([
             // Bands query
-            pool.query('SELECT BandNumber, BandName, PictureURL, BandWebsite FROM Bands WHERE BandName LIKE ? ORDER BY BandName ASC LIMIT 50', [searchPattern]),
+            database_js_1.default.query('SELECT BandNumber, BandName, PictureURL, BandWebsite FROM Bands WHERE BandName LIKE ? ORDER BY BandName ASC LIMIT 50', [searchPattern]),
             // Concerts query (with venue info and date logic)
-            pool.query(`
+            database_js_1.default.query(`
         SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
                v.VenueName, v.City, v.State
         FROM Concerts c
@@ -215,7 +221,7 @@ export async function search(req, res) {
         LIMIT 50
       `, concertParams),
             // Festivals query (with venue info and date logic)
-            pool.query(`SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
+            database_js_1.default.query(`SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
                 v.VenueName, v.City, v.State
          FROM Festivals f
          LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
@@ -223,7 +229,7 @@ export async function search(req, res) {
          ORDER BY f.StartDate ASC 
          LIMIT 50`, festivalParams),
             // Jams query (Published only) - include state code search
-            pool.query(`SELECT JamID, JamName, City, State, Schedule 
+            database_js_1.default.query(`SELECT JamID, JamName, City, State, Schedule 
          FROM LocalJams 
          WHERE Status = 'Published' 
            AND (JamName LIKE ? OR City LIKE ? OR State LIKE ? ${additionalStatePattern ? 'OR State LIKE ?' : ''})

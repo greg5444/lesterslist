@@ -1,9 +1,17 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.listLearn = listLearn;
+exports.showLearnForm = showLearnForm;
+exports.submitLearn = submitLearn;
 // src/controllers/learnController.js
-import LearnResource from '../models/learnResourceModel.js';
-import { sendLearnNotification } from '../config/email.js';
-export async function listLearn(req, res) {
+const learnResourceModel_js_1 = __importDefault(require("../models/learnResourceModel.js"));
+const email_js_1 = require("../config/email.js");
+async function listLearn(req, res) {
     try {
-        const resources = await LearnResource.findPublished();
+        const resources = await learnResourceModel_js_1.default.findPublished();
         res.render('learn/index', { title: 'Learn to Play', resources });
     }
     catch (err) {
@@ -11,10 +19,10 @@ export async function listLearn(req, res) {
         res.render('learn/index', { title: 'Learn to Play', resources: [] });
     }
 }
-export function showLearnForm(req, res) {
+function showLearnForm(req, res) {
     res.render('learn/new', { title: 'Submit a Resource', success: false, error: null });
 }
-export async function submitLearn(req, res) {
+async function submitLearn(req, res) {
     const { InstructorName, CourseDescription, ExternalLink } = req.body;
     // Validate required fields
     if (!InstructorName || !CourseDescription || !ExternalLink) {
@@ -30,9 +38,9 @@ export async function submitLearn(req, res) {
     try {
         // Save resource to database as Draft
         const resourceData = { InstructorName, CourseDescription, ExternalLink };
-        await LearnResource.create(resourceData);
+        await learnResourceModel_js_1.default.create(resourceData);
         // Send email notification to admin
-        const emailResult = await sendLearnNotification(resourceData);
+        const emailResult = await (0, email_js_1.sendLearnNotification)(resourceData);
         if (!emailResult.success) {
             console.error('Email notification failed:', emailResult.error);
             // Still show success to user even if email fails

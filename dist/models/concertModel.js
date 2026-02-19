@@ -1,12 +1,17 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/models/concertModel.js
 // Data access for Concerts table and associations
-import pool from '../config/database.js';
-export default class Concert {
+const database_js_1 = __importDefault(require("../config/database.js"));
+class Concert {
     /**
      * Fetch all upcoming concerts with venue info
      */
     static async findUpcoming() {
-        const [rows] = await pool.query(`
+        const [rows] = await database_js_1.default.query(`
       SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
              v.VenueName, v.City, v.State,
              b.PictureURL as BandPictureURL
@@ -22,7 +27,7 @@ export default class Concert {
      * Fetch upcoming concerts with pagination
      */
     static async findUpcomingPaginated(limit, offset) {
-        const [rows] = await pool.query(`
+        const [rows] = await database_js_1.default.query(`
       SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
              v.VenueName, v.City, v.State,
              b.PictureURL as BandPictureURL
@@ -39,7 +44,7 @@ export default class Concert {
      * Count upcoming concerts
      */
     static async countUpcoming() {
-        const [rows] = await pool.query(`
+        const [rows] = await database_js_1.default.query(`
       SELECT COUNT(*) as total
       FROM Concerts c
       WHERE c.ConcertDate >= CURDATE()
@@ -54,7 +59,7 @@ export default class Concert {
         if (!concertNumber)
             throw new Error('ConcertNumber is required');
         // Robust query with COALESCE for venue data fallback
-        const [rows] = await pool.query(`
+        const [rows] = await database_js_1.default.query(`
       SELECT
         c.ConcertNumber,
         c.ConcertName,
@@ -92,3 +97,4 @@ export default class Concert {
         return rows[0] || null;
     }
 }
+exports.default = Concert;

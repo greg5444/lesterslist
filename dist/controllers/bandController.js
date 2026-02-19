@@ -1,15 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.listBands = listBands;
+exports.showBand = showBand;
 // src/controllers/bandController.js
-import Band from '../models/bandModel.js';
-import { DEFAULT_IMAGE_URL } from '../config/constants.js';
+const bandModel_js_1 = __importDefault(require("../models/bandModel.js"));
+const constants_js_1 = require("../config/constants.js");
 const IMAGE_BASE_URL = 'https://images.lesterslist.com/media/';
 function resolveBandImage(pictureUrl) {
     if (!pictureUrl || pictureUrl.trim() === '')
-        return DEFAULT_IMAGE_URL;
+        return constants_js_1.DEFAULT_IMAGE_URL;
     if (/^https?:\/\//i.test(pictureUrl))
         return pictureUrl;
     return IMAGE_BASE_URL + pictureUrl;
 }
-export async function listBands(req, res) {
+async function listBands(req, res) {
     try {
         const letter = req.query.letter || 'All';
         const currentView = req.query.view === 'list' ? 'list' : 'gallery';
@@ -23,12 +30,12 @@ export async function listBands(req, res) {
         // Fetch bands and count based on filter
         let bands, totalCount;
         if (letter === 'All') {
-            bands = await Band.findAllPaginated(itemsPerPage, offset);
-            totalCount = await Band.countAll();
+            bands = await bandModel_js_1.default.findAllPaginated(itemsPerPage, offset);
+            totalCount = await bandModel_js_1.default.countAll();
         }
         else {
-            bands = await Band.findByLetterPaginated(letter, itemsPerPage, offset);
-            totalCount = await Band.countByLetter(letter);
+            bands = await bandModel_js_1.default.findByLetterPaginated(letter, itemsPerPage, offset);
+            totalCount = await bandModel_js_1.default.countByLetter(letter);
         }
         const totalPages = Math.ceil(totalCount / itemsPerPage);
         // Attach resolved image URLs to each band
@@ -52,13 +59,13 @@ export async function listBands(req, res) {
         res.status(500).render('500', { message: 'Server error' });
     }
 }
-export async function showBand(req, res) {
+async function showBand(req, res) {
     try {
-        const band = await Band.findById(req.params.id);
+        const band = await bandModel_js_1.default.findById(req.params.id);
         if (!band)
             return res.status(404).render('404', { message: 'Band not found' });
         const imageUrl = resolveBandImage(band.PictureURL);
-        const concerts = await Band.findLinkedConcerts(req.params.id);
+        const concerts = await bandModel_js_1.default.findLinkedConcerts(req.params.id);
         res.render('bands/show', {
             title: band.BandName,
             band,

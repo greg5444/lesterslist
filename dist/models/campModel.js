@@ -1,12 +1,17 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/models/campModel.js
 // Data access for Camps/Workshops table and associations
-import pool from '../config/database.js';
-export default class Camp {
+const database_js_1 = __importDefault(require("../config/database.js"));
+class Camp {
     /**
      * Fetch all camps sorted by StartDate
      */
     static async findAll() {
-        const [rows] = await pool.query(`
+        const [rows] = await database_js_1.default.query(`
             SELECT JDNumber, EventName, StartDate, EndDate, DateRange, Contact, ExternalURL, ImageURL, 
              VenueName, Street, City, State, Zip, GoogleMapAddress
       FROM Camps
@@ -21,7 +26,7 @@ export default class Camp {
     static async findById(jdNumber) {
         if (!jdNumber)
             throw new Error('JDNumber is required');
-        const [rows] = await pool.query(`
+        const [rows] = await database_js_1.default.query(`
       SELECT JDNumber, EventName, StartDate, EndDate, DateRange, Contact, ExternalURL, ImageURL,
              VenueName, Street, City, State, Zip, GoogleMapAddress
       FROM Camps
@@ -31,3 +36,4 @@ export default class Camp {
         return rows[0] || null;
     }
 }
+exports.default = Camp;

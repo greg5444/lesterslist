@@ -1,35 +1,52 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.showLogin = showLogin;
+exports.handleLogin = handleLogin;
+exports.handleLogout = handleLogout;
+exports.showDashboard = showDashboard;
+exports.approveItem = approveItem;
+exports.deleteItem = deleteItem;
+exports.showEditJam = showEditJam;
+exports.updateJam = updateJam;
+exports.showEditLearn = showEditLearn;
+exports.updateLearn = updateLearn;
+exports.showTickerSettings = showTickerSettings;
+exports.saveTickerSettings = saveTickerSettings;
 // src/controllers/adminController.js
-import User from '../models/userModel.js';
-import SiteSettings from '../models/siteSettingsModel.js';
-import pool from '../config/database.js';
-export function showLogin(req, res) {
+const userModel_js_1 = __importDefault(require("../models/userModel.js"));
+const siteSettingsModel_js_1 = __importDefault(require("../models/siteSettingsModel.js"));
+const database_js_1 = __importDefault(require("../config/database.js"));
+function showLogin(req, res) {
     res.render('admin/login', { title: 'Admin Login', error: null });
 }
-export async function handleLogin(req, res) {
+async function handleLogin(req, res) {
     const { username, password } = req.body;
-    const user = await User.findByUsername(username);
-    if (!user || !(await User.verifyPassword(password, user.PasswordHash))) {
+    const user = await userModel_js_1.default.findByUsername(username);
+    if (!user || !(await userModel_js_1.default.verifyPassword(password, user.PasswordHash))) {
         return res.render('admin/login', { title: 'Admin Login', error: 'Invalid credentials' });
     }
     req.session.userId = user.UserID;
     req.session.username = user.Name || user.Email;
     res.redirect('/admin/dashboard');
 }
-export function handleLogout(req, res) {
+function handleLogout(req, res) {
     req.session.destroy(() => {
         res.redirect('/admin/login');
     });
 }
-export async function showDashboard(req, res) {
+async function showDashboard(req, res) {
     try {
         // Approval Queue: Draft Jams
-        const [draftJams] = await pool.query("SELECT JamID, JamName, VenueName, Schedule, AllWelcome, BeginnersWelcome, AdvancedOnly, ContactName, ContactEmail, ContactPhone, ShowPhone, City, State FROM LocalJams WHERE Status = 'Draft' ORDER BY JamID DESC");
+        const [draftJams] = await database_js_1.default.query("SELECT JamID, JamName, VenueName, Schedule, AllWelcome, BeginnersWelcome, AdvancedOnly, ContactName, ContactEmail, ContactPhone, ShowPhone, City, State FROM LocalJams WHERE Status = 'Draft' ORDER BY JamID DESC");
         // Approval Queue: Draft Learn Resources
-        const [draftLearn] = await pool.query("SELECT id, InstructorName, CourseDescription, ExternalLink FROM LearnResources WHERE Status = 'Draft' ORDER BY id DESC");
+        const [draftLearn] = await database_js_1.default.query("SELECT id, InstructorName, CourseDescription, ExternalLink FROM LearnResources WHERE Status = 'Draft' ORDER BY id DESC");
         // Quick Stats
-        const [bandCount] = await pool.query('SELECT COUNT(*) as total FROM Bands');
-        const [concertCount] = await pool.query('SELECT COUNT(*) as total FROM Concerts');
-        const [festivalCount] = await pool.query('SELECT COUNT(*) as total FROM Festivals');
+        const [bandCount] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Bands');
+        const [concertCount] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Concerts');
+        const [festivalCount] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Festivals');
         res.render('admin/dashboard', {
             title: 'Admin Dashboard',
             username: req.session.username,
@@ -47,30 +64,30 @@ export async function showDashboard(req, res) {
         res.status(500).render('500', { message: 'Server error' });
     }
 }
-export async function approveItem(req, res) {
+async function approveItem(req, res) {
     const { type, id } = req.params;
     if (type === 'jam') {
-        await pool.query(`UPDATE LocalJams SET Status = 'Published' WHERE JamID = ?`, [id]);
+        await database_js_1.default.query(`UPDATE LocalJams SET Status = 'Published' WHERE JamID = ?`, [id]);
     }
     else {
-        await pool.query(`UPDATE LearnResources SET Status = 'Published' WHERE id = ?`, [id]);
+        await database_js_1.default.query(`UPDATE LearnResources SET Status = 'Published' WHERE id = ?`, [id]);
     }
     res.redirect('/admin/dashboard');
 }
-export async function deleteItem(req, res) {
+async function deleteItem(req, res) {
     const { type, id } = req.params;
     if (type === 'jam') {
-        await pool.query(`DELETE FROM LocalJams WHERE JamID = ?`, [id]);
+        await database_js_1.default.query(`DELETE FROM LocalJams WHERE JamID = ?`, [id]);
     }
     else {
-        await pool.query(`DELETE FROM LearnResources WHERE id = ?`, [id]);
+        await database_js_1.default.query(`DELETE FROM LearnResources WHERE id = ?`, [id]);
     }
     res.redirect('/admin/dashboard');
 }
-export async function showEditJam(req, res) {
+async function showEditJam(req, res) {
     try {
         const { id } = req.params;
-        const [jams] = await pool.query('SELECT * FROM LocalJams WHERE JamID = ?', [id]);
+        const [jams] = await database_js_1.default.query('SELECT * FROM LocalJams WHERE JamID = ?', [id]);
         if (jams.length === 0) {
             return res.status(404).send('Jam not found');
         }
@@ -85,11 +102,11 @@ export async function showEditJam(req, res) {
         res.status(500).send('Server error');
     }
 }
-export async function updateJam(req, res) {
+async function updateJam(req, res) {
     try {
         const { id } = req.params;
         const { JamName, VenueName, Schedule, AllWelcome, BeginnersWelcome, AdvancedOnly, ContactName, ContactEmail, ContactPhone, ShowPhone, City, State, Zip, GoogleMapAddress } = req.body;
-        await pool.query(`UPDATE LocalJams SET 
+        await database_js_1.default.query(`UPDATE LocalJams SET 
         JamName = ?, 
         VenueName = ?, 
         Schedule = ?, 
@@ -112,10 +129,10 @@ export async function updateJam(req, res) {
         res.status(500).send('Server error');
     }
 }
-export async function showEditLearn(req, res) {
+async function showEditLearn(req, res) {
     try {
         const { id } = req.params;
-        const [resources] = await pool.query('SELECT * FROM LearnResources WHERE id = ?', [id]);
+        const [resources] = await database_js_1.default.query('SELECT * FROM LearnResources WHERE id = ?', [id]);
         if (resources.length === 0) {
             return res.status(404).send('Resource not found');
         }
@@ -130,11 +147,11 @@ export async function showEditLearn(req, res) {
         res.status(500).send('Server error');
     }
 }
-export async function updateLearn(req, res) {
+async function updateLearn(req, res) {
     try {
         const { id } = req.params;
         const { InstructorName, CourseDescription, ExternalLink } = req.body;
-        await pool.query(`UPDATE LearnResources SET 
+        await database_js_1.default.query(`UPDATE LearnResources SET 
         InstructorName = ?, 
         CourseDescription = ?, 
         ExternalLink = ?
@@ -146,9 +163,9 @@ export async function updateLearn(req, res) {
         res.status(500).send('Server error');
     }
 }
-export async function showTickerSettings(req, res) {
+async function showTickerSettings(req, res) {
     try {
-        const ticker = await SiteSettings.getTickerSettings();
+        const ticker = await siteSettingsModel_js_1.default.getTickerSettings();
         // Parse messages JSON if it exists
         let messages = [];
         if (ticker.ticker_text) {
@@ -175,7 +192,7 @@ export async function showTickerSettings(req, res) {
         res.status(500).send('Server error');
     }
 }
-export async function saveTickerSettings(req, res) {
+async function saveTickerSettings(req, res) {
     try {
         const { enabled, messages, speed } = req.body;
         const updatedBy = req.session.username || 'admin';
@@ -193,7 +210,7 @@ export async function saveTickerSettings(req, res) {
         }
         // Save as JSON string
         const jsonString = JSON.stringify(tickerMessages);
-        await SiteSettings.saveTickerSettings(enabled === 'true', jsonString, speed || 'medium', updatedBy);
+        await siteSettingsModel_js_1.default.saveTickerSettings(enabled === 'true', jsonString, speed || 'medium', updatedBy);
         res.redirect('/admin/ticker?success=1');
     }
     catch (err) {

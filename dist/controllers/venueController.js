@@ -1,12 +1,18 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.showVenue = showVenue;
 // src/controllers/venueController.js
-import Venue from '../models/venueModel.js';
-export async function showVenue(req, res) {
+const venueModel_js_1 = __importDefault(require("../models/venueModel.js"));
+async function showVenue(req, res) {
     try {
-        const venue = await Venue.findById(req.params.id);
+        const venue = await venueModel_js_1.default.findById(req.params.id);
         if (!venue)
             return res.status(404).render('404', { message: 'Venue not found' });
         const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
-        const concerts = await Venue.findLinkedConcerts(req.params.id);
+        const concerts = await venueModel_js_1.default.findLinkedConcerts(req.params.id);
         res.render('venues/show', {
             title: venue.VenueName,
             venue,

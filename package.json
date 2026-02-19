@@ -2,11 +2,10 @@
   "name": "lesterslist",
   "version": "1.0.0",
   "main": "dist/server.js",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "nodemon src/server.js",
+    "dev": "nodemon --watch src --ext js --exec \"npm run build && node dist/server.js\"",
     "seed:admin": "node src/db/seedAdmin.js",
     "fix:concert-dates": "node scripts/fix-concert-dates.js",
     "fix:concert-dates:apply": "node scripts/fix-concert-dates.js --apply"

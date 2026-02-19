@@ -1,11 +1,16 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/models/siteSettingsModel.js
-import pool from '../config/database.js';
-export default class SiteSettings {
+const database_js_1 = __importDefault(require("../config/database.js"));
+class SiteSettings {
     /**
      * Get a setting by key
      */
     static async get(key) {
-        const [rows] = await pool.query('SELECT setting_value, setting_type FROM SiteSettings WHERE setting_key = ?', [key]);
+        const [rows] = await database_js_1.default.query('SELECT setting_value, setting_type FROM SiteSettings WHERE setting_key = ?', [key]);
         if (!rows[0])
             return null;
         const { setting_value, setting_type } = rows[0];
@@ -19,7 +24,7 @@ export default class SiteSettings {
      * Get multiple settings
      */
     static async getMultiple(keys) {
-        const [rows] = await pool.query('SELECT setting_key, setting_value, setting_type FROM SiteSettings WHERE setting_key IN (?)', [keys]);
+        const [rows] = await database_js_1.default.query('SELECT setting_key, setting_value, setting_type FROM SiteSettings WHERE setting_key IN (?)', [keys]);
         const settings = {};
         rows.forEach(row => {
             const value = row.setting_type === 'boolean' ? row.setting_value === 'true' : row.setting_value;
@@ -31,7 +36,7 @@ export default class SiteSettings {
      * Set a setting value
      */
     static async set(key, value, updatedBy = 'admin') {
-        await pool.query(`INSERT INTO SiteSettings (setting_key, setting_value, updated_by) 
+        await database_js_1.default.query(`INSERT INTO SiteSettings (setting_key, setting_value, updated_by) 
        VALUES (?, ?, ?)
        ON DUPLICATE KEY UPDATE setting_value = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP`, [key, value, updatedBy, value, updatedBy]);
     }
@@ -50,3 +55,4 @@ export default class SiteSettings {
         await this.set('ticker_speed', speed, updatedBy);
     }
 }
+exports.default = SiteSettings;

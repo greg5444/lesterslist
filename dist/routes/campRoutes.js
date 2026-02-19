@@ -1,9 +1,14 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/routes/campRoutes.js
-import express from 'express';
-import { listCamps, showCamp } from '../controllers/campController.js';
-const router = express.Router();
+const express_1 = __importDefault(require("express"));
+const campController_js_1 = require("../controllers/campController.js");
+const router = express_1.default.Router();
 // GET /camps
-router.get('/', listCamps);
+router.get('/', campController_js_1.listCamps);
 // GET /camps/:id
-router.get('/:id', showCamp);
-export default router;
+router.get('/:id', campController_js_1.showCamp);
+exports.default = router;

@@ -1,14 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.listJams = listJams;
+exports.showJamForm = showJamForm;
+exports.submitJam = submitJam;
 // src/controllers/jamController.js
-import LocalJam from '../models/localJamModel.js';
-import { sendJamNotification } from '../config/email.js';
-export async function listJams(req, res) {
-    const jams = await LocalJam.findPublished();
+const localJamModel_js_1 = __importDefault(require("../models/localJamModel.js"));
+const email_js_1 = require("../config/email.js");
+async function listJams(req, res) {
+    const jams = await localJamModel_js_1.default.findPublished();
     res.render('jams/index', { title: 'Local Jams', jams });
 }
-export function showJamForm(req, res) {
+function showJamForm(req, res) {
     res.render('jams/new', { title: 'Submit a Jam', success: false, error: null });
 }
-export async function submitJam(req, res) {
+async function submitJam(req, res) {
     const { JamName, VenueName, Schedule, AllWelcome, BeginnersWelcome, AdvancedOnly, ContactName, ContactEmail, ContactPhone, ShowPhone, City, State, Zip, GoogleMapAddress } = req.body;
     // Validate required fields
     if (!JamName || !VenueName || !Schedule || !ContactName || !ContactEmail || !ContactPhone) {
@@ -41,9 +49,9 @@ export async function submitJam(req, res) {
             Zip,
             GoogleMapAddress
         };
-        await LocalJam.create(jamData);
+        await localJamModel_js_1.default.create(jamData);
         // Send email notification to admin
-        const emailResult = await sendJamNotification(jamData);
+        const emailResult = await (0, email_js_1.sendJamNotification)(jamData);
         if (!emailResult.success) {
             console.error('Email notification failed:', emailResult.error);
             // Still show success to user even if email fails

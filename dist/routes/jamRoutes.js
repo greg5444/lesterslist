@@ -1,8 +1,13 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/routes/jamRoutes.js
-import express from 'express';
-import { listJams, showJamForm, submitJam } from '../controllers/jamController.js';
-const router = express.Router();
-router.get('/', listJams);
-router.get('/new', showJamForm);
-router.post('/new', submitJam);
-export default router;
+const express_1 = __importDefault(require("express"));
+const jamController_js_1 = require("../controllers/jamController.js");
+const router = express_1.default.Router();
+router.get('/', jamController_js_1.listJams);
+router.get('/new', jamController_js_1.showJamForm);
+router.post('/new', jamController_js_1.submitJam);
+exports.default = router;

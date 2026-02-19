@@ -1,65 +1,70 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/server.js
-import express from 'express';
-import session from 'express-session';
-import engine from 'ejs-mate';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-import bandRoutes from './routes/bandRoutes.js';
-import venueRoutes from './routes/venueRoutes.js';
-import concertRoutes from './routes/concertRoutes.js';
-import festivalRoutes from './routes/festivalRoutes.js';
-import campRoutes from './routes/campRoutes.js';
-import jamRoutes from './routes/jamRoutes.js';
-import learnRoutes from './routes/learnRoutes.js';
-import mapRoutes from './routes/mapRoutes.js';
-import searchRoutes from './routes/searchRoutes.js';
-import homeRoutes from './routes/homeRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
-import pool from './config/database.js';
+const express_1 = __importDefault(require("express"));
+const express_session_1 = __importDefault(require("express-session"));
+const ejs_mate_1 = __importDefault(require("ejs-mate"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const path_1 = __importDefault(require("path"));
+const url_1 = require("url");
+const __filename = (0, url_1.fileURLToPath)(import.meta.url);
+const __dirname = path_1.default.dirname(__filename);
+const bandRoutes_js_1 = __importDefault(require("./routes/bandRoutes.js"));
+const venueRoutes_js_1 = __importDefault(require("./routes/venueRoutes.js"));
+const concertRoutes_js_1 = __importDefault(require("./routes/concertRoutes.js"));
+const festivalRoutes_js_1 = __importDefault(require("./routes/festivalRoutes.js"));
+const campRoutes_js_1 = __importDefault(require("./routes/campRoutes.js"));
+const jamRoutes_js_1 = __importDefault(require("./routes/jamRoutes.js"));
+const learnRoutes_js_1 = __importDefault(require("./routes/learnRoutes.js"));
+const mapRoutes_js_1 = __importDefault(require("./routes/mapRoutes.js"));
+const searchRoutes_js_1 = __importDefault(require("./routes/searchRoutes.js"));
+const homeRoutes_js_1 = __importDefault(require("./routes/homeRoutes.js"));
+const adminRoutes_js_1 = __importDefault(require("./routes/adminRoutes.js"));
+const database_js_1 = __importDefault(require("./config/database.js"));
 // Load env vars
-dotenv.config();
-const app = express();
+dotenv_1.default.config();
+const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT) || 3000;
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../src/public')));
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.static(path_1.default.join(__dirname, '../src/public')));
 // Session middleware
-app.use(session({
+app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
 // EJS setup
-app.engine('ejs', engine);
+app.engine('ejs', ejs_mate_1.default);
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../src/views'));
+app.set('views', path_1.default.join(__dirname, '../src/views'));
 // Homepage route (must be first)
-app.use('/', homeRoutes);
+app.use('/', homeRoutes_js_1.default);
 // Admin routes
-app.use('/admin', adminRoutes);
+app.use('/admin', adminRoutes_js_1.default);
 // Band routes
-app.use('/bands', bandRoutes);
+app.use('/bands', bandRoutes_js_1.default);
 // Venue routes
-app.use('/venues', venueRoutes);
+app.use('/venues', venueRoutes_js_1.default);
 // Concert routes
-app.use('/concerts', concertRoutes);
+app.use('/concerts', concertRoutes_js_1.default);
 // Festival routes
-app.use('/festivals', festivalRoutes);
+app.use('/festivals', festivalRoutes_js_1.default);
 // Camp routes
-app.use('/camps', campRoutes);
+app.use('/camps', campRoutes_js_1.default);
 // Jam routes
-app.use('/jams', jamRoutes);
+app.use('/jams', jamRoutes_js_1.default);
 // Learn routes
-app.use('/learn', learnRoutes);
+app.use('/learn', learnRoutes_js_1.default);
 // Search routes
-app.use('/search', searchRoutes);
+app.use('/search', searchRoutes_js_1.default);
 // Map routes
-app.use('/map', mapRoutes);
+app.use('/map', mapRoutes_js_1.default);
 // Short link redirect
 app.get('/:slug', async (req, res, next) => {
     const { slug } = req.params;
@@ -67,12 +72,12 @@ app.get('/:slug', async (req, res, next) => {
         return next();
     }
     try {
-        const [rows] = await pool.query('SELECT id, TargetURL FROM ShortLinks WHERE Slug = ? LIMIT 1', [slug]);
+        const [rows] = await database_js_1.default.query('SELECT id, TargetURL FROM ShortLinks WHERE Slug = ? LIMIT 1', [slug]);
         if (!rows || rows.length === 0) {
             return next();
         }
         const link = rows[0];
-        pool.query('UPDATE ShortLinks SET ClickCount = ClickCount + 1 WHERE id = ?', [link.id]).catch((err) => console.error('ShortLinks click update failed:', err));
+        database_js_1.default.query('UPDATE ShortLinks SET ClickCount = ClickCount + 1 WHERE id = ?', [link.id]).catch((err) => console.error('ShortLinks click update failed:', err));
         return res.redirect(301, link.TargetURL);
     }
     catch (err) {

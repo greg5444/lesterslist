@@ -1,14 +1,21 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.listConcerts = listConcerts;
+exports.showConcert = showConcert;
 // src/controllers/concertController.js
-import Concert from '../models/concertModel.js';
-import { DEFAULT_IMAGE_URL } from '../config/constants.js';
-export async function listConcerts(req, res) {
+const concertModel_js_1 = __importDefault(require("../models/concertModel.js"));
+const constants_js_1 = require("../config/constants.js");
+async function listConcerts(req, res) {
     try {
         const currentView = req.query.view === 'list' ? 'list' : 'gallery';
         const currentPage = parseInt(req.query.page) || 1;
         const itemsPerPage = [25, 40, 55].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 25;
         const offset = (currentPage - 1) * itemsPerPage;
-        const concerts = await Concert.findUpcomingPaginated(itemsPerPage, offset);
-        const totalCount = await Concert.countUpcoming();
+        const concerts = await concertModel_js_1.default.findUpcomingPaginated(itemsPerPage, offset);
+        const totalCount = await concertModel_js_1.default.countUpcoming();
         const totalPages = Math.ceil(totalCount / itemsPerPage);
         res.render('concerts/index', {
             title: 'Upcoming Concerts',
@@ -25,9 +32,9 @@ export async function listConcerts(req, res) {
         res.status(500).render('500', { message: 'Server error' });
     }
 }
-export async function showConcert(req, res) {
+async function showConcert(req, res) {
     try {
-        const concert = await Concert.findById(req.params.id);
+        const concert = await concertModel_js_1.default.findById(req.params.id);
         if (!concert)
             return res.status(404).render('404', { message: 'Concert not found' });
         // Explicit Image Fallback Logic (Priority Order)

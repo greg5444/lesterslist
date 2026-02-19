@@ -1,12 +1,17 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/models/festivalModel.js
 // Data access for Festivals table and associations
-import pool from '../config/database.js';
-export default class Festival {
+const database_js_1 = __importDefault(require("../config/database.js"));
+class Festival {
     /**
      * Fetch all festivals, sorted by StartDate
      */
     static async findAll() {
-        const [rows] = await pool.query(`
+        const [rows] = await database_js_1.default.query(`
       SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, f.FestivalFlyerURL,
              COALESCE(v.VenueName, f.FestivalName) AS VenueName,
              COALESCE(v.City, f.City) AS City,
@@ -21,7 +26,7 @@ export default class Festival {
      * Fetch festivals with pagination
      */
     static async findAllPaginated(limit, offset) {
-        const [rows] = await pool.query(`
+        const [rows] = await database_js_1.default.query(`
       SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, 
              f.FeaturedImageURL, f.FestivalFlyerURL,
              COALESCE(v.VenueName, f.FestivalName) AS VenueName,
@@ -38,7 +43,7 @@ export default class Festival {
      * Count all festivals
      */
     static async countAll() {
-        const [rows] = await pool.query('SELECT COUNT(*) as total FROM Festivals');
+        const [rows] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Festivals');
         return rows[0].total;
     }
     /**
@@ -49,7 +54,7 @@ export default class Festival {
         if (!festivalNumber)
             throw new Error('FestivalNumber is required');
         // Fetch festival and join venue
-        const [festRows] = await pool.query(`
+        const [festRows] = await database_js_1.default.query(`
       SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, f.ExpireDate,
              f.FeaturedImageURL, f.FestivalFlyerURL, f.FestivalWebsite,
              f.VenueNumber,
@@ -70,7 +75,7 @@ export default class Festival {
         const festival = festRows[0];
         console.log('Festival Data:', festival);
         // Fetch participating bands by querying Concerts table (dynamic lineup)
-        const [bands] = await pool.query(`
+        const [bands] = await database_js_1.default.query(`
       SELECT DISTINCT b.BandNumber, b.BandName, b.PictureURL
       FROM Concerts c
       JOIN Bands b ON c.BandNumber = b.BandNumber
@@ -80,3 +85,4 @@ export default class Festival {
         return { festival, bands };
     }
 }
+exports.default = Festival;

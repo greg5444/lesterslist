@@ -1,9 +1,16 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sendJamNotification = sendJamNotification;
+exports.sendLearnNotification = sendLearnNotification;
 // src/config/email.js
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-dotenv.config();
+const nodemailer_1 = __importDefault(require("nodemailer"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 // Create reusable transporter
-const transporter = nodemailer.createTransport({
+const transporter = nodemailer_1.default.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT),
     secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
@@ -15,7 +22,7 @@ const transporter = nodemailer.createTransport({
 /**
  * Send email notification to admin about new jam submission
  */
-export async function sendJamNotification(jamData) {
+async function sendJamNotification(jamData) {
     const mailOptions = {
         from: `"Lester's List" <${process.env.SMTP_USER}>`,
         to: process.env.ADMIN_EMAIL,
@@ -69,7 +76,7 @@ export async function sendJamNotification(jamData) {
 /**
  * Send email notification to admin about new learning resource submission
  */
-export async function sendLearnNotification(resourceData) {
+async function sendLearnNotification(resourceData) {
     const mailOptions = {
         from: `"Lester's List" <${process.env.SMTP_USER}>`,
         to: process.env.ADMIN_EMAIL,
@@ -104,4 +111,4 @@ export async function sendLearnNotification(resourceData) {
         return { success: false, error: error.message };
     }
 }
-export default transporter;
+exports.default = transporter;

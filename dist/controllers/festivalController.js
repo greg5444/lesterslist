@@ -1,22 +1,29 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.listFestivals = listFestivals;
+exports.showFestival = showFestival;
 // src/controllers/festivalController.js
-import Festival from '../models/festivalModel.js';
-import { DEFAULT_IMAGE_URL } from '../config/constants.js';
+const festivalModel_js_1 = __importDefault(require("../models/festivalModel.js"));
+const constants_js_1 = require("../config/constants.js");
 const BAND_IMAGE_BASE = 'https://images.lesterslist.com/media/';
 function resolveBandImage(pictureUrl) {
     if (!pictureUrl || pictureUrl.trim() === '')
-        return DEFAULT_IMAGE_URL;
+        return constants_js_1.DEFAULT_IMAGE_URL;
     if (/^https?:\/\//i.test(pictureUrl))
         return pictureUrl;
     return BAND_IMAGE_BASE + pictureUrl;
 }
-export async function listFestivals(req, res) {
+async function listFestivals(req, res) {
     try {
         const currentView = req.query.view === 'list' ? 'list' : 'gallery';
         const currentPage = parseInt(req.query.page) || 1;
         const itemsPerPage = [25, 40, 55].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 25;
         const offset = (currentPage - 1) * itemsPerPage;
-        const festivals = await Festival.findAllPaginated(itemsPerPage, offset);
-        const totalCount = await Festival.countAll();
+        const festivals = await festivalModel_js_1.default.findAllPaginated(itemsPerPage, offset);
+        const totalCount = await festivalModel_js_1.default.countAll();
         const totalPages = Math.ceil(totalCount / itemsPerPage);
         res.render('festivals/index', {
             title: 'All Festivals',
@@ -33,9 +40,9 @@ export async function listFestivals(req, res) {
         res.status(500).render('500', { message: 'Server error' });
     }
 }
-export async function showFestival(req, res) {
+async function showFestival(req, res) {
     try {
-        const result = await Festival.findById(req.params.id);
+        const result = await festivalModel_js_1.default.findById(req.params.id);
         if (!result)
             return res.status(404).render('404', { message: 'Festival not found' });
         const { festival, bands } = result;

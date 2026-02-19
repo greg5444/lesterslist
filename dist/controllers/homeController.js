@@ -1,19 +1,26 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.showHome = showHome;
+exports.showContact = showContact;
 // src/controllers/homeController.js
-import pool from '../config/database.js';
-import SiteSettings from '../models/siteSettingsModel.js';
-export async function showHome(req, res) {
+const database_js_1 = __importDefault(require("../config/database.js"));
+const siteSettingsModel_js_1 = __importDefault(require("../models/siteSettingsModel.js"));
+async function showHome(req, res) {
     try {
         const today = new Date().toISOString().split('T')[0];
         // Parallel queries for community statistics
         const [[tickerConcerts], [[featuredBand]], [[featuredFestival]], [[featuredConcert]], [upcomingConcerts], [upcomingFestivals], [sidebarJams], [sidebarCamps], [[{ concertCount }]], [[{ festivalCount }]], [[{ jamCount }]], [[{ campCount }]]] = await Promise.all([
             // Ticker Data: Latest 5 Concerts
-            pool.query('SELECT ConcertNumber, ConcertName, VenueName FROM Concerts ORDER BY ConcertNumber DESC LIMIT 5'),
+            database_js_1.default.query('SELECT ConcertNumber, ConcertName, VenueName FROM Concerts ORDER BY ConcertNumber DESC LIMIT 5'),
             // Discovery Trio - Query A: Random Active Band with Photo
-            pool.query('SELECT BandNumber, BandName, PictureURL FROM Bands WHERE Active = 1 AND PictureURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
+            database_js_1.default.query('SELECT BandNumber, BandName, PictureURL FROM Bands WHERE Active = 1 AND PictureURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
             // Discovery Trio - Query B: Random Upcoming Festival with Featured Image
-            pool.query('SELECT FestivalNumber, FestivalName, StartDate, EndDate, FeaturedImageURL FROM Festivals WHERE StartDate >= CURDATE() AND FeaturedImageURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
+            database_js_1.default.query('SELECT FestivalNumber, FestivalName, StartDate, EndDate, FeaturedImageURL FROM Festivals WHERE StartDate >= CURDATE() AND FeaturedImageURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
             // Discovery Trio - Query C: Random Upcoming Concert with Band Photo
-            pool.query(`
+            database_js_1.default.query(`
         SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
                COALESCE(v.VenueName, c.VenueName) as VenueName,
                COALESCE(v.City, c.City) as City,
@@ -27,7 +34,7 @@ export async function showHome(req, res) {
         LIMIT 1
       `),
             // Main Feed: Next 20 Upcoming Concerts
-            pool.query(`SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, 
+            database_js_1.default.query(`SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, 
                 COALESCE(v.VenueName, c.VenueName) as VenueName,
                 COALESCE(v.City, c.City) as City,
                 COALESCE(v.State, c.State) as State,
@@ -38,7 +45,7 @@ export async function showHome(req, res) {
          ORDER BY c.ConcertDate ASC
          LIMIT 20`),
             // Main Feed: Next 20 Upcoming Festivals
-            pool.query(`SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.DateRange,
+            database_js_1.default.query(`SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.DateRange,
                 COALESCE(v.City, f.City) as City,
                 COALESCE(v.State, f.State) as State
          FROM Festivals f
@@ -47,20 +54,20 @@ export async function showHome(req, res) {
          ORDER BY f.StartDate ASC
          LIMIT 20`),
             // Sidebar Jams: Latest 5 Published Jams
-            pool.query("SELECT JamID, JamName, City, State, Schedule FROM LocalJams WHERE Status = 'Published' ORDER BY JamID DESC LIMIT 5"),
+            database_js_1.default.query("SELECT JamID, JamName, City, State, Schedule FROM LocalJams WHERE Status = 'Published' ORDER BY JamID DESC LIMIT 5"),
             // Sidebar Camps: Next 3 Upcoming Camps
-            pool.query('SELECT JDNumber, EventName, DateRange FROM Camps ORDER BY StartDate ASC LIMIT 3'),
+            database_js_1.default.query('SELECT JDNumber, EventName, DateRange FROM Camps ORDER BY StartDate ASC LIMIT 3'),
             // Community Stats: Upcoming Concerts (Date >= Today)
-            pool.query('SELECT COUNT(*) AS concertCount FROM Concerts WHERE ConcertDate >= ?', [today]),
+            database_js_1.default.query('SELECT COUNT(*) AS concertCount FROM Concerts WHERE ConcertDate >= ?', [today]),
             // Community Stats: Active Festivals (EndDate >= Today)
-            pool.query('SELECT COUNT(*) AS festivalCount FROM Festivals WHERE EndDate >= ?', [today]),
+            database_js_1.default.query('SELECT COUNT(*) AS festivalCount FROM Festivals WHERE EndDate >= ?', [today]),
             // Community Stats: Active Jams
-            pool.query("SELECT COUNT(*) AS jamCount FROM LocalJams WHERE Status = 'Published'"),
+            database_js_1.default.query("SELECT COUNT(*) AS jamCount FROM LocalJams WHERE Status = 'Published'"),
             // Community Stats: Total Camps
-            pool.query('SELECT COUNT(*) AS campCount FROM Camps')
+            database_js_1.default.query('SELECT COUNT(*) AS campCount FROM Camps')
         ]);
         // Get ticker settings from database
-        const tickerSettings = await SiteSettings.getTickerSettings();
+        const tickerSettings = await siteSettingsModel_js_1.default.getTickerSettings();
         let tickerMessages = [];
         // Parse ticker messages JSON
         try {
@@ -102,7 +109,7 @@ export async function showHome(req, res) {
         res.status(500).render('500', { message: 'Server error' });
     }
 }
-export async function showContact(req, res) {
+async function showContact(req, res) {
     try {
         res.render('contact', {
             title: "Contact Us - Lester's List"

@@ -1,9 +1,16 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.listCamps = listCamps;
+exports.showCamp = showCamp;
 // src/controllers/campController.js
-import Camp from '../models/campModel.js';
-import { DEFAULT_IMAGE_URL } from '../config/constants.js';
-export async function listCamps(req, res) {
+const campModel_js_1 = __importDefault(require("../models/campModel.js"));
+const constants_js_1 = require("../config/constants.js");
+async function listCamps(req, res) {
     try {
-        const camps = await Camp.findAll();
+        const camps = await campModel_js_1.default.findAll();
         res.render('camps/index', { title: 'Camps & Workshops', camps });
     }
     catch (err) {
@@ -11,12 +18,12 @@ export async function listCamps(req, res) {
         res.status(500).render('500', { message: 'Server error' });
     }
 }
-export async function showCamp(req, res) {
+async function showCamp(req, res) {
     try {
-        const camp = await Camp.findById(req.params.id);
+        const camp = await campModel_js_1.default.findById(req.params.id);
         if (!camp)
             return res.status(404).render('404', { message: 'Camp/Workshop not found' });
-        const imageUrl = camp.ImageURL && camp.ImageURL.trim() ? camp.ImageURL : DEFAULT_IMAGE_URL;
+        const imageUrl = camp.ImageURL && camp.ImageURL.trim() ? camp.ImageURL : constants_js_1.DEFAULT_IMAGE_URL;
         // Use GoogleMapAddress directly from Camps table
         const mapAddress = camp.GoogleMapAddress && camp.GoogleMapAddress.trim() ? camp.GoogleMapAddress : null;
         res.render('camps/show', {

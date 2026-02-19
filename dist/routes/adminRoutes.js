@@ -1,24 +1,29 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/routes/adminRoutes.js
-import express from 'express';
-import { showLogin, handleLogin, handleLogout, showDashboard, approveItem, deleteItem, showEditJam, updateJam, showEditLearn, updateLearn, showTickerSettings, saveTickerSettings } from '../controllers/adminController.js';
-import { isAuthenticated } from '../middleware/auth.js';
-import pool from '../config/database.js';
-const router = express.Router();
-router.get('/login', showLogin);
-router.post('/login', handleLogin);
-router.get('/logout', handleLogout);
-router.get('/dashboard', isAuthenticated, showDashboard);
-router.get('/ticker', isAuthenticated, showTickerSettings);
-router.post('/ticker/save', isAuthenticated, saveTickerSettings);
-router.get('/edit/jam/:id', isAuthenticated, showEditJam);
-router.post('/edit/jam/:id', isAuthenticated, updateJam);
-router.get('/edit/learn/:id', isAuthenticated, showEditLearn);
-router.post('/edit/learn/:id', isAuthenticated, updateLearn);
-router.post('/approve/:type/:id', isAuthenticated, approveItem);
-router.post('/delete/:type/:id', isAuthenticated, deleteItem);
-router.get('/links', isAuthenticated, async (req, res) => {
+const express_1 = __importDefault(require("express"));
+const adminController_js_1 = require("../controllers/adminController.js");
+const auth_js_1 = require("../middleware/auth.js");
+const database_js_1 = __importDefault(require("../config/database.js"));
+const router = express_1.default.Router();
+router.get('/login', adminController_js_1.showLogin);
+router.post('/login', adminController_js_1.handleLogin);
+router.get('/logout', adminController_js_1.handleLogout);
+router.get('/dashboard', auth_js_1.isAuthenticated, adminController_js_1.showDashboard);
+router.get('/ticker', auth_js_1.isAuthenticated, adminController_js_1.showTickerSettings);
+router.post('/ticker/save', auth_js_1.isAuthenticated, adminController_js_1.saveTickerSettings);
+router.get('/edit/jam/:id', auth_js_1.isAuthenticated, adminController_js_1.showEditJam);
+router.post('/edit/jam/:id', auth_js_1.isAuthenticated, adminController_js_1.updateJam);
+router.get('/edit/learn/:id', auth_js_1.isAuthenticated, adminController_js_1.showEditLearn);
+router.post('/edit/learn/:id', auth_js_1.isAuthenticated, adminController_js_1.updateLearn);
+router.post('/approve/:type/:id', auth_js_1.isAuthenticated, adminController_js_1.approveItem);
+router.post('/delete/:type/:id', auth_js_1.isAuthenticated, adminController_js_1.deleteItem);
+router.get('/links', auth_js_1.isAuthenticated, async (req, res) => {
     try {
-        const [links] = await pool.query('SELECT id, Slug, TargetURL, ClickCount, CreatedAt FROM ShortLinks ORDER BY CreatedAt DESC');
+        const [links] = await database_js_1.default.query('SELECT id, Slug, TargetURL, ClickCount, CreatedAt FROM ShortLinks ORDER BY CreatedAt DESC');
         res.render('admin/links', {
             title: 'Short Link Manager',
             username: req.session.username,
@@ -33,7 +38,7 @@ router.get('/links', isAuthenticated, async (req, res) => {
         res.status(500).render('500', { message: 'Server error' });
     }
 });
-router.post('/links', isAuthenticated, async (req, res) => {
+router.post('/links', auth_js_1.isAuthenticated, async (req, res) => {
     const slug = (req.body.slug || '').trim();
     const targetURL = (req.body.targetURL || '').trim();
     if (!slug) {
@@ -43,7 +48,7 @@ router.post('/links', isAuthenticated, async (req, res) => {
         return res.redirect('/admin/links?error=' + encodeURIComponent('Target URL is required.'));
     }
     try {
-        await pool.query('INSERT INTO ShortLinks (Slug, TargetURL) VALUES (?, ?)', [slug, targetURL]);
+        await database_js_1.default.query('INSERT INTO ShortLinks (Slug, TargetURL) VALUES (?, ?)', [slug, targetURL]);
         return res.redirect('/admin/links?success=1');
     }
     catch (err) {
@@ -54,13 +59,13 @@ router.post('/links', isAuthenticated, async (req, res) => {
         return res.redirect('/admin/links?error=' + encodeURIComponent('Unable to create link.'));
     }
 });
-router.post('/links/delete/:id', isAuthenticated, async (req, res) => {
+router.post('/links/delete/:id', auth_js_1.isAuthenticated, async (req, res) => {
     try {
-        await pool.query('DELETE FROM ShortLinks WHERE id = ?', [req.params.id]);
+        await database_js_1.default.query('DELETE FROM ShortLinks WHERE id = ?', [req.params.id]);
     }
     catch (err) {
         console.error('Error deleting short link:', err);
     }
     res.redirect('/admin/links');
 });
-export default router;
+exports.default = router;

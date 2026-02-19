@@ -1,7 +1,13 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.showMap = void 0;
 // src/controllers/mapController.js
 // Controller for the Events on Map page
-import pool from '../config/database.js';
-export const showMap = async (req, res) => {
+const database_js_1 = __importDefault(require("../config/database.js"));
+const showMap = async (req, res) => {
     try {
         // 1. Concerts (Join Venues + Venue_Location for Coords)
         const concertQuery = `
@@ -33,10 +39,10 @@ export const showMap = async (req, res) => {
              JamId as id, Latitude, Longitude, City as VenueName
       FROM LocalJams WHERE Latitude IS NOT NULL
     `;
-        const [concerts] = await pool.query(concertQuery);
-        const [festivals] = await pool.query(festivalQuery);
-        const [camps] = await pool.query(campQuery);
-        const [jams] = await pool.query(jamQuery);
+        const [concerts] = await database_js_1.default.query(concertQuery);
+        const [festivals] = await database_js_1.default.query(festivalQuery);
+        const [camps] = await database_js_1.default.query(campQuery);
+        const [jams] = await database_js_1.default.query(jamQuery);
         const mapData = [...concerts, ...festivals, ...camps, ...jams].map(item => ({
             type: item.type,
             title: item.title,
@@ -60,3 +66,4 @@ export const showMap = async (req, res) => {
         res.status(500).send('Error loading map. Check terminal for details.');
     }
 };
+exports.showMap = showMap;
