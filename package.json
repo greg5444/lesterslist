@@ -4,7 +4,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node server.cjs",
     "dev": "nodemon --watch src --ext js --exec \"npm run build && node dist/server.js\"",
     "seed:admin": "node src/db/seedAdmin.js",
     "fix:concert-dates": "node scripts/fix-concert-dates.js",
