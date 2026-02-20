@@ -2,7 +2,7 @@
 <!-- Tier 1: Animated Ticker -->
 <% if (tickerEnabled && tickerMessages && tickerMessages.length > 0) { %>
 <div class="ticker-wrap">
-  <div class="ticker-move" style="animation-duration:<%= tickerSpeed === 'slow' ? '30s' : tickerSpeed === 'fast' ? '10s' : '20s' %>;">
+  <div class="ticker-move" style="animation-duration:<%= tickerSpeed === 'slow' ? '60s' : tickerSpeed === 'fast' ? '40s' : '50s' %>">
     <% tickerMessages.forEach((msg, index) => { %>
       <% if (msg.url) { %>
         <a href="<%= msg.url %>" style="color: inherit; text-decoration: none; margin-right: 4rem;"><%= msg.text %></a>

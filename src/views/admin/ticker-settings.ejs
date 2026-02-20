@@ -113,9 +113,9 @@
         <div style="margin-bottom: 2rem;">
           <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-secondary);">Animation Speed:</label>
           <select name="speed" style="width: 100%; padding: 0.8rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
-            <option value="slow" <%= ticker.speed === 'slow' ? 'selected' : '' %>>Slow (30s)</option>
-            <option value="medium" <%= ticker.speed === 'medium' ? 'selected' : '' %>>Medium (20s)</option>
-            <option value="fast" <%= ticker.speed === 'fast' ? 'selected' : '' %>>Fast (10s)</option>
+            <option value="slow" <%= ticker.speed === 'slow' ? 'selected' : '' %>>Slow (60s)</option>
+            <option value="medium" <%= ticker.speed === 'medium' ? 'selected' : '' %>>Medium (50s)</option>
+            <option value="fast" <%= ticker.speed === 'fast' ? 'selected' : '' %>>Fast (40s)</option>
           </select>
         </div>
         
@@ -164,39 +164,28 @@
   </style>
   
   <script>
-    function insertVariable() {
-      const picker = documenselectElement, rowIndex) {
+    function insertVariable(selectElement, rowIndex) {
       const variable = selectElement.value;
       if (!variable) return;
       
       const input = document.getElementById('message-' + rowIndex);
       const startPos = input.selectionStart;
       const endPos = input.selectionEnd;
-      const textBefore = input.value.substring(0, startPos);
-      const textAfter = input.value.substring(endPos);
-      
-      // Insert variable at cursor position
-      input.value = textBefore + variable + textAfter;
-      
-      // Set cursor position after inserted variable
+      input.value = input.value.substring(0, startPos) + variable + input.value.substring(endPos);
       const newCursorPos = startPos + variable.length;
       input.selectionStart = newCursorPos;
       input.selectionEnd = newCursorPos;
-      
-      // Focus back on input
       input.focus();
-      
-      // Reset dropdown
       selectElement.value = '';
-      
-      // Update preview
       updatePreview();
     }
     
     function updatePreview() {
       const messages = [];
       for (let i = 0; i < 6; i++) {
-        const text = document.querySelector(`input[name="messages[${i}][text]"]`).value.trim();
+        const input = document.querySelector(`input[name="messages[${i}][text]"]`);
+        if (!input) continue;
+        const text = input.value.trim();
         if (text) {
           messages.push(text
             .replace(/{concertCount}/g, '42')
@@ -210,20 +199,19 @@
       const preview = document.getElementById('tickerPreview');
       if (messages.length === 0) {
         preview.textContent = 'Add messages above to see preview...';
+        preview.style.animation = 'none';
       } else {
-        preview.textContent = messages.join(' • ') + ' • ' + messages.join(' • ');
+        const joined = messages.join(' • ');
+        preview.textContent = joined + '   ' + joined;
+        preview.style.animation = '';
       }
     }
     
-    // Update preview on page load and when inputs change
     document.addEventListener('DOMContentLoaded', function() {
       updatePreview();
-      
-      // Add change listeners to all message inputs
       for (let i = 0; i < 6; i++) {
         const input = document.querySelector(`input[name="messages[${i}][text]"]`);
-        input.addEventListener('input', updatePreview);
+        if (input) input.addEventListener('input', updatePreview);
       }
-    });cript>
-</body>
-</html>
+    });
+  </script>

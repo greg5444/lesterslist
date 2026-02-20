@@ -320,7 +320,7 @@ ul, ol {
   display: inline-block;
   white-space: nowrap;
   padding-left: 100%;
-  animation: ticker 35s linear infinite;
+  animation: ticker 50s linear infinite;
 }
 
 @keyframes ticker {

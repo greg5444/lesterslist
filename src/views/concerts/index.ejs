@@ -30,9 +30,8 @@
           <label style="color:#666;font-size:0.9rem;font-weight:600;">Show:</label>
           <select onchange="window.location.href='/concerts<%= buildQueryString({ page: 1, view: currentView, limit: undefined }) %>&limit=' + this.value" 
                   style="padding:0.4rem 0.7rem;border:1px solid #ddd;border-radius:4px;font-size:0.9rem;font-weight:600;cursor:pointer;background:#fff;">
-            <option value="25" <%= itemsPerPage === 25 ? 'selected' : '' %>>25</option>
-            <option value="40" <%= itemsPerPage === 40 ? 'selected' : '' %>>40</option>
-            <option value="55" <%= itemsPerPage === 55 ? 'selected' : '' %>>55</option>
+            <option value="30" <%= itemsPerPage === 30 ? 'selected' : '' %>>30</option>
+            <option value="60" <%= itemsPerPage === 60 ? 'selected' : '' %>>60</option>
           </select>
         </div>
         <div class="view-toggle" style="display:flex;gap:0.5rem;">

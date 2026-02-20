@@ -15,7 +15,7 @@ export async function listBands(req, res) {
     const letter = req.query.letter || 'All';
     const currentView = req.query.view === 'list' ? 'list' : 'gallery';
     const currentPage = parseInt(req.query.page) || 1;
-    const itemsPerPage = [25, 40, 55].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 25;
+    const itemsPerPage = [30, 60].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 30;
     const offset = (currentPage - 1) * itemsPerPage;
     
     // Validate letter parameter (must be A-Z or "All")
