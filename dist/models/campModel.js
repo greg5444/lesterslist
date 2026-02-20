@@ -15,7 +15,7 @@ class Camp {
             SELECT JDNumber, EventName, StartDate, EndDate, DateRange, Contact, ExternalURL, ImageURL, 
              VenueName, Street, City, State, Zip, GoogleMapAddress
       FROM Camps
-      ORDER BY StartDate ASC
+      ORDER BY StartDate DESC
     `);
         return rows;
     }

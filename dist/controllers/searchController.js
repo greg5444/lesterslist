@@ -46,7 +46,8 @@ async function search(req, res) {
                 bands: [],
                 concerts: [],
                 festivals: [],
-                jams: []
+                jams: [],
+                camps: []
             });
         }
         // Detect Strict State Mode
@@ -60,7 +61,7 @@ async function search(req, res) {
         if (strictStateCode) {
             // STRICT MODE: State Code detected (e.g., "NC", "IN", "Tennessee")
             // Only search State column with exact match - no text matching
-            const [bandsResult, concertsResult, festivalsResult, jamsResult] = await Promise.all([
+            const [bandsResult, concertsResult, festivalsResult, jamsResult, campsResult] = await Promise.all([
                 // Bands have no state - return empty
                 Promise.resolve([[]]),
                 // Concerts - strict state match only
@@ -90,19 +91,29 @@ async function search(req, res) {
           WHERE Status = 'Published' AND State = ?
           ORDER BY JamName ASC
           LIMIT 50
+        `, [strictStateCode]),
+                // Camps - strict state match only
+                database_js_1.default.query(`
+          SELECT JDNumber, EventName, StartDate, VenueName, City, State
+          FROM Camps
+          WHERE State = ?
+          ORDER BY StartDate DESC
+          LIMIT 50
         `, [strictStateCode])
             ]);
             const bands = bandsResult[0];
             const concerts = concertsResult[0];
             const festivals = festivalsResult[0];
             const jams = jamsResult[0];
+            const camps = campsResult[0];
             return res.render('search/results', {
                 title: `Search Results for "${query}"`,
                 query,
                 bands,
                 concerts,
                 festivals,
-                jams
+                jams,
+                camps
             });
         }
         // STANDARD MODE: Normal text search with partial matching
@@ -207,7 +218,7 @@ async function search(req, res) {
             festivalParams.unshift(searchPattern, searchPattern, searchPattern);
         }
         // Run 4 parallel queries (removed venues)
-        const [bandsResult, concertsResult, festivalsResult, jamsResult] = await Promise.all([
+        const [bandsResult, concertsResult, festivalsResult, jamsResult, campsResult] = await Promise.all([
             // Bands query
             database_js_1.default.query('SELECT BandNumber, BandName, PictureURL, BandWebsite FROM Bands WHERE BandName LIKE ? ORDER BY BandName ASC LIMIT 50', [searchPattern]),
             // Concerts query (with venue info and date logic)
@@ -234,19 +245,27 @@ async function search(req, res) {
          WHERE Status = 'Published' 
            AND (JamName LIKE ? OR City LIKE ? OR State LIKE ? ${additionalStatePattern ? 'OR State LIKE ?' : ''})
          ORDER BY JamName ASC
-         LIMIT 50`, additionalStatePattern ? [searchPattern, searchPattern, searchPattern, additionalStatePattern] : [searchPattern, searchPattern, searchPattern])
+         LIMIT 50`, additionalStatePattern ? [searchPattern, searchPattern, searchPattern, additionalStatePattern] : [searchPattern, searchPattern, searchPattern]),
+            // Camps query (EventName, VenueName, City, State)
+            database_js_1.default.query(`SELECT JDNumber, EventName, StartDate, VenueName, City, State
+         FROM Camps
+         WHERE EventName LIKE ? OR VenueName LIKE ? OR City LIKE ? OR State LIKE ?
+         ORDER BY StartDate DESC
+         LIMIT 50`, [searchPattern, searchPattern, searchPattern, searchPattern])
         ]);
         const bands = bandsResult[0];
         const concerts = concertsResult[0];
         const festivals = festivalsResult[0];
         const jams = jamsResult[0];
+        const camps = campsResult[0];
         res.render('search/results', {
             title: `Search Results for "${query}"`,
             query,
             bands,
             concerts,
             festivals,
-            jams
+            jams,
+            camps
         });
     }
     catch (err) {

@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node server.cjs",
-    "dev": "nodemon --watch src --ext js --exec \"npm run build && node dist/server.js\"",
+    "dev": "nodemon --exec \"npm run build && node dist/server.js\"",
     "seed:admin": "node src/db/seedAdmin.js",
     "fix:concert-dates": "node scripts/fix-concert-dates.js",
     "fix:concert-dates:apply": "node scripts/fix-concert-dates.js --apply"

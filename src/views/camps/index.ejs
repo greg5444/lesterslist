@@ -29,13 +29,23 @@
     </div>
   <% } else { %>
     
-    <!-- List Layout -->
+
+    <!-- Responsive List Layout -->
+    <style>
+      @media (max-width: 700px) {
+        .camp-card { grid-template-columns: 1fr !important; height: auto !important; }
+        .camp-card-date { display: none !important; }
+        .camp-card-content { padding: 18px 12px 10px 12px !important; }
+        .camp-card-state { flex-direction: row !important; justify-content: flex-start !important; padding: 10px 12px !important; background: #f9f9f9 !important; }
+        .camp-card-state img { max-width: 60px !important; margin-bottom: 0 !important; margin-right: 10px !important; }
+        .camp-card-state div { font-size: 0.9rem !important; text-align: left !important; }
+      }
+    </style>
     <div style="display:grid;gap:1.5rem;">
       <% camps.forEach(camp => { %>
-        <div style="position:relative;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);overflow:hidden;height:220px;display:grid;grid-template-columns:85px 1fr 180px;transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)';">
-          
-          <!-- Column 1: Date Badge (Fixed 85px) -->
-          <div style="background:var(--color-secondary-blue);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;">
+        <div class="camp-card" style="position:relative;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);overflow:hidden;height:220px;display:grid;grid-template-columns:85px 1fr 180px;transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;">
+          <!-- Date Badge (hidden on mobile) -->
+          <div class="camp-card-date" style="background:var(--color-secondary-blue);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;">
             <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.25rem;opacity:0.9;">
               <%= camp.StartDate ? new Date(camp.StartDate).toLocaleDateString('en-US', { month: 'short' }) : 'TBD' %>
             </div>
@@ -48,28 +58,24 @@
               </div>
             <% } %>
           </div>
-
-          <!-- Column 2: Content (Flexible 1fr) -->
-          <div style="padding:15px;display:flex;flex-direction:column;justify-content:center;min-width:0;">
+          <!-- Content -->
+          <div class="camp-card-content" style="padding:15px;display:flex;flex-direction:column;justify-content:center;min-width:0;">
             <h3 style="font-family:var(--font-display);font-size:1.3rem;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.2;font-weight:700;">
               <a href="/camps/<%= camp.JDNumber %>" class="stretched-link" style="color:var(--color-secondary-blue);text-decoration:none;">
                 <%= camp.EventName %>
               </a>
             </h3>
-            
-            <div style="display:flex;flex-direction:column;gap:0.35rem;color:#666;font-size:0.9rem;">
+            <div style="display:flex;flex-direction:column;gap:0.35rem;color:#666;font-size:0.98rem;">
               <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 <%= camp.VenueName || '' %>
               </div>
-              
               <div>
                 <%= camp.City || '' %><% if (camp.City && camp.State) { %>, <% } %><%= camp.State ? camp.State.trim() : '' %>
               </div>
             </div>
           </div>
-
-          <!-- Column 3: State Outline Visual (Fixed 180px) -->
-          <div style="position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f9f9f9;padding:15px;">
+          <!-- State Outline Visual -->
+          <div class="camp-card-state" style="position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f9f9f9;padding:15px;">
             <% if (camp.State && camp.State.trim()) { %>
               <img src="https://raw.githubusercontent.com/djaiss/mapsicon/master/us/<%= camp.State.trim().toLowerCase() %>/512.png" 
                    alt="<%= camp.State.trim() %>" 

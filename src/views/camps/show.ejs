@@ -5,6 +5,22 @@
   const startDate = camp.StartDate ? new Date(camp.StartDate) : null;
   const campMonth = startDate ? startDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : '';
   const campDay = startDate ? startDate.toLocaleDateString('en-US', { day: 'numeric' }) : '';
+  const campYear = startDate ? startDate.getFullYear() : '';
+  // Remove year from date range string if present (e.g., 'Thursday, August 5, 2026 - Sunday, August 8, 2026')
+  let dateRangeNoYear = camp.DateRange ? camp.DateRange.replace(/,?\s*\d{4}/g, '') : '';
+  // Calculate event duration in days (inclusive)
+  let durationDays = '';
+  let durationNum = '';
+  let durationWord = '';
+  if (camp.StartDate && camp.EndDate) {
+    const start = new Date(camp.StartDate);
+    const end = new Date(camp.EndDate);
+    const diff = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    if (!isNaN(diff) && diff > 0) {
+      durationNum = diff;
+      durationWord = diff === 1 ? 'day' : 'days';
+    }
+  }
 %>
 
 <article class="boldwp-post-singular boldwp-box detail-page-card" style="max-width:1100px;margin:2.5rem auto 0 auto;width:100%;">
@@ -16,26 +32,35 @@
     </header>
     
     <div class="entry-content" style="display:flex;flex-wrap:wrap;gap:2.5rem;margin-top:1.5rem;">
-      <!-- Left: Poster with Date Badge -->
+      <!-- Left: Poster with Orange Overlay for Duration -->
       <div style="flex:1 1 320px;min-width:280px;display:flex;align-items:flex-start;justify-content:center;">
         <div style="position:relative;width:100%;max-width:340px;">
           <img src="<%= imageUrl %>" alt="Camp/Workshop Image" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';" style="width:100%;height:340px;object-fit:cover;border-radius:10px;background:#f8f9fa;box-shadow:0 2px 8px rgba(34,86,117,0.06);">
-          <!-- Date Badge Overlay (ORANGE) -->
-          <% if (campMonth && campDay) { %>
-          <div class="date-badge">
-            <div class="date-month"><%= campMonth %></div>
-            <div class="date-day"><%= campDay %></div>
-          </div>
+          <% if (durationNum && durationWord) { %>
+            <div class="date-badge" style="position:absolute;bottom:15px;left:15px;min-width:75px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <span style="font-size:1.8rem;font-weight:800;letter-spacing:1.5px;line-height:1.1;text-transform:uppercase;text-shadow:1px 1px 2px rgba(0,0,0,0.3);font-family:var(--font-display);margin-bottom:3px;">
+                <%= durationNum %>
+              </span>
+              <span style="font-size:1.1rem;font-weight:700;line-height:1.1;text-transform:uppercase;text-shadow:1px 1px 2px rgba(0,0,0,0.3);font-family:var(--font-display);">
+                <%= durationWord %>
+              </span>
+            </div>
           <% } %>
         </div>
       </div>
       
       <!-- Right: Info -->
       <div style="flex:2 1 400px;min-width:260px;">
-        <!-- Date Range Display -->
-        <% if (camp.DateRange) { %>
-          <div style="margin-bottom:1.5rem;font-size:1.15rem;color:var(--color-primary-teal);font-weight:600;">
-            <%= camp.DateRange %>
+        <!-- Date Range Display (no year) -->
+        <% if (dateRangeNoYear) { %>
+          <div style="margin-bottom:0.3rem;font-size:1.15rem;color:var(--color-primary-teal);font-weight:600;">
+            <%= dateRangeNoYear.trim() %>
+          </div>
+        <% } %>
+        <!-- Year below date range -->
+        <% if (campYear) { %>
+          <div style="margin-bottom:1.2rem;font-size:1.08rem;color:#444;font-weight:600;text-align:left;">
+            <%= campYear %>
           </div>
         <% } %>
         

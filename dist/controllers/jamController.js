@@ -3,9 +3,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.showJamDetail = showJamDetail;
 exports.listJams = listJams;
 exports.showJamForm = showJamForm;
 exports.submitJam = submitJam;
+async function showJamDetail(req, res) {
+    const { JamID } = req.params;
+    if (!JamID || isNaN(Number(JamID))) {
+        return res.status(400).render('400', { message: 'Invalid Jam ID.' });
+    }
+    const jam = await localJamModel_js_1.default.findById(JamID);
+    if (!jam) {
+        return res.status(404).render('404', { message: 'Jam not found.' });
+    }
+    res.render('jams/detail', { title: jam.JamName, jam });
+}
 // src/controllers/jamController.js
 const localJamModel_js_1 = __importDefault(require("../models/localJamModel.js"));
 const email_js_1 = require("../config/email.js");

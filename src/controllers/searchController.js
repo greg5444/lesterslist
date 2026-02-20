@@ -45,7 +45,8 @@ export async function search(req, res) {
         bands: [],
         concerts: [],
         festivals: [],
-        jams: []
+        jams: [],
+        camps: []
       });
     }
 
@@ -62,7 +63,7 @@ export async function search(req, res) {
     if (strictStateCode) {
       // STRICT MODE: State Code detected (e.g., "NC", "IN", "Tennessee")
       // Only search State column with exact match - no text matching
-      const [bandsResult, concertsResult, festivalsResult, jamsResult] = await Promise.all([
+      const [bandsResult, concertsResult, festivalsResult, jamsResult, campsResult] = await Promise.all([
         // Bands have no state - return empty
         Promise.resolve([[]]),
         
@@ -95,6 +96,14 @@ export async function search(req, res) {
           WHERE Status = 'Published' AND State = ?
           ORDER BY JamName ASC
           LIMIT 50
+        `, [strictStateCode]),
+        // Camps - strict state match only
+        pool.query(`
+          SELECT JDNumber, EventName, StartDate, VenueName, City, State
+          FROM Camps
+          WHERE State = ?
+          ORDER BY StartDate DESC
+          LIMIT 50
         `, [strictStateCode])
       ]);
 
@@ -102,6 +111,7 @@ export async function search(req, res) {
       const concerts = concertsResult[0];
       const festivals = festivalsResult[0];
       const jams = jamsResult[0];
+      const camps = campsResult[0];
 
       return res.render('search/results', {
         title: `Search Results for "${query}"`,
@@ -109,7 +119,8 @@ export async function search(req, res) {
         bands,
         concerts,
         festivals,
-        jams
+        jams,
+        camps
       });
     }
 
@@ -225,7 +236,7 @@ export async function search(req, res) {
     }
 
     // Run 4 parallel queries (removed venues)
-    const [bandsResult, concertsResult, festivalsResult, jamsResult] = await Promise.all([
+    const [bandsResult, concertsResult, festivalsResult, jamsResult, campsResult] = await Promise.all([
       // Bands query
       pool.query(
         'SELECT BandNumber, BandName, PictureURL, BandWebsite FROM Bands WHERE BandName LIKE ? ORDER BY BandName ASC LIMIT 50',
@@ -264,6 +275,15 @@ export async function search(req, res) {
          ORDER BY JamName ASC
          LIMIT 50`,
         additionalStatePattern ? [searchPattern, searchPattern, searchPattern, additionalStatePattern] : [searchPattern, searchPattern, searchPattern]
+      ),
+      // Camps query (EventName, VenueName, City, State)
+      pool.query(
+        `SELECT JDNumber, EventName, StartDate, VenueName, City, State
+         FROM Camps
+         WHERE EventName LIKE ? OR VenueName LIKE ? OR City LIKE ? OR State LIKE ?
+         ORDER BY StartDate DESC
+         LIMIT 50`,
+        [searchPattern, searchPattern, searchPattern, searchPattern]
       )
     ]);
 
@@ -271,6 +291,7 @@ export async function search(req, res) {
     const concerts = concertsResult[0];
     const festivals = festivalsResult[0];
     const jams = jamsResult[0];
+    const camps = campsResult[0];
 
     res.render('search/results', {
       title: `Search Results for "${query}"`,
@@ -278,7 +299,8 @@ export async function search(req, res) {
       bands,
       concerts,
       festivals,
-      jams
+      jams,
+      camps
     });
 
   } catch (err) {

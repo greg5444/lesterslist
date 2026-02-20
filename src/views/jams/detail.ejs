@@ -1,0 +1,52 @@
+<% layout('layout') %>
+
+<div style="max-width:700px;margin:2rem auto;padding:0 1.5rem;">
+  <header style="margin-bottom:2rem;border-bottom:3px solid var(--color-primary-teal);padding-bottom:1rem;">
+    <h1 style="font-family:var(--font-display);font-size:2.2rem;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;">
+      🎻 <%= jam.JamName %>
+    </h1>
+    <div style="color:#666;font-size:1.1rem;margin-bottom:0.5rem;">
+      <% if (jam.City && jam.State) { %>
+        <%= jam.City %>, <%= jam.State %>
+      <% } %>
+      <% if (jam.VenueName) { %>
+        <span style="color:#888;">@ <%= jam.VenueName %></span>
+      <% } %>
+    </div>
+  </header>
+
+  <section style="margin-bottom:1.5rem;">
+    <div style="font-size:1.1rem;color:#444;margin-bottom:0.7rem;">
+      <strong>Schedule:</strong> <%= jam.Schedule || '—' %>
+    </div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.7rem;">
+      <% if (jam.AllWelcome) { %>
+        <span style="background:#28a745;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.92rem;font-weight:600;">All Welcome</span>
+      <% } %>
+      <% if (jam.BeginnersWelcome) { %>
+        <span style="background:#007bff;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.92rem;font-weight:600;">Beginners</span>
+      <% } %>
+      <% if (jam.AdvancedOnly) { %>
+        <span style="background:#e53935;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.92rem;font-weight:600;">Advanced Only</span>
+      <% } %>
+    </div>
+    <div style="font-size:1.05rem;color:#666;margin-bottom:0.7rem;">
+      <strong>Contact:</strong>
+      <% if (jam.ContactName) { %>
+        <span style="font-weight:600;color:#333;"><%= jam.ContactName %></span>
+        <% if (jam.ContactEmail) { %>
+          <span style="color:#888;margin-left:0.5rem;">(<%= jam.ContactEmail %>)</span>
+        <% } %>
+      <% } else { %>
+        <span style="color:#999;">—</span>
+      <% } %>
+    </div>
+    <% if (jam.GoogleMapAddress) { %>
+      <div style="margin-bottom:1.2rem;">
+        <a href="https://maps.google.com/?q=<%= encodeURIComponent(jam.GoogleMapAddress) %>" target="_blank" style="color:var(--color-primary-teal);text-decoration:underline;font-size:1.05rem;">View on Google Maps</a>
+      </div>
+    <% } %>
+  </section>
+
+  <a href="/jams" style="color:var(--color-primary-teal);text-decoration:underline;font-size:1.05rem;">← Back to all jams</a>
+</div>

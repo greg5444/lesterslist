@@ -31,7 +31,7 @@ export default class Festival {
              COALESCE(v.State, f.State) AS State
       FROM Festivals f
       LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
-      ORDER BY f.StartDate DESC
+      ORDER BY f.StartDate ASC
       LIMIT ? OFFSET ?
     `, [limit, offset]);
     return rows;

@@ -1,7 +1,13 @@
-// src/models/localJamModel.js
-import pool from '../config/database.js';
+  import pool from '../config/database.js';
 
-export default class LocalJam {
+  export default class LocalJam {
+    static async findById(JamID) {
+      const [rows] = await pool.query(
+        "SELECT JamID, JamName, VenueName, Schedule, AllWelcome, BeginnersWelcome, AdvancedOnly, ContactName, ContactEmail, ContactPhone, ShowPhone, City, State, Zip, GoogleMapAddress FROM LocalJams WHERE JamID = ? AND Status = 'Published' LIMIT 1",
+        [JamID]
+      );
+      return rows[0] || null;
+    }
   static async create({ JamName, VenueName, Schedule, AllWelcome, BeginnersWelcome, AdvancedOnly, ContactName, ContactEmail, ContactPhone, ShowPhone, City, State, Zip, GoogleMapAddress }) {
     const [result] = await pool.query(
       'INSERT INTO LocalJams (JamName, VenueName, Schedule, SkillLevel, AllWelcome, BeginnersWelcome, AdvancedOnly, ContactName, ContactEmail, ContactPhone, ShowPhone, City, State, Zip, GoogleMapAddress, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',

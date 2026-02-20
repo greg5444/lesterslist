@@ -12,76 +12,57 @@
     </a>
   </header>
 
-  <% if (jams.length === 0) { %>
-    <div style="text-align:center;padding:4rem 1rem;background:#f9f9f9;border-radius:12px;">
-      <div style="font-size:4rem;margin-bottom:1rem;">🎻</div>
-      <p style="font-size:1.2rem;color:#666;margin:0;">No jams are currently listed.</p>
-      <p style="font-size:0.95rem;color:#888;margin-top:0.5rem;">Be the first to submit one!</p>
-    </div>
-  <% } else { %>
-    
-    <!-- Table Layout -->
-    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);overflow:hidden;">
-      <table style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr style="background:var(--color-primary-teal);color:#fff;">
-            <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Jam Name</th>
-            <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Location</th>
-            <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Schedule</th>
-            <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Level</th>
-            <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Contact</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% jams.forEach((jam, index) => { %>
-            <tr style="border-bottom:1px solid #eee;background:<%= index % 2 === 0 ? '#fff' : '#f9f9f9' %>;">
-              <td style="padding:1rem;">
-                <div style="font-weight:600;font-size:1.05rem;color:var(--color-secondary-blue);margin-bottom:0.25rem;">
-                  <%= jam.JamName %>
-                </div>
-                <% if (jam.VenueName) { %>
-                  <div style="font-size:0.85rem;color:#666;">@ <%= jam.VenueName %></div>
-                <% } %>
-              </td>
-              <td style="padding:1rem;color:#555;font-size:0.95rem;">
+    <!-- Card/Grid Layout for Jams -->
+    <div class="jam-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;">
+      <% jams.forEach(jam => { %>
+        <a href="/jams/<%= jam.JamID %>" class="jam-card" style="display:block;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:1.2rem 1.2rem 1rem 1.2rem;text-decoration:none;color:inherit;transition:transform 0.18s,box-shadow 0.18s;position:relative;min-height:180px;"
+          onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.12)';"
+          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)';">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.7rem;">
+            <div style="background:var(--color-primary-teal);color:#fff;border-radius:8px;padding:0.7rem 1.1rem;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:70px;">
+              <div style="font-size:1.1rem;font-weight:700;line-height:1.1;white-space:nowrap;"><%= jam.JamName %></div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:0.98rem;color:#666;font-weight:500;">
                 <% if (jam.City && jam.State) { %>
                   <%= jam.City %>, <%= jam.State %>
                 <% } else { %>
                   <span style="color:#999;">—</span>
                 <% } %>
-              </td>
-              <td style="padding:1rem;color:#555;font-size:0.9rem;max-width:250px;">
-                <%= jam.Schedule ? jam.Schedule.substring(0, 80) : '—' %><%= jam.Schedule && jam.Schedule.length > 80 ? '...' : '' %>
-              </td>
-              <td style="padding:1rem;">
-                <% if (jam.AllWelcome || jam.BeginnersWelcome || jam.AdvancedOnly) { %>
-                  <div style="display:flex;flex-direction:column;gap:0.25rem;">
-                    <% if (jam.AllWelcome) { %>
-                      <span style="background:#28a745;color:#fff;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;display:inline-block;white-space:nowrap;">All Welcome</span>
-                    <% } %>
-                    <% if (jam.BeginnersWelcome) { %>
-                      <span style="background:#17a2b8;color:#fff;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;display:inline-block;white-space:nowrap;">Beginners</span>
-                    <% } %>
-                    <% if (jam.AdvancedOnly) { %>
-                      <span style="background:var(--color-highlight-orange);color:#fff;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;display:inline-block;white-space:nowrap;">Advanced</span>
-                    <% } %>
-                  </div>
-                <% } else { %>
-                  <span style="color:#999;">—</span>
-                <% } %>
-              </td>
-              <td style="padding:1rem;color:#555;font-size:0.9rem;">
-                <%= jam.ContactName %>
-                <% if (jam.ShowPhone && jam.ContactPhone) { %>
-                  <div style="font-size:0.85rem;color:#888;margin-top:0.25rem;"><%= jam.ContactPhone %></div>
-                <% } %>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+              </div>
+              <% if (jam.VenueName) { %>
+                <div style="font-size:0.92rem;color:#888;">@ <%= jam.VenueName %></div>
+              <% } %>
+            </div>
+          </div>
+          <div style="font-size:0.97rem;color:#444;margin-bottom:0.5rem;">
+            <%= jam.Schedule ? jam.Schedule.substring(0, 80) : '—' %><%= jam.Schedule && jam.Schedule.length > 80 ? '...' : '' %>
+          </div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+            <% if (jam.AllWelcome) { %>
+              <span style="background:#28a745;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.82rem;font-weight:600;">All Welcome</span>
+            <% } %>
+            <% if (jam.BeginnersWelcome) { %>
+              <span style="background:#007bff;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.82rem;font-weight:600;">Beginners</span>
+            <% } %>
+            <% if (jam.AdvancedOnly) { %>
+              <span style="background:#e53935;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.82rem;font-weight:600;">Advanced Only</span>
+            <% } %>
+          </div>
+          <div style="font-size:0.95rem;color:#666;">
+            <% if (jam.ContactName) { %>
+              <span style="font-weight:600;color:#333;"><%= jam.ContactName %></span>
+              <% if (jam.ContactEmail) { %>
+                <span style="color:#888;margin-left:0.5rem;">(<%= jam.ContactEmail %>)</span>
+              <% } %>
+            <% } else { %>
+              <span style="color:#999;">—</span>
+            <% } %>
+          </div>
+        </a>
+      <% }) %>
 
-  <% } %>
+    </div>
+</div>
 </div>
 

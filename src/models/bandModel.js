@@ -72,7 +72,7 @@ export default class Band {
       FROM Concerts c
       LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
       WHERE c.BandNumber = ?
-      ORDER BY c.ConcertDate DESC
+      ORDER BY c.ConcertDate ASC
     `, [bandNumber]);
     return rows;
   }

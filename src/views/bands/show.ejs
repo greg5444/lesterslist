@@ -39,14 +39,16 @@
       <ul style="list-style:none;padding:0;">
         <% concerts.forEach(concert => { %>
           <li class="boldwp-box" style="margin-bottom:0.8rem;">
-            <div class="boldwp-box-inside" style="padding:1rem;">
-              <a href="/concerts/<%= concert.ConcertNumber %>" style="color:var(--color-secondary);font-weight:600;text-decoration:none;font-size:1.05rem;"><%= concert.ConcertName %></a>
-              <div style="color:#888;font-size:0.95rem;margin-top:0.3rem;">
-                <%= new Date(concert.ConcertDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %>
-                <% if (concert.VenueName) { %> @ <%= concert.VenueName %><% } %>
-                <% if (concert.City && concert.State) { %> (<%= concert.City %>, <%= concert.State %>)<% } %>
+            <a href="/concerts/<%= concert.ConcertNumber %>" style="display:block;color:inherit;text-decoration:none;">
+              <div class="boldwp-box-inside" style="padding:1rem;transition:background 0.15s;">
+                <div style="color:var(--color-secondary);font-weight:600;font-size:1.05rem;"> <%= concert.ConcertName %> </div>
+                <div style="color:#888;font-size:0.95rem;margin-top:0.3rem;">
+                  <%= new Date(concert.ConcertDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %>
+                  <% if (concert.VenueName) { %> @ <%= concert.VenueName %><% } %>
+                  <% if (concert.City && concert.State) { %> (<%= concert.City %>, <%= concert.State %>)<% } %>
+                </div>
               </div>
-            </div>
+            </a>
           </li>
         <% }) %>
       </ul>

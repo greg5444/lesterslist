@@ -1,3 +1,14 @@
+export async function showJamDetail(req, res) {
+  const { JamID } = req.params;
+  if (!JamID || isNaN(Number(JamID))) {
+    return res.status(400).render('400', { message: 'Invalid Jam ID.' });
+  }
+  const jam = await LocalJam.findById(JamID);
+  if (!jam) {
+    return res.status(404).render('404', { message: 'Jam not found.' });
+  }
+  res.render('jams/detail', { title: jam.JamName, jam });
+}
 // src/controllers/jamController.js
 import LocalJam from '../models/localJamModel.js';
 import { sendJamNotification } from '../config/email.js';

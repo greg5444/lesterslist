@@ -45,7 +45,7 @@
     </h1>
     <% if (query) { %>
       <p style="color:#666;font-size:0.95rem;margin:0;">
-        Found <%= bands.length %> band(s), <%= concerts.length %> concert(s), <%= festivals.length %> festival(s), <%= jams.length %> jam(s)
+        Found <%= bands.length %> band(s), <%= concerts.length %> concert(s), <%= festivals.length %> festival(s), <%= jams.length %> jam(s), <%= camps.length %> camp(s)
       </p>
     <% } %>
   </header>
@@ -55,13 +55,42 @@
       <div style="font-size:3rem;margin-bottom:1rem;">🔍</div>
       <p style="font-size:1.1rem;">Please enter a search term to find bands, concerts, festivals, and jams. Search by name, location, date, month, or year!</p>
     </div>
-  <% } else if (bands.length === 0 && concerts.length === 0 && festivals.length === 0 && jams.length === 0) { %>
+  <% } else if (bands.length === 0 && concerts.length === 0 && festivals.length === 0 && jams.length === 0 && camps.length === 0) { %>
     <div style="text-align:center;padding:3rem 1rem;color:#666;">
       <div style="font-size:3rem;margin-bottom:1rem;">😞</div>
       <p style="font-size:1.1rem;">No results found for "<strong><%= query %></strong>"</p>
       <p style="font-size:0.95rem;margin-top:0.5rem;">Try a different search term or browse our directories.</p>
     </div>
   <% } else { %>
+    <!-- Camps Section -->
+    <% if (camps.length > 0) { %>
+      <section style="margin-bottom:3rem;">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem;color:var(--color-secondary-blue);margin:0 0 1rem 0;padding-bottom:0.5rem;border-bottom:2px solid #eee;">
+          🏕️ Camps & Workshops Found (<%= camps.length %>)
+        </h2>
+        <div style="display:grid;gap:1rem;">
+          <% camps.forEach(camp => { %>
+            <a href="/camps/<%= camp.JDNumber %>" class="search-results-card" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';">
+              <div class="search-results-thumb" style="width:60px;height:60px;background:linear-gradient(135deg,var(--color-primary-teal),var(--color-secondary-blue));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;">🏕️</div>
+              <div class="search-results-content" style="flex:1;">
+                <div class="search-results-title" style="font-size:1.1rem;font-weight:600;color:var(--color-secondary-blue);margin-bottom:0.3rem;"><%= camp.EventName %></div>
+                <div class="search-results-meta" style="font-size:0.9rem;color:#666;">
+                  <% if (camp.VenueName) { %>
+                    <%= camp.VenueName %> • 
+                  <% } %>
+                  <% if (camp.City && camp.State) { %>
+                    <%= camp.City %>, <%= camp.State %>
+                  <% } %>
+                  <% if (camp.StartDate) { %>
+                    • <%= new Date(camp.StartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                  <% } %>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      </section>
+    <% } %>
     
     <!-- Bands Section -->
     <% if (bands.length > 0) { %>
