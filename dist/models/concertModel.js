@@ -90,10 +90,6 @@ class Concert {
       WHERE c.ConcertNumber = ?
       LIMIT 1
     `, [concertNumber]);
-        // Debug logging to see exact data from database
-        if (rows[0]) {
-            console.log("🔍 DEBUG CONCERT:", rows[0]);
-        }
         return rows[0] || null;
     }
 }

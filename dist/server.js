@@ -22,6 +22,8 @@ const mapRoutes_js_1 = __importDefault(require("./routes/mapRoutes.js"));
 const searchRoutes_js_1 = __importDefault(require("./routes/searchRoutes.js"));
 const homeRoutes_js_1 = __importDefault(require("./routes/homeRoutes.js"));
 const adminRoutes_js_1 = __importDefault(require("./routes/adminRoutes.js"));
+const submitRoutes_js_1 = __importDefault(require("./routes/submitRoutes.js"));
+const submitController_js_1 = require("./controllers/submitController.js");
 const database_js_1 = __importDefault(require("./config/database.js"));
 const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT) || 3000;
@@ -81,6 +83,11 @@ app.use('/learn', learnRoutes_js_1.default);
 app.use('/search', searchRoutes_js_1.default);
 // Map routes
 app.use('/map', mapRoutes_js_1.default);
+// Submit a Resource routes
+app.use('/submit', submitRoutes_js_1.default);
+// Report a Problem (top-level so ?type=X&id=Y links from any public page work)
+app.get('/report', submitController_js_1.showReportForm);
+app.post('/report', submitController_js_1.submitReport);
 // Short link redirect
 app.get('/:slug', async (req, res, next) => {
     const { slug } = req.params;

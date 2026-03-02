@@ -1,12 +1,12 @@
 // src/models/venueModel.js
-// Data access for Venues table (fields: VenueNumber, VenueName, GoogleMapAddress, Street, City, State, Zip)
+// Data access for Venues table
 import pool from '../config/database.js';
 
 export default class Venue {
   static async findById(venueNumber) {
     if (!venueNumber) throw new Error('VenueNumber is required');
     const [rows] = await pool.query(
-      'SELECT VenueNumber, VenueName, GoogleMapAddress, VenueStreetAddress, City, State, Zip FROM Venues WHERE VenueNumber = ?',
+      'SELECT VenueNumber, VenueName, GoogleMapAddress, VenueStreetAddress, City, State, Zip, Latitude, Longitude, GM_CID_URL FROM Venues WHERE VenueNumber = ?',
       [venueNumber]
     );
     return rows[0] || null;

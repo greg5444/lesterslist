@@ -116,7 +116,7 @@
       <a href="<%= festival.FestivalFlyerURL %>" target="_blank" rel="noopener" style="display:inline-block;margin-top:1.5rem;padding:0.8rem 2rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:6px;text-decoration:none;transition:background 0.2s;">View Full Size Flyer</a>
     </div>
     <% } %>
-    
+
     <div class="entry-content">
       <h2 style="color:var(--color-primary-teal);margin:2rem 0 1.5rem;text-align:center;font-size:2rem;">Performing Bands</h2>
       <% if (bands && bands.length > 0) { %>
@@ -141,3 +141,9 @@
   </div>
 </article>
 
+<!-- Report a Problem -->
+<div class="report-problem" style="max-width:1100px;margin:0 auto 4rem auto;padding:1.5rem 0;">
+  <a href="/report?type=festival&id=<%= festival.FestivalNumber %>">
+    🚩 Report a problem with any information on this page
+  </a>
+</div>

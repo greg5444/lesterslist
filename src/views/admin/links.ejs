@@ -22,8 +22,10 @@
     <div style="display: flex; gap: 2rem; align-items: flex-start;">
       <%- include('_sidebar') %>
       <div style="flex: 1; min-width: 0;">
-        <% if (success) { %>
+        <% if (success === '1') { %>
           <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">Link Created!</div>
+        <% } else if (success === 'updated') { %>
+          <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">Link Updated!</div>
         <% } %>
         <% if (error) { %>
           <div style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;"><%= error %></div>
@@ -76,9 +78,14 @@
                         <span style="display: inline-block; background: #17a2b8; color: #fff; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;"><%= link.ClickCount || 0 %> Clicks</span>
                       </td>
                       <td style="padding: 0.85rem; text-align: right;">
-                        <form method="POST" action="/admin/links/delete/<%= link.id %>" style="display: inline;">
-                          <button type="submit" onclick="return confirm('Are you sure?')" style="background: #d9534f; color: #fff; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer;">Delete</button>
-                        </form>
+                        <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+                          <button type="button"
+                            onclick="openEditModal('<%= link.id %>', '<%= link.Slug %>', '<%= link.TargetURL.replace(/'/g, "&apos;") %>')"
+                            style="background: #225675; color: #fff; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer;">Edit</button>
+                          <form method="POST" action="/admin/links/delete/<%= link.id %>" style="display: inline;">
+                            <button type="submit" onclick="return confirm('Are you sure?')" style="background: #d9534f; color: #fff; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer;">Delete</button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   <% }) %>
@@ -91,7 +98,41 @@
     </div>
   </main>
 
+  <!-- Edit Modal -->
+  <div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:10px;padding:2rem;max-width:560px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+      <h3 style="margin:0 0 0.5rem 0;color:var(--color-primary);">Edit Link</h3>
+      <p style="margin:0 0 1.2rem 0;color:#666;font-size:0.9rem;">Slug stays the same — only the destination URL changes.</p>
+      <div style="background:#f8f9fa;border-radius:6px;padding:0.6rem 0.9rem;margin-bottom:1.2rem;font-size:0.9rem;">
+        <strong>Short link:</strong> <span id="editSlugDisplay" style="color:var(--color-secondary);"></span>
+      </div>
+      <form id="editForm" method="POST" action="">
+        <label style="display:block;font-weight:600;margin-bottom:0.4rem;color:#333;">New destination URL</label>
+        <input type="url" id="editTargetURL" name="targetURL" required
+          style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:0.95rem;box-sizing:border-box;margin-bottom:1.2rem;">
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+          <button type="button" onclick="closeEditModal()" style="background:#f0f0f0;color:#333;border:none;padding:0.6rem 1.2rem;border-radius:6px;cursor:pointer;font-size:0.95rem;">Cancel</button>
+          <button type="submit" style="background:var(--color-primary);color:#fff;border:none;padding:0.6rem 1.4rem;border-radius:6px;cursor:pointer;font-weight:700;font-size:0.95rem;">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
+    function openEditModal(id, slug, targetURL) {
+      document.getElementById('editSlugDisplay').textContent = '<%= baseUrl.replace(/^https?:\/\//, "") %>/' + slug;
+      document.getElementById('editTargetURL').value = targetURL;
+      document.getElementById('editForm').action = '/admin/links/edit/' + id;
+      const modal = document.getElementById('editModal');
+      modal.style.display = 'flex';
+    }
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+    document.getElementById('editModal').addEventListener('click', function(e) {
+      if (e.target === this) closeEditModal();
+    });
+
     function copyText(text) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         return navigator.clipboard.writeText(text);

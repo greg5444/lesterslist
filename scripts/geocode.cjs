@@ -18,9 +18,19 @@ async function getCoordinates(address) {
     try {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_API_KEY}`;
         const response = await axios.get(url);
-        
+
         if (response.data.status === 'OK') {
-            return response.data.results[0].geometry.location; // Returns { lat: ..., lng: ... }
+            const result = response.data.results[0];
+            // Extract place_id to construct Google Maps URL
+            const gmapUrl = result.place_id
+                ? `https://www.google.com/maps/place/?q=place:${result.place_id}`
+                : null;
+
+            return {
+                lat: result.geometry.location.lat,
+                lng: result.geometry.location.lng,
+                gmapUrl: gmapUrl
+            };
         } else {
             console.log(`   ⚠️ Google Warning: ${response.data.status} for "${address}"`);
             return null;
@@ -31,27 +41,63 @@ async function getCoordinates(address) {
     }
 }
 
-// --- THE PROCESSOR ---
+// --- VENUE PROCESSOR (writes directly to Venues table) ---
+async function processVenues(connection) {
+    console.log(`\n--- 🛠 Processing Venues ---`);
+
+    // Find venues with a GoogleMapAddress but missing Latitude or GM_CID_URL
+    const [rows] = await connection.execute(
+        `SELECT VenueNumber, GoogleMapAddress FROM Venues
+         WHERE GoogleMapAddress IS NOT NULL
+         AND GoogleMapAddress != ''
+         AND (Latitude IS NULL OR Latitude = 0 OR GM_CID_URL IS NULL)`
+    );
+
+    console.log(`   Found ${rows.length} venues waiting for coordinates.`);
+
+    for (const row of rows) {
+        const address = row.GoogleMapAddress;
+        const id = row.VenueNumber;
+
+        process.stdout.write(`   📍 Geocoding ${id}... `);
+
+        const coords = await getCoordinates(address);
+
+        if (coords) {
+            await connection.execute(
+                `UPDATE Venues SET Latitude = ?, Longitude = ?, GM_CID_URL = ? WHERE VenueNumber = ?`,
+                [coords.lat, coords.lng, coords.gmapUrl, id]
+            );
+            console.log(`✅ Saved: ${coords.lat}, ${coords.lng}${coords.gmapUrl ? ' + CID URL' : ''}`);
+        } else {
+            console.log(`❌ Failed.`);
+        }
+
+        // Sleep 500ms to avoid hitting Google rate limits
+        await new Promise(r => setTimeout(r, 500));
+    }
+}
+
+// --- CAMPS/JAMS PROCESSOR (writes to their own table) ---
 async function processTable(connection, tableName, idColumn, addressColumn) {
     console.log(`\n--- 🛠 Processing Table: ${tableName} ---`);
-    
-    // 1. Find rows that have an address but NO coordinates yet
+
+    // Find rows with an address but no coordinates yet
     const [rows] = await connection.execute(
-        `SELECT ${idColumn}, ${addressColumn} FROM ${tableName} 
-         WHERE ${addressColumn} IS NOT NULL 
-         AND ${addressColumn} != '' 
+        `SELECT ${idColumn}, ${addressColumn} FROM ${tableName}
+         WHERE ${addressColumn} IS NOT NULL
+         AND ${addressColumn} != ''
          AND Latitude IS NULL`
     );
 
     console.log(`   Found ${rows.length} locations waiting for coordinates.`);
 
-    // 2. Loop through them one by one
     for (const row of rows) {
         const address = row[addressColumn];
         const id = row[idColumn];
-        
+
         process.stdout.write(`   📍 Geocoding ID ${id}... `);
-        
+
         const coords = await getCoordinates(address);
 
         if (coords) {
@@ -63,9 +109,9 @@ async function processTable(connection, tableName, idColumn, addressColumn) {
         } else {
             console.log(`❌ Failed.`);
         }
-        
-        // 3. Sleep for 200ms to be nice to Google (avoid rate limits)
-        await new Promise(r => setTimeout(r, 200));
+
+        // Sleep 500ms to avoid hitting Google rate limits
+        await new Promise(r => setTimeout(r, 500));
     }
 }
 
@@ -76,18 +122,18 @@ async function processTable(connection, tableName, idColumn, addressColumn) {
 
     try {
         connection = await mysql.createConnection(DB_CONFIG);
-        
-        // Process Venues
-        await processTable(connection, 'Venues', 'VenueNumber', 'GoogleMapAddress');
-        
-        // Process Camps
+
+        // Venues → coordinates go into Venue_Location
+        await processVenues(connection);
+
+        // Camps → coordinates stored directly on Camps table
         await processTable(connection, 'Camps', 'WorkshopNumber', 'GoogleMapAddress');
-        
-        // Process Jams
+
+        // Jams → coordinates stored directly on LocalJams table
         await processTable(connection, 'LocalJams', 'JamId', 'GoogleMapAddress');
 
         console.log("\n🎉 All Done! Your database now has GPS coordinates.");
-        
+
     } catch (err) {
         console.error("\n💥 Fatal Error:", err);
     } finally {

@@ -7,6 +7,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Data access for Bands table (fields: BandNumber, BandName, BandWebsite, PictureURL)
 const database_js_1 = __importDefault(require("../config/database.js"));
 class Band {
+    static async findAllAppearancesWithCoords(bandNumber) {
+        if (!bandNumber)
+            throw new Error('BandNumber is required');
+        // Fetch all venues for band appearances (concerts & festivals) with valid coordinates
+        const [concerts] = await database_js_1.default.query(`
+        SELECT v.VenueName, v.Latitude, v.Longitude, c.ConcertDate as date, 'concert' as type, TRIM(REGEXP_REPLACE(c.ConcertName, ' [0-9]{4}$', '')) as eventTitle
+        FROM Concerts c
+        JOIN Venues v ON c.VenueNumber = v.VenueNumber
+        WHERE c.BandNumber = ? AND c.ConcertDate >= CURDATE()
+      `, [bandNumber]);
+        const [festivals] = await database_js_1.default.query(`
+        SELECT v.VenueName, v.Latitude, v.Longitude, f.StartDate as date, 'festival' as type, TRIM(REGEXP_REPLACE(f.FestivalName, ' [0-9]{4}$', '')) as eventTitle
+        FROM Festivals f
+        JOIN Venues v ON f.VenueNumber = v.VenueNumber
+        JOIN Concerts c ON c.FestivalNumber = f.FestivalNumber AND c.BandNumber = ?
+        WHERE f.ExpireDate >= CURDATE()
+      `, [bandNumber]);
+        return [...concerts, ...festivals].sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
     static async findAll() {
         const [rows] = await database_js_1.default.query('SELECT BandNumber, BandName, PictureURL FROM Bands ORDER BY BandName ASC');
         return rows;
@@ -59,7 +78,7 @@ class Band {
         // TODO: Re-enable date filtering for production
         // DEV MODE: Show ALL concerts regardless of date
         const [rows] = await database_js_1.default.query(`
-      SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, v.VenueName, v.City, v.State
+      SELECT c.ConcertNumber, TRIM(REGEXP_REPLACE(c.ConcertName, ' [0-9]{4}$', '')) as ConcertName, c.ConcertDate, v.VenueName, v.City, v.State
       FROM Concerts c
       LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
       WHERE c.BandNumber = ?

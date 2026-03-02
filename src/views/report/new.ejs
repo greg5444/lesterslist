@@ -1,0 +1,89 @@
+<% layout('layout') %>
+<div class="submit-form-wrap" style="max-width: 560px;">
+  <p class="submit-breadcrumb">
+    <% if (sourceType && sourceId) { %>
+      <a href="/<%= sourceType %>s/<%= sourceId %>">&larr; Back to listing</a>
+    <% } else { %>
+      <a href="/">&larr; Home</a>
+    <% } %>
+  </p>
+  <h1 style="color: #b94040;">Report a Problem</h1>
+  <p style="color: #666; margin-top: 0; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6;">
+    Found incorrect information, a broken link, or something else wrong with a listing?
+    Let us know and we'll look into it.
+  </p>
+
+  <% if (success) { %>
+    <div class="submit-alert success">Thanks! Your report has been submitted. We'll review it and make any needed corrections.</div>
+  <% } %>
+  <% if (error) { %>
+    <div class="submit-alert error"><%= error %></div>
+  <% } %>
+
+  <% if (!success) { %>
+  <form method="POST" action="/report">
+    <%# Hidden source identifiers %>
+    <input type="hidden" name="SourceType" value="<%= sourceType %>">
+    <input type="hidden" name="SourceID"   value="<%= sourceId %>">
+
+    <% if (sourceType && sourceId) { %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Listing</h3>
+      <p style="margin: 0; font-size: 0.9rem; color: #555;">
+        <strong>Type:</strong> <%= sourceType.charAt(0).toUpperCase() + sourceType.slice(1) %>
+        &nbsp;&middot;&nbsp;
+        <strong>ID:</strong> #<%= sourceId %>
+      </p>
+    </div>
+    <% } %>
+
+    <div class="submit-section">
+      <h3 class="submit-section-title">Report Details</h3>
+      <div class="submit-field full-width">
+        <label for="PageURL">Page URL <span class="req">*</span></label>
+        <div style="font-size: 0.8rem; color: #888; margin-bottom: 0.35rem;">Copy the page link and paste it here (e.g., https://lesterslist.com/concerts/C2600073)</div>
+        <input type="url" id="PageURL" name="PageURL" placeholder="https://" required
+               value="<%= typeof formData !== 'undefined' && formData.PageURL ? formData.PageURL : '' %>">
+      </div>
+      <div class="submit-field full-width" style="margin-top: 0.75rem;">
+        <label for="Description">What's wrong? <span class="req">*</span></label>
+        <textarea id="Description" name="Description" required
+                  placeholder="Describe the problem — wrong dates, incorrect location, broken link, missing info, etc."
+                  style="min-height: 100px;"><%= typeof formData !== 'undefined' && formData.Description ? formData.Description : '' %></textarea>
+      </div>
+    </div>
+
+    <div class="submit-section">
+      <h3 class="submit-section-title">Your Contact Information</h3>
+      <div class="submit-grid-2">
+        <div class="submit-field">
+          <label for="ContactName">Your Name <span class="req">*</span></label>
+          <input type="text" id="ContactName" name="ContactName" placeholder="Full Name" required
+                 value="<%= typeof formData !== 'undefined' && formData.ContactName ? formData.ContactName : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="ContactEmail">Email <span class="req">*</span></label>
+          <input type="email" id="ContactEmail" name="ContactEmail" placeholder="you@example.com" required
+                 value="<%= typeof formData !== 'undefined' && formData.ContactEmail ? formData.ContactEmail : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="ContactPhone">Phone</label>
+          <input type="tel" id="ContactPhone" name="ContactPhone" placeholder="Optional"
+                 value="<%= typeof formData !== 'undefined' && formData.ContactPhone ? formData.ContactPhone : '' %>">
+        </div>
+      </div>
+      <label class="submit-check" style="margin-top: 0.75rem;">
+        <input type="checkbox" name="AuthorizedToSubmit" value="1" required>
+        <span>I confirm this report is accurate to the best of my knowledge. <span class="req">*</span></span>
+      </label>
+      <%# Honeypot anti-spam — bots fill this, humans don't see it %>
+      <div style="display:none;visibility:hidden;position:absolute;left:-9999px;" aria-hidden="true">
+        <input type="text" name="nickname" tabindex="-1" autocomplete="off">
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" style="background: #b94040;">Send Report</button>
+    <p class="submit-note">* Required fields. Reports are reviewed by our team.</p>
+  </form>
+  <% } %>
+</div>

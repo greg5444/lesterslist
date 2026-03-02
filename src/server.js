@@ -17,6 +17,8 @@ import mapRoutes from './routes/mapRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import homeRoutes from './routes/homeRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import submitRoutes from './routes/submitRoutes.js';
+import { showReportForm, submitReport } from './controllers/submitController.js';
 import pool from './config/database.js';
 
 const app = express();
@@ -95,6 +97,13 @@ app.use('/search', searchRoutes);
 
 // Map routes
 app.use('/map', mapRoutes);
+
+// Submit a Resource routes
+app.use('/submit', submitRoutes);
+
+// Report a Problem (top-level so ?type=X&id=Y links from any public page work)
+app.get('/report', showReportForm);
+app.post('/report', submitReport);
 
 // Short link redirect
 app.get('/:slug', async (req, res, next) => {

@@ -1,0 +1,92 @@
+<% layout('layout') %>
+<div class="submit-form-wrap">
+  <p class="submit-breadcrumb"><a href="/submit">&larr; Submit a Resource</a></p>
+  <h1>Submit a Band / Tour Update</h1>
+
+  <% if (success) { %>
+    <div class="submit-alert success">Thanks! Your submission has been received and is pending review. We'll be in touch.</div>
+  <% } %>
+  <% if (error) { %>
+    <div class="submit-alert error"><%= error %></div>
+  <% } %>
+
+  <% if (!success) { %>
+  <form method="POST" action="/submit/band">
+
+    <%# Submission Type %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">What are you submitting?</h3>
+      <div class="submit-field">
+        <div class="submit-radio-group">
+          <label>
+            <input type="radio" name="SubmissionType" value="New Band" required
+              <%= typeof formData !== 'undefined' && formData.SubmissionType === 'New Band' ? 'checked' : '' %>>
+            New Band Listing
+          </label>
+          <label>
+            <input type="radio" name="SubmissionType" value="Tour Update"
+              <%= typeof formData !== 'undefined' && formData.SubmissionType === 'Tour Update' ? 'checked' : '' %>>
+            Tour / Show Update for Existing Band
+          </label>
+          <label>
+            <input type="radio" name="SubmissionType" value="Update Listing"
+              <%= typeof formData !== 'undefined' && formData.SubmissionType === 'Update Listing' ? 'checked' : '' %>>
+            Update an Existing Listing
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <%# Band Details %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Band Details</h3>
+      <div class="submit-grid-2">
+        <div class="submit-field full-width">
+          <label for="BandName">Band Name <span class="req">*</span></label>
+          <input type="text" id="BandName" name="BandName"
+                 placeholder="Band Name" required
+                 value="<%= typeof formData !== 'undefined' && formData.BandName ? formData.BandName : '' %>">
+        </div>
+        <div class="submit-field full-width">
+          <label for="BandWebsite">Band Website</label>
+          <input type="url" id="BandWebsite" name="BandWebsite"
+                 placeholder="https://..."
+                 value="<%= typeof formData !== 'undefined' && formData.BandWebsite ? formData.BandWebsite : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="HomeCity">Home City</label>
+          <input type="text" id="HomeCity" name="HomeCity"
+                 placeholder="City"
+                 value="<%= typeof formData !== 'undefined' && formData.HomeCity ? formData.HomeCity : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="HomeState">Home State</label>
+          <input type="text" id="HomeState" name="HomeState"
+                 placeholder="e.g. TN"
+                 value="<%= typeof formData !== 'undefined' && formData.HomeState ? formData.HomeState : '' %>">
+        </div>
+      </div>
+    </div>
+
+    <%# Tour / Notes %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Tour Dates / Notes</h3>
+      <div class="submit-field">
+        <label for="TourDates">Upcoming Show Dates</label>
+        <textarea id="TourDates" name="TourDates"
+                  placeholder="List upcoming shows: date, venue, city, state — one per line"><%= typeof formData !== 'undefined' && formData.TourDates ? formData.TourDates : '' %></textarea>
+      </div>
+      <div class="submit-field" style="margin-top:0.75rem;">
+        <label for="Notes">Additional Notes</label>
+        <textarea id="Notes" name="Notes"
+                  placeholder="Bio, genre, album info, or anything else you'd like us to know"><%= typeof formData !== 'undefined' && formData.Notes ? formData.Notes : '' %></textarea>
+      </div>
+    </div>
+
+    <%- include('_contact') %>
+
+    <button type="submit" class="submit-btn">Submit Band Info</button>
+    <p class="submit-note">* Required fields. Your submission will be reviewed before publishing.</p>
+  </form>
+  <% } %>
+</div>

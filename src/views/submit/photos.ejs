@@ -1,0 +1,82 @@
+<% layout('layout') %>
+<div class="submit-form-wrap">
+  <p class="submit-breadcrumb"><a href="/submit">&larr; Submit a Resource</a></p>
+  <h1>Submit Photos</h1>
+
+  <% if (success) { %>
+    <div class="submit-alert success">Thanks! Your photo submission has been received. We'll review it and be in touch.</div>
+  <% } %>
+  <% if (error) { %>
+    <div class="submit-alert error"><%= error %></div>
+  <% } %>
+
+  <% if (!success) { %>
+  <form method="POST" action="/submit/photos">
+
+    <%# Photo Type %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Photo Type</h3>
+      <div class="submit-field">
+        <div class="submit-radio-group">
+          <label>
+            <input type="radio" name="PhotoType" value="Band Photo" required
+              <%= typeof formData !== 'undefined' && formData.PhotoType === 'Band Photo' ? 'checked' : '' %>>
+            Band Photo
+          </label>
+          <label>
+            <input type="radio" name="PhotoType" value="Festival Photo"
+              <%= typeof formData !== 'undefined' && formData.PhotoType === 'Festival Photo' ? 'checked' : '' %>>
+            Festival Photo
+          </label>
+          <label>
+            <input type="radio" name="PhotoType" value="Venue Photo"
+              <%= typeof formData !== 'undefined' && formData.PhotoType === 'Venue Photo' ? 'checked' : '' %>>
+            Venue Photo
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <%# Photo Details %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Photo Details</h3>
+      <div class="submit-grid-2">
+        <div class="submit-field full-width">
+          <label for="RelatedName">Band / Festival / Venue Name <span class="req">*</span></label>
+          <input type="text" id="RelatedName" name="RelatedName"
+                 placeholder="Who or what is this photo of?" required
+                 value="<%= typeof formData !== 'undefined' && formData.RelatedName ? formData.RelatedName : '' %>">
+        </div>
+        <div class="submit-field full-width">
+          <label for="ImageURL">Photo URL</label>
+          <input type="url" id="ImageURL" name="ImageURL"
+                 placeholder="Link to your hosted photo (Google Drive, Dropbox, etc.)"
+                 value="<%= typeof formData !== 'undefined' && formData.ImageURL ? formData.ImageURL : '' %>">
+          <small style="color:#888;font-size:0.8rem;margin-top:0.25rem;">
+            Host your image on Google Drive, Dropbox, or similar and paste the shareable link here.
+          </small>
+        </div>
+        <div class="submit-field full-width">
+          <label for="Caption">Caption / Description <span class="req">*</span></label>
+          <textarea id="Caption" name="Caption" required
+                    placeholder="Describe the photo — who is pictured, when and where it was taken, photographer credit, etc."><%= typeof formData !== 'undefined' && formData.Caption ? formData.Caption : '' %></textarea>
+        </div>
+      </div>
+    </div>
+
+    <%# Rights %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Photo Rights</h3>
+      <label class="submit-check">
+        <input type="checkbox" name="OwnsRights" value="1" required>
+        <span>I confirm that I own or have the rights to submit this photo and grant Lester's List permission to display it on this website. <span class="req">*</span></span>
+      </label>
+    </div>
+
+    <%- include('_contact') %>
+
+    <button type="submit" class="submit-btn">Submit Photos</button>
+    <p class="submit-note">* Required fields. All photos are reviewed by our team before use.</p>
+  </form>
+  <% } %>
+</div>

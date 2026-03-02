@@ -11,6 +11,7 @@ class Festival {
      * Fetch all festivals, sorted by StartDate
      */
     static async findAll() {
+        // Filter: Only return festivals that are not expired (ExpireDate >= today)
         const [rows] = await database_js_1.default.query(`
       SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, f.FestivalFlyerURL,
              COALESCE(v.VenueName, f.FestivalName) AS VenueName,
@@ -18,6 +19,7 @@ class Festival {
              COALESCE(v.State, f.State) AS State
       FROM Festivals f
       LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
+      WHERE f.ExpireDate >= CURDATE()
       ORDER BY f.StartDate DESC
     `);
         return rows;
@@ -26,6 +28,7 @@ class Festival {
      * Fetch festivals with pagination
      */
     static async findAllPaginated(limit, offset) {
+        // Filter: Only return festivals that are not expired (ExpireDate >= today)
         const [rows] = await database_js_1.default.query(`
       SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, 
              f.FeaturedImageURL, f.FestivalFlyerURL,
@@ -34,6 +37,7 @@ class Festival {
              COALESCE(v.State, f.State) AS State
       FROM Festivals f
       LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
+      WHERE f.ExpireDate >= CURDATE()
       ORDER BY f.StartDate ASC
       LIMIT ? OFFSET ?
     `, [limit, offset]);
@@ -43,7 +47,8 @@ class Festival {
      * Count all festivals
      */
     static async countAll() {
-        const [rows] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Festivals');
+        // Filter: Only count festivals that are not expired (ExpireDate >= today)
+        const [rows] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Festivals WHERE ExpireDate >= CURDATE()');
         return rows[0].total;
     }
     /**

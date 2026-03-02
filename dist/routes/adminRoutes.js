@@ -21,6 +21,9 @@ router.get('/edit/learn/:id', auth_js_1.isAuthenticated, adminController_js_1.sh
 router.post('/edit/learn/:id', auth_js_1.isAuthenticated, adminController_js_1.updateLearn);
 router.post('/approve/:type/:id', auth_js_1.isAuthenticated, adminController_js_1.approveItem);
 router.post('/delete/:type/:id', auth_js_1.isAuthenticated, adminController_js_1.deleteItem);
+router.get('/submissions', auth_js_1.isAuthenticated, adminController_js_1.showSubmissions);
+router.get('/submissions/:id', auth_js_1.isAuthenticated, adminController_js_1.showSubmissionDetail);
+router.post('/submissions/:id/status', auth_js_1.isAuthenticated, adminController_js_1.updateSubmissionStatus);
 router.get('/links', auth_js_1.isAuthenticated, async (req, res) => {
     try {
         const [links] = await database_js_1.default.query('SELECT id, Slug, TargetURL, ClickCount, CreatedAt FROM ShortLinks ORDER BY CreatedAt DESC');
@@ -67,5 +70,19 @@ router.post('/links/delete/:id', auth_js_1.isAuthenticated, async (req, res) => 
         console.error('Error deleting short link:', err);
     }
     res.redirect('/admin/links');
+});
+router.post('/links/edit/:id', auth_js_1.isAuthenticated, async (req, res) => {
+    const { targetURL } = req.body;
+    if (!targetURL || !targetURL.trim()) {
+        return res.redirect('/admin/links?error=' + encodeURIComponent('Target URL is required.'));
+    }
+    try {
+        await database_js_1.default.query('UPDATE ShortLinks SET TargetURL = ? WHERE id = ?', [targetURL.trim(), req.params.id]);
+        return res.redirect('/admin/links?success=updated');
+    }
+    catch (err) {
+        console.error('Error updating short link:', err);
+        return res.redirect('/admin/links?error=' + encodeURIComponent('Unable to update link.'));
+    }
 });
 exports.default = router;

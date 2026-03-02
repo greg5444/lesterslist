@@ -1,0 +1,102 @@
+<% layout('layout') %>
+<div class="submit-form-wrap">
+  <p class="submit-breadcrumb"><a href="/submit">&larr; Submit a Resource</a></p>
+  <h1>Submit a Festival</h1>
+
+  <% if (success) { %>
+    <div class="submit-alert success">Thanks! Your festival submission has been received and is pending review. We'll be in touch.</div>
+  <% } %>
+  <% if (error) { %>
+    <div class="submit-alert error"><%= error %></div>
+  <% } %>
+
+  <% if (!success) { %>
+  <form method="POST" action="/submit/festival">
+
+    <%# Festival Details %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Festival Details</h3>
+      <div class="submit-grid-2">
+        <div class="submit-field full-width">
+          <label for="FestivalName">Festival Name <span class="req">*</span></label>
+          <input type="text" id="FestivalName" name="FestivalName"
+                 placeholder="e.g. Telluride Bluegrass Festival" required
+                 value="<%= typeof formData !== 'undefined' && formData.FestivalName ? formData.FestivalName : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="StartDate">Start Date <span class="req">*</span></label>
+          <input type="date" id="StartDate" name="StartDate" required
+                 value="<%= typeof formData !== 'undefined' && formData.StartDate ? formData.StartDate : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="EndDate">End Date <span class="req">*</span></label>
+          <input type="date" id="EndDate" name="EndDate" required
+                 value="<%= typeof formData !== 'undefined' && formData.EndDate ? formData.EndDate : '' %>">
+        </div>
+        <div class="submit-field full-width">
+          <label for="FestivalWebsite">Festival Website</label>
+          <input type="url" id="FestivalWebsite" name="FestivalWebsite"
+                 placeholder="https://..."
+                 value="<%= typeof formData !== 'undefined' && formData.FestivalWebsite ? formData.FestivalWebsite : '' %>">
+        </div>
+      </div>
+    </div>
+
+    <%# Location %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Location</h3>
+      <div class="submit-grid-2">
+        <div class="submit-field full-width">
+          <label for="VenueName">Venue / Grounds Name</label>
+          <input type="text" id="VenueName" name="VenueName"
+                 placeholder="e.g. Planet Bluegrass Ranch"
+                 value="<%= typeof formData !== 'undefined' && formData.VenueName ? formData.VenueName : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="City">City <span class="req">*</span></label>
+          <input type="text" id="City" name="City" placeholder="City" required
+                 value="<%= typeof formData !== 'undefined' && formData.City ? formData.City : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="State">State <span class="req">*</span></label>
+          <input type="text" id="State" name="State" placeholder="e.g. CO" required
+                 value="<%= typeof formData !== 'undefined' && formData.State ? formData.State : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="Zip">Zip Code</label>
+          <input type="text" id="Zip" name="Zip" placeholder="Zip Code"
+                 value="<%= typeof formData !== 'undefined' && formData.Zip ? formData.Zip : '' %>">
+        </div>
+        <div class="submit-field full-width">
+          <label for="GoogleMapAddress">Full Address for Google Maps</label>
+          <input type="text" id="GoogleMapAddress" name="GoogleMapAddress"
+                 placeholder="Street, City, State, Zip"
+                 value="<%= typeof formData !== 'undefined' && formData.GoogleMapAddress ? formData.GoogleMapAddress : '' %>">
+        </div>
+      </div>
+    </div>
+
+    <%# Additional Info %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Additional Information</h3>
+      <div class="submit-field full-width">
+        <label for="FestivalFlyerURL">Festival Flyer or Poster URL</label>
+        <div style="font-size: 0.8rem; color: #888; margin-bottom: 0.35rem;">Link to an image of the festival flyer or poster (e.g., https://example.com/flyer.jpg)</div>
+        <input type="url" id="FestivalFlyerURL" name="FestivalFlyerURL"
+               placeholder="https://..."
+               value="<%= typeof formData !== 'undefined' && formData.FestivalFlyerURL ? formData.FestivalFlyerURL : '' %>">
+      </div>
+      <div class="submit-field">
+        <label for="Notes">Notes / Description</label>
+        <textarea id="Notes" name="Notes"
+                  placeholder="Tell us about the festival — lineup, ticket info, history, etc."><%= typeof formData !== 'undefined' && formData.Notes ? formData.Notes : '' %></textarea>
+      </div>
+    </div>
+
+    <%- include('_contact') %>
+
+    <button type="submit" class="submit-btn">Submit Festival</button>
+    <p class="submit-note">* Required fields. Your submission will be reviewed before publishing.</p>
+  </form>
+  <% } %>
+</div>

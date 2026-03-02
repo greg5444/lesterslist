@@ -15,6 +15,7 @@
     <!-- Card/Grid Layout for Jams -->
     <div class="jam-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;">
       <% jams.forEach(jam => { %>
+        <div>
         <a href="/jams/<%= jam.JamID %>" class="jam-card" style="display:block;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:1.2rem 1.2rem 1rem 1.2rem;text-decoration:none;color:inherit;transition:transform 0.18s,box-shadow 0.18s;position:relative;min-height:180px;"
           onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.12)';"
           onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)';">

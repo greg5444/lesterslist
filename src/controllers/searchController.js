@@ -80,14 +80,15 @@ export async function search(req, res) {
         
         // Festivals - strict state match only
         pool.query(`
-          SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
-                 v.VenueName, v.City, v.State
-          FROM Festivals f
-          LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
-          WHERE v.State = ?
-          ORDER BY f.StartDate ASC
-          LIMIT 50
-        `, [strictStateCode]),
+             // Filter: Only return festivals that are not expired (ExpireDate >= today)
+             SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
+               v.VenueName, v.City, v.State
+             FROM Festivals f
+             LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
+             WHERE v.State = ? AND f.ExpireDate >= CURDATE()
+             ORDER BY f.StartDate ASC
+             LIMIT 50
+           `, [strictStateCode]),
         
         // Jams - strict state match only
         pool.query(`
@@ -245,25 +246,26 @@ export async function search(req, res) {
       
       // Concerts query (with venue info and date logic)
       pool.query(`
-        SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
-               v.VenueName, v.City, v.State
-        FROM Concerts c
-        LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
-        WHERE ${concertWhereClause}
-        ORDER BY c.ConcertDate ASC
-        LIMIT 50
-      `, concertParams),
+         SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
+           v.VenueName, v.City, v.State
+         FROM Concerts c
+         LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
+         WHERE (${concertTextConditions.join(' OR ')}) AND c.ConcertDate >= CURDATE()
+         ORDER BY c.ConcertDate ASC
+         LIMIT 50
+            `, [searchPattern, searchPattern, searchPattern]),
       
       // Festivals query (with venue info and date logic)
       pool.query(
+        // Filter: Only return festivals that are not expired (ExpireDate >= today)
         `SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
                 v.VenueName, v.City, v.State
          FROM Festivals f
          LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
-         WHERE ${festivalWhereClause}
+         WHERE (${festivalTextConditions.join(' OR ')}) AND f.ExpireDate >= CURDATE()
          ORDER BY f.StartDate ASC 
          LIMIT 50`,
-        festivalParams
+        [searchPattern, searchPattern, searchPattern]
       ),
       
       // Jams query (Published only) - include state code search
@@ -280,8 +282,9 @@ export async function search(req, res) {
       pool.query(
         `SELECT JDNumber, EventName, StartDate, VenueName, City, State
          FROM Camps
-         WHERE EventName LIKE ? OR VenueName LIKE ? OR City LIKE ? OR State LIKE ?
-         ORDER BY StartDate DESC
+         WHERE (EventName LIKE ? OR VenueName LIKE ? OR City LIKE ? OR State LIKE ?)
+           AND EndDate >= CURDATE()
+         ORDER BY StartDate ASC
          LIMIT 50`,
         [searchPattern, searchPattern, searchPattern, searchPattern]
       )

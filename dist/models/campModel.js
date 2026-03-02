@@ -11,10 +11,12 @@ class Camp {
      * Fetch all camps sorted by StartDate
      */
     static async findAll() {
+        // Filter: Only return camps/workshops that are not expired (EndDate >= today)
         const [rows] = await database_js_1.default.query(`
             SELECT JDNumber, EventName, StartDate, EndDate, DateRange, Contact, ExternalURL, ImageURL, 
              VenueName, Street, City, State, Zip, GoogleMapAddress
       FROM Camps
+      WHERE EndDate >= CURDATE()
       ORDER BY StartDate DESC
     `);
         return rows;

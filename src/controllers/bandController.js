@@ -63,11 +63,21 @@ export async function showBand(req, res) {
     if (!band) return res.status(404).render('404', { message: 'Band not found' });
     const imageUrl = resolveBandImage(band.PictureURL);
     const concerts = await Band.findLinkedConcerts(req.params.id);
+    // Band detail map: all appearances with valid coordinates (stored directly on Venues)
+    const allAppearances = await Band.findAllAppearancesWithCoords(req.params.id);
+    const mapData = allAppearances.filter(a => a.Latitude && a.Longitude);
+    const missingCoords = allAppearances.filter(a => !a.Latitude || !a.Longitude);
+    if (missingCoords.length > 0) {
+      console.log(`Band ${req.params.id} missing coordinates for ${missingCoords.length} appearances:`);
+      missingCoords.forEach(a => console.log(`- ${a.VenueName} (${a.date})`));
+    }
     res.render('bands/show', {
       title: band.BandName,
       band,
       imageUrl,
-      concerts
+      concerts,
+      mapData,
+      GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY
     });
   } catch (err) {
     console.error('Error fetching band:', err);

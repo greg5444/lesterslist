@@ -1,0 +1,85 @@
+<% layout('layout') %>
+<div class="submit-form-wrap">
+  <p class="submit-breadcrumb"><a href="/submit">&larr; Submit a Resource</a></p>
+  <h1>Submit a Venue</h1>
+
+  <% if (success) { %>
+    <div class="submit-alert success">Thanks! Your venue submission has been received and is pending review. We'll be in touch.</div>
+  <% } %>
+  <% if (error) { %>
+    <div class="submit-alert error"><%= error %></div>
+  <% } %>
+
+  <% if (!success) { %>
+  <form method="POST" action="/submit/venue">
+
+    <%# Venue Details %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Venue Details</h3>
+      <div class="submit-grid-2">
+        <div class="submit-field full-width">
+          <label for="VenueName">Venue Name <span class="req">*</span></label>
+          <input type="text" id="VenueName" name="VenueName"
+                 placeholder="e.g. The Station Inn" required
+                 value="<%= typeof formData !== 'undefined' && formData.VenueName ? formData.VenueName : '' %>">
+        </div>
+        <div class="submit-field full-width">
+          <label for="VenueURL">Venue Website</label>
+          <input type="url" id="VenueURL" name="VenueURL"
+                 placeholder="https://..."
+                 value="<%= typeof formData !== 'undefined' && formData.VenueURL ? formData.VenueURL : '' %>">
+        </div>
+      </div>
+    </div>
+
+    <%# Location %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Location</h3>
+      <div class="submit-grid-2">
+        <div class="submit-field full-width">
+          <label for="VenueStreetAddress">Street Address <span class="req">*</span></label>
+          <input type="text" id="VenueStreetAddress" name="VenueStreetAddress"
+                 placeholder="123 Main St" required
+                 value="<%= typeof formData !== 'undefined' && formData.VenueStreetAddress ? formData.VenueStreetAddress : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="City">City <span class="req">*</span></label>
+          <input type="text" id="City" name="City" placeholder="City" required
+                 value="<%= typeof formData !== 'undefined' && formData.City ? formData.City : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="State">State <span class="req">*</span></label>
+          <input type="text" id="State" name="State" placeholder="e.g. TN" required
+                 value="<%= typeof formData !== 'undefined' && formData.State ? formData.State : '' %>">
+        </div>
+        <div class="submit-field">
+          <label for="Zip">Zip Code</label>
+          <input type="text" id="Zip" name="Zip" placeholder="Zip Code"
+                 value="<%= typeof formData !== 'undefined' && formData.Zip ? formData.Zip : '' %>">
+        </div>
+        <div class="submit-field full-width">
+          <label for="GoogleMapAddress">Full Address for Google Maps <span class="req">*</span></label>
+          <input type="text" id="GoogleMapAddress" name="GoogleMapAddress"
+                 placeholder="123 Main St, Nashville, TN 37203" required
+                 value="<%= typeof formData !== 'undefined' && formData.GoogleMapAddress ? formData.GoogleMapAddress : '' %>">
+        </div>
+      </div>
+    </div>
+
+    <%# Additional Info %>
+    <div class="submit-section">
+      <h3 class="submit-section-title">Additional Information</h3>
+      <div class="submit-field">
+        <label for="Notes">Notes</label>
+        <textarea id="Notes" name="Notes"
+                  placeholder="Tell us about this venue — capacity, style, how often they host bluegrass, etc."><%= typeof formData !== 'undefined' && formData.Notes ? formData.Notes : '' %></textarea>
+      </div>
+    </div>
+
+    <%- include('_contact') %>
+
+    <button type="submit" class="submit-btn">Submit Venue</button>
+    <p class="submit-note">* Required fields. Your submission will be reviewed before publishing.</p>
+  </form>
+  <% } %>
+</div>

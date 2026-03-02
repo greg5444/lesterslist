@@ -55,35 +55,34 @@
       <% } else if (currentView === 'gallery') { %>
         <!-- Gallery Mode: Cards with Date Overlay (Top Right) -->
         <div class="concert-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;">
-          <% concerts.forEach(concert => { 
+          <% concerts.forEach(concert => {
             const concertDate = new Date(concert.ConcertDate);
             const month = concertDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
             const day = concertDate.getDate();
           %>
-            <a href="/concerts/<%= concert.ConcertNumber %>" class="gallery-card" 
-               style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;"
-               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
-               onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
-              <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
-                <img src="<%= concert.ConcertImage || concert.BandPictureURL || 'https://images.lesterslist.com/media/All-bluegrass.jpg' %>" 
-                     alt="<%= concert.BandName %>" 
-                     onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
-                     style="width:100%;height:100%;object-fit:cover;object-position:top;">
-                <!-- Date Badge Overlay (Bottom Left) -->
-                <div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.5rem 0.75rem;border-radius:6px;text-align:center;min-width:60px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">
-                  <div style="font-size:0.75rem;font-weight:600;letter-spacing:0.5px;line-height:1;"><%= month %></div>
-                  <div style="font-size:1.5rem;font-weight:800;line-height:1;margin-top:2px;"><%= day %></div>
+            <a href="/concerts/<%= concert.ConcertNumber %>" class="gallery-card"
+                 style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;flex:1;"
+                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
+                 onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+                <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
+                  <img src="<%= concert.imageUrl %>"
+                       alt="<%= concert.ConcertName %>"
+                       onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
+                       style="width:100%;height:100%;object-fit:cover;object-position:top;">
+                  <div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.5rem 0.75rem;border-radius:6px;text-align:center;min-width:60px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">
+                    <div style="font-size:0.75rem;font-weight:600;letter-spacing:0.5px;line-height:1;"><%= month %></div>
+                    <div style="font-size:1.5rem;font-weight:800;line-height:1;margin-top:2px;"><%= day %></div>
+                  </div>
                 </div>
-              </div>
-              <div style="padding:1rem;">
-                <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;"><%= concert.ConcertName %></h3>
-                <div style="color:#666;font-size:0.9rem;">
-                  <% if (concert.City && concert.State) { %>
-                    <%= concert.City %>, <%= concert.State %>
-                  <% } %>
+                <div style="padding:1rem;">
+                  <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;"><%= concert.ConcertName %></h3>
+                  <div style="color:#666;font-size:0.9rem;">
+                    <% if (concert.City && concert.State) { %>
+                      <%= concert.City %>, <%= concert.State %>
+                    <% } %>
+                  </div>
                 </div>
-              </div>
-            </a>
+              </a>
           <% }) %>
         </div>
       <% } else { %>
@@ -119,7 +118,7 @@
                   <% } %>
                 </td>
                 <td style="padding:1rem;text-align:right;">
-                  <a href="/concerts/<%= concert.ConcertNumber %>" 
+                  <a href="/concerts/<%= concert.ConcertNumber %>"
                      style="display:inline-block;padding:0.5rem 1.2rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:4px;text-decoration:none;font-size:0.85rem;transition:opacity 0.2s;"
                      onmouseover="this.style.opacity='0.85'"
                      onmouseout="this.style.opacity='1'">

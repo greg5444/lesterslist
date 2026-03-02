@@ -15,10 +15,25 @@ exports.showEditLearn = showEditLearn;
 exports.updateLearn = updateLearn;
 exports.showTickerSettings = showTickerSettings;
 exports.saveTickerSettings = saveTickerSettings;
+exports.showSubmissions = showSubmissions;
+exports.showSubmissionDetail = showSubmissionDetail;
+exports.updateSubmissionStatus = updateSubmissionStatus;
 // src/controllers/adminController.js
 const userModel_js_1 = __importDefault(require("../models/userModel.js"));
 const siteSettingsModel_js_1 = __importDefault(require("../models/siteSettingsModel.js"));
 const database_js_1 = __importDefault(require("../config/database.js"));
+// Helper: safely parse ResourceSubmissions.SubmissionData JSON
+function parseSubmission(row) {
+    let data = {};
+    try {
+        data = JSON.parse(row.SubmissionData || '{}');
+    }
+    catch (_) { }
+    const label = data.FestivalName || data.BandName || data.EventName ||
+        data.VenueName || data.RelatedName ||
+        (data.SourceType ? `${data.SourceType} #${data.SourceID}` : null) || '—';
+    return { ...row, data, label };
+}
 function showLogin(req, res) {
     res.render('admin/login', { title: 'Admin Login', error: null });
 }
@@ -47,6 +62,16 @@ async function showDashboard(req, res) {
         const [bandCount] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Bands');
         const [concertCount] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Concerts');
         const [festivalCount] = await database_js_1.default.query('SELECT COUNT(*) as total FROM Festivals');
+        // ResourceSubmissions counts (table may not exist yet — handle gracefully)
+        let pendingSubmissions = 0;
+        let pendingReports = 0;
+        try {
+            const [[sc]] = await database_js_1.default.query("SELECT COUNT(*) as total FROM ResourceSubmissions WHERE Status = 'Pending' AND SubmissionType != 'report'");
+            const [[rc]] = await database_js_1.default.query("SELECT COUNT(*) as total FROM ResourceSubmissions WHERE SubmissionType = 'report' AND Status = 'Pending'");
+            pendingSubmissions = sc.total;
+            pendingReports = rc.total;
+        }
+        catch (_) { /* table doesn't exist yet */ }
         res.render('admin/dashboard', {
             title: 'Admin Dashboard',
             username: req.session.username,
@@ -55,7 +80,9 @@ async function showDashboard(req, res) {
             stats: {
                 bands: bandCount[0].total,
                 concerts: concertCount[0].total,
-                festivals: festivalCount[0].total
+                festivals: festivalCount[0].total,
+                pendingSubmissions,
+                pendingReports
             }
         });
     }
@@ -217,4 +244,66 @@ async function saveTickerSettings(req, res) {
         console.error('Error saving ticker settings:', err);
         res.status(500).send('Server error');
     }
+}
+// ── Submissions Management ────────────────────────────────────────────────────
+async function showSubmissions(req, res) {
+    const filter = req.query.filter || 'all'; // 'all' | 'submissions' | 'reports'
+    try {
+        let query = 'SELECT SubmissionId, SubmissionType, SubmissionData, ContactName, ContactEmail, ContactPhone, Status, SubmittedAt FROM ResourceSubmissions';
+        if (filter === 'submissions') {
+            query += " WHERE SubmissionType != 'report'";
+        }
+        else if (filter === 'reports') {
+            query += " WHERE SubmissionType = 'report'";
+        }
+        query += ' ORDER BY SubmittedAt DESC';
+        const [rows] = await database_js_1.default.query(query);
+        const submissions = rows.map(parseSubmission);
+        res.render('admin/submissions', {
+            title: 'Submissions',
+            username: req.session.username,
+            submissions,
+            filter,
+        });
+    }
+    catch (err) {
+        console.error('Error loading submissions:', err);
+        res.status(500).render('500', { message: 'Server error' });
+    }
+}
+async function showSubmissionDetail(req, res) {
+    const { id } = req.params;
+    const filter = req.query.filter || 'all';
+    try {
+        const [rows] = await database_js_1.default.query('SELECT SubmissionId, SubmissionType, SubmissionData, ContactName, ContactEmail, ContactPhone, Status, SubmittedAt FROM ResourceSubmissions WHERE SubmissionId = ?', [id]);
+        if (rows.length === 0) {
+            return res.status(404).render('404', { message: 'Submission not found' });
+        }
+        const submission = parseSubmission(rows[0]);
+        res.render('admin/submission-detail', {
+            title: `Submission #${id}`,
+            username: req.session.username,
+            submission,
+            filter,
+        });
+    }
+    catch (err) {
+        console.error('Error loading submission detail:', err);
+        res.status(500).render('500', { message: 'Server error' });
+    }
+}
+async function updateSubmissionStatus(req, res) {
+    const { id } = req.params;
+    const { status, filter } = req.body;
+    const allowed = ['Reviewed', 'Hidden', 'Pending'];
+    if (!allowed.includes(status))
+        return res.redirect('/admin/submissions');
+    try {
+        await database_js_1.default.query('UPDATE ResourceSubmissions SET Status = ? WHERE SubmissionId = ?', [status, id]);
+    }
+    catch (err) {
+        console.error('Error updating submission status:', err);
+    }
+    const back = filter ? `/admin/submissions?filter=${filter}` : '/admin/submissions';
+    res.redirect(back);
 }

@@ -4,24 +4,22 @@ import pool from '../config/database.js';
 
 export const showMap = async (req, res) => {
   try {
-    // 1. Concerts (Join Venues + Venue_Location for Coords)
+    // 1. Concerts — coords now live directly on Venues
     const concertQuery = `
-      SELECT c.ConcertName as title, c.ConcertDate as date, 'concert' as type, 
-             c.ConcertNumber as id, vl.Latitude, vl.Longitude, v.VenueName
+      SELECT c.ConcertName as title, c.ConcertDate as date, 'concert' as type,
+             c.ConcertNumber as id, v.Latitude, v.Longitude, v.VenueName, v.GM_CID_URL
       FROM Concerts c
       LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
-      LEFT JOIN Venue_Location vl ON c.VenueNumber = vl.VenueNumber
-      WHERE c.ConcertDate >= CURDATE() AND vl.Latitude IS NOT NULL
+      WHERE c.ConcertDate >= CURDATE() AND v.Latitude IS NOT NULL AND v.Longitude IS NOT NULL
     `;
 
-    // 2. Festivals (Join Venues + Venue_Location for Coords)
+    // 2. Festivals — coords now live directly on Venues
     const festivalQuery = `
-      SELECT f.FestivalName as title, f.StartDate as date, 'festival' as type, 
-             f.FestivalNumber as id, vl.Latitude, vl.Longitude, v.VenueName
+      SELECT f.FestivalName as title, f.StartDate as date, 'festival' as type,
+             f.FestivalNumber as id, v.Latitude, v.Longitude, v.VenueName, v.GM_CID_URL
       FROM Festivals f
       LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
-      LEFT JOIN Venue_Location vl ON f.VenueNumber = vl.VenueNumber
-      WHERE f.EndDate >= CURDATE() AND vl.Latitude IS NOT NULL
+      WHERE f.ExpireDate >= CURDATE() AND v.Latitude IS NOT NULL AND v.Longitude IS NOT NULL
     `;
 
     // 3. Camps (Coords on Table - ID is JDNumber)
@@ -50,8 +48,9 @@ export const showMap = async (req, res) => {
       lng: parseFloat(item.Longitude),
       date: item.date,
       venue: item.VenueName,
-      url: item.type === 'concert' ? `/concerts/${item.id}` : 
-           item.type === 'festival' ? `/festivals/${item.id}` : 
+      gmCidUrl: item.GM_CID_URL || null,
+      url: item.type === 'concert' ? `/concerts/${item.id}` :
+           item.type === 'festival' ? `/festivals/${item.id}` :
            item.type === 'camp' ? `/camps/${item.id}` : `/jams`
     }));
 

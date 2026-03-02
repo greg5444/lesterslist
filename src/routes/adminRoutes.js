@@ -1,6 +1,6 @@
 // src/routes/adminRoutes.js
 import express from 'express';
-import { showLogin, handleLogin, handleLogout, showDashboard, approveItem, deleteItem, showEditJam, updateJam, showEditLearn, updateLearn, showTickerSettings, saveTickerSettings } from '../controllers/adminController.js';
+import { showLogin, handleLogin, handleLogout, showDashboard, approveItem, deleteItem, showEditJam, updateJam, showEditLearn, updateLearn, showTickerSettings, saveTickerSettings, showSubmissions, showSubmissionDetail, updateSubmissionStatus } from '../controllers/adminController.js';
 import { isAuthenticated } from '../middleware/auth.js';
 import pool from '../config/database.js';
 
@@ -18,6 +18,10 @@ router.get('/edit/learn/:id', isAuthenticated, showEditLearn);
 router.post('/edit/learn/:id', isAuthenticated, updateLearn);
 router.post('/approve/:type/:id', isAuthenticated, approveItem);
 router.post('/delete/:type/:id', isAuthenticated, deleteItem);
+
+router.get('/submissions', isAuthenticated, showSubmissions);
+router.get('/submissions/:id', isAuthenticated, showSubmissionDetail);
+router.post('/submissions/:id/status', isAuthenticated, updateSubmissionStatus);
 
 router.get('/links', isAuthenticated, async (req, res) => {
 	try {
@@ -73,6 +77,20 @@ router.post('/links/delete/:id', isAuthenticated, async (req, res) => {
 		console.error('Error deleting short link:', err);
 	}
 	res.redirect('/admin/links');
+});
+
+router.post('/links/edit/:id', isAuthenticated, async (req, res) => {
+	const { targetURL } = req.body;
+	if (!targetURL || !targetURL.trim()) {
+		return res.redirect('/admin/links?error=' + encodeURIComponent('Target URL is required.'));
+	}
+	try {
+		await pool.query('UPDATE ShortLinks SET TargetURL = ? WHERE id = ?', [targetURL.trim(), req.params.id]);
+		return res.redirect('/admin/links?success=updated');
+	} catch (err) {
+		console.error('Error updating short link:', err);
+		return res.redirect('/admin/links?error=' + encodeURIComponent('Unable to update link.'));
+	}
 });
 
 export default router;

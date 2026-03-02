@@ -2,20 +2,47 @@
 import Concert from '../models/concertModel.js';
 import { DEFAULT_IMAGE_URL } from '../config/constants.js';
 
+const IMAGE_BASE_URL = 'https://images.lesterslist.com/media/';
+
+function resolveBandImage(pictureUrl) {
+  if (!pictureUrl || pictureUrl.trim() === '') return DEFAULT_IMAGE_URL;
+  if (/^https?:\/\//i.test(pictureUrl)) return pictureUrl;
+  return IMAGE_BASE_URL + pictureUrl;
+}
+
+function normalizeImageUrl(url) {
+  if (!url || url.trim() === '') return null;
+  // Fix old WordPress paths → CDN paths
+  url = url.replace('/wp-content/media/', '/media/');
+  // Remove WordPress -scaled suffix (e.g. image-scaled.jpg → image.jpg)
+  url = url.replace(/-scaled(\.[a-zA-Z]+)$/, '$1');
+  return url;
+}
+
 export async function listConcerts(req, res) {
   try {
     const currentView = req.query.view === 'list' ? 'list' : 'gallery';
     const currentPage = parseInt(req.query.page) || 1;
     const itemsPerPage = [30, 60].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 30;
     const offset = (currentPage - 1) * itemsPerPage;
-    
+
     const concerts = await Concert.findUpcomingPaginated(itemsPerPage, offset);
     const totalCount = await Concert.countUpcoming();
     const totalPages = Math.ceil(totalCount / itemsPerPage);
-    
+
+    // Resolve image URLs for each concert
+    const concertsWithImages = concerts.map(concert => {
+      const concertImg = normalizeImageUrl(concert.ConcertImage);
+      const bandImg = concert.BandPictureURL ? resolveBandImage(normalizeImageUrl(concert.BandPictureURL)) : null;
+      const imageUrl = (concertImg && concertImg.length > 5 ? concertImg : null)
+        || (bandImg && bandImg.length > 5 ? bandImg : null)
+        || DEFAULT_IMAGE_URL;
+      return { ...concert, imageUrl };
+    });
+
     res.render('concerts/index', {
       title: 'Upcoming Concerts',
-      concerts,
+      concerts: concertsWithImages,
       currentView,
       currentPage,
       totalPages,
@@ -34,24 +61,11 @@ export async function showConcert(req, res) {
     if (!concert) return res.status(404).render('404', { message: 'Concert not found' });
     
     // Explicit Image Fallback Logic (Priority Order)
-    let displayImage = 'https://images.lesterslist.com/media/All-bluegrass.jpg'; // Default
-    
-    // Priority 1: Specific Concert Poster
-    if (concert.ConcertImage && concert.ConcertImage.length > 5) {
-      displayImage = concert.ConcertImage;
-    }
-    // Priority 2: Band Profile Photo
-    else if (concert.BandPictureURL && concert.BandPictureURL.length > 5) {
-      displayImage = concert.BandPictureURL;
-    }
-    
-    console.log('=== Concert Image Debug ===');
-    console.log('Concert Number:', concert.ConcertNumber);
-    console.log('Concert Name:', concert.ConcertName);
-    console.log('ConcertImage:', concert.ConcertImage);
-    console.log('BandPictureURL:', concert.BandPictureURL);
-    console.log('Final displayImage:', displayImage);
-    console.log('=== End Debug ===');
+    const concertImg = normalizeImageUrl(concert.ConcertImage);
+    const bandImg = concert.BandPictureURL ? resolveBandImage(normalizeImageUrl(concert.BandPictureURL)) : null;
+    const displayImage = (concertImg && concertImg.length > 5 ? concertImg : null)
+      || (bandImg && bandImg.length > 5 ? bandImg : null)
+      || DEFAULT_IMAGE_URL;
     
     // Restructure flat SQL result into nested objects for view compatibility
     const structuredConcert = {

@@ -1,0 +1,32 @@
+<%# Shared contact + authorization section — include inside every submit form %>
+<div class="submit-section">
+  <h3 class="submit-section-title">Your Contact Information</h3>
+  <div class="submit-grid-2">
+    <div class="submit-field">
+      <label for="ContactName">Your Name <span class="req">*</span></label>
+      <input type="text" id="ContactName" name="ContactName"
+             placeholder="Full Name" required
+             value="<%= typeof formData !== 'undefined' && formData.ContactName ? formData.ContactName : '' %>">
+    </div>
+    <div class="submit-field">
+      <label for="ContactEmail">Email Address <span class="req">*</span></label>
+      <input type="email" id="ContactEmail" name="ContactEmail"
+             placeholder="you@example.com" required
+             value="<%= typeof formData !== 'undefined' && formData.ContactEmail ? formData.ContactEmail : '' %>">
+    </div>
+    <div class="submit-field">
+      <label for="ContactPhone">Phone Number</label>
+      <input type="tel" id="ContactPhone" name="ContactPhone"
+             placeholder="Optional"
+             value="<%= typeof formData !== 'undefined' && formData.ContactPhone ? formData.ContactPhone : '' %>">
+    </div>
+  </div>
+  <label class="submit-check">
+    <input type="checkbox" name="AuthorizedToSubmit" value="1" required>
+    <span>I confirm I am authorized to submit this information and that it is accurate to the best of my knowledge. <span class="req">*</span></span>
+  </label>
+  <%# Anti-spam honeypot — hidden from real users %>
+  <div style="display:none;visibility:hidden;position:absolute;left:-9999px;" aria-hidden="true">
+    <input type="text" name="website_url" tabindex="-1" autocomplete="off">
+  </div>
+</div>

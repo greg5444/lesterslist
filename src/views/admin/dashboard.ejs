@@ -29,19 +29,27 @@
         </section>
         
         <!-- Quick Stats -->
-        <section style="display: flex; gap: 1.5rem; margin-bottom: 2.5rem; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 180px; background: var(--color-primary); color: #fff; padding: 1.5rem; border-radius: 10px; text-align: center;">
+        <section style="display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 130px; background: var(--color-primary); color: #fff; padding: 1.5rem; border-radius: 10px; text-align: center;">
             <div style="font-size: 2.5rem; font-weight: 700;"><%= stats.bands %></div>
-            <div style="font-size: 1.1rem;">Bands</div>
+            <div style="font-size: 0.95rem;">Bands</div>
           </div>
-          <div style="flex: 1; min-width: 180px; background: var(--color-secondary); color: #fff; padding: 1.5rem; border-radius: 10px; text-align: center;">
+          <div style="flex: 1; min-width: 130px; background: var(--color-secondary); color: #fff; padding: 1.5rem; border-radius: 10px; text-align: center;">
             <div style="font-size: 2.5rem; font-weight: 700;"><%= stats.concerts %></div>
-            <div style="font-size: 1.1rem;">Concerts</div>
+            <div style="font-size: 0.95rem;">Concerts</div>
           </div>
-          <div style="flex: 1; min-width: 180px; background: var(--color-primary); color: #fff; padding: 1.5rem; border-radius: 10px; text-align: center;">
+          <div style="flex: 1; min-width: 130px; background: var(--color-primary); color: #fff; padding: 1.5rem; border-radius: 10px; text-align: center;">
             <div style="font-size: 2.5rem; font-weight: 700;"><%= stats.festivals %></div>
-            <div style="font-size: 1.1rem;">Festivals</div>
+            <div style="font-size: 0.95rem;">Festivals</div>
           </div>
+          <a href="/admin/submissions?filter=submissions" style="flex: 1; min-width: 130px; background: #225675; color: #fff; padding: 1.5rem; border-radius: 10px; text-align: center; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            <div style="font-size: 2.5rem; font-weight: 700;"><%= stats.pendingSubmissions %></div>
+            <div style="font-size: 0.95rem; line-height: 1.3;">Pending<br>Submissions</div>
+          </a>
+          <a href="/admin/submissions?filter=reports" style="flex: 1; min-width: 130px; background: #b94040; color: #fff; padding: 1.5rem; border-radius: 10px; text-align: center; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            <div style="font-size: 2.5rem; font-weight: 700;"><%= stats.pendingReports %></div>
+            <div style="font-size: 0.95rem; line-height: 1.3;">Problem<br>Reports</div>
+          </a>
         </section>
         <!-- Approval Queue -->
         <section style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,86,117,0.06); padding: 2rem; margin-bottom: 2rem;">
@@ -114,6 +122,29 @@
         </ul>
       <% } %>
         </section>
+
+        <!-- Submissions Queue summary -->
+        <section style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,86,117,0.06); padding: 2rem; margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 style="color: var(--color-primary); margin: 0 0 0.4rem;">User Submissions</h2>
+            <p style="color: #666; margin: 0; font-size: 0.95rem;">New festival, band, camp, venue, and photo submissions pending review.</p>
+          </div>
+          <a href="/admin/submissions?filter=submissions" style="display: inline-block; background: #225675; color: #fff; font-weight: 700; border-radius: 8px; padding: 0.75rem 1.5rem; font-size: 0.95rem; text-decoration: none; white-space: nowrap;">
+            View All (<%= stats.pendingSubmissions %> pending)
+          </a>
+        </section>
+
+        <!-- Reports Queue summary -->
+        <section style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,86,117,0.06); padding: 2rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 style="color: #b94040; margin: 0 0 0.4rem;">Reports of Errors</h2>
+            <p style="color: #666; margin: 0; font-size: 0.95rem;">Listing problems reported by public users across concerts, festivals, venues, and jams.</p>
+          </div>
+          <a href="/admin/submissions?filter=reports" style="display: inline-block; background: #b94040; color: #fff; font-weight: 700; border-radius: 8px; padding: 0.75rem 1.5rem; font-size: 0.95rem; text-decoration: none; white-space: nowrap;">
+            View All (<%= stats.pendingReports %> pending)
+          </a>
+        </section>
+
       </div>
     </div>
   </main>

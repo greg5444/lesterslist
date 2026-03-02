@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendJamNotification = sendJamNotification;
 exports.sendLearnNotification = sendLearnNotification;
+exports.sendSubmissionNotification = sendSubmissionNotification;
 // src/config/email.js
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -108,6 +109,61 @@ async function sendLearnNotification(resourceData) {
     }
     catch (error) {
         console.error('Error sending learn notification:', error);
+        return { success: false, error: error.message };
+    }
+}
+const SUBMISSION_LABELS = {
+    festival: { emoji: '🎪', title: 'Festival' },
+    band: { emoji: '🎸', title: 'Band / Tour Update' },
+    camp: { emoji: '🏕', title: 'Camp / Workshop' },
+    venue: { emoji: '🏛', title: 'Venue' },
+    photos: { emoji: '📸', title: 'Photos' },
+    report: { emoji: '⚑', title: 'Problem Report' },
+};
+/**
+ * Send email notification to admin about a new resource submission.
+ * @param {string} type        - 'festival' | 'band' | 'camp' | 'venue' | 'photos'
+ * @param {object} data        - form fields
+ * @param {object} contact     - { ContactName, ContactEmail, ContactPhone }
+ */
+async function sendSubmissionNotification(type, data, contact) {
+    const label = SUBMISSION_LABELS[type] || { emoji: '📋', title: type };
+    const dataRows = Object.entries(data)
+        .filter(([, v]) => v !== null && v !== undefined && v !== '')
+        .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
+        .join('');
+    const mailOptions = {
+        from: `"Lester's List" <${process.env.SMTP_USER}>`,
+        to: process.env.ADMIN_EMAIL,
+        subject: `${label.emoji} New ${label.title} Submission – Pending Approval`,
+        html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#3D8C95;">${label.emoji} New ${label.title} Submission</h2>
+        <p>A new resource has been submitted and is pending your review.</p>
+
+        <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin:20px 0;">
+          <h3 style="margin-top:0;color:#225675;">Submission Details</h3>
+          ${dataRows}
+        </div>
+
+        <div style="background:#fff;padding:15px;border-radius:8px;border:1px solid #ddd;margin:20px 0;">
+          <h3 style="margin-top:0;color:#225675;">Submitted By</h3>
+          <p><strong>Name:</strong> ${contact.ContactName || '—'}</p>
+          <p><strong>Email:</strong> <a href="mailto:${contact.ContactEmail}">${contact.ContactEmail || '—'}</a></p>
+          <p><strong>Phone:</strong> ${contact.ContactPhone || '—'}</p>
+        </div>
+
+        <p style="color:#666;font-size:14px;">Log in to the admin panel to approve or reject this submission.</p>
+      </div>
+    `,
+    };
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`${label.title} submission notification sent:`, info.messageId);
+        return { success: true, messageId: info.messageId };
+    }
+    catch (error) {
+        console.error(`Error sending ${label.title} submission notification:`, error);
         return { success: false, error: error.message };
     }
 }
