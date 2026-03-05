@@ -31,8 +31,14 @@ async function listConcerts(req, res) {
         const currentPage = parseInt(req.query.page) || 1;
         const itemsPerPage = [30, 60].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 30;
         const offset = (currentPage - 1) * itemsPerPage;
-        const concerts = await concertModel_js_1.default.findUpcomingPaginated(itemsPerPage, offset);
-        const totalCount = await concertModel_js_1.default.countUpcoming();
+        const filterState = req.query.state || '';
+        const filterMonth = req.query.month || '';
+        const filters = { state: filterState || null, month: filterMonth || null };
+        const [concerts, totalCount, filterOptions] = await Promise.all([
+            concertModel_js_1.default.findUpcomingFiltered(itemsPerPage, offset, filters),
+            concertModel_js_1.default.countUpcomingFiltered(filters),
+            concertModel_js_1.default.getFilterOptions()
+        ]);
         const totalPages = Math.ceil(totalCount / itemsPerPage);
         // Resolve image URLs for each concert
         const concertsWithImages = concerts.map(concert => {
@@ -50,7 +56,10 @@ async function listConcerts(req, res) {
             currentPage,
             totalPages,
             totalCount,
-            itemsPerPage
+            itemsPerPage,
+            filterState,
+            filterMonth,
+            filterOptions
         });
     }
     catch (err) {
@@ -75,7 +84,7 @@ async function showConcert(req, res) {
             ConcertName: concert.ConcertName,
             ConcertDate: concert.ConcertDate,
             ConcertImage: concert.ConcertImage,
-            VenueStreetAddress: concert.VenueStreetAddress,
+            Street: concert.Street,
             City: concert.City,
             State: concert.State,
             Zip: concert.Zip,
@@ -89,7 +98,7 @@ async function showConcert(req, res) {
             Venue: concert.VenueNumber ? {
                 VenueNumber: concert.VenueNumber,
                 VenueName: concert.VenueName,
-                VenueStreetAddress: concert.VenueStreetAddress,
+                Street: concert.Street,
                 City: concert.City,
                 State: concert.State,
                 Zip: concert.Zip,

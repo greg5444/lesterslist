@@ -68,8 +68,8 @@ class Festival {
              COALESCE(v.City, f.City) AS City,
              COALESCE(v.State, f.State) AS State,
              COALESCE(v.Zip, f.Zip) AS Zip,
-             COALESCE(v.VenueStreetAddress, f.Street) AS VenueStreetAddress,
-             v.VenueURL
+             COALESCE(v.Street, f.Street) AS Street,
+             v.VenueWebsite
       FROM Festivals f
       LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
       WHERE f.FestivalNumber = ?

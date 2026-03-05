@@ -10,7 +10,7 @@ class Venue {
     static async findById(venueNumber) {
         if (!venueNumber)
             throw new Error('VenueNumber is required');
-        const [rows] = await database_js_1.default.query('SELECT VenueNumber, VenueName, GoogleMapAddress, VenueStreetAddress, City, State, Zip, Latitude, Longitude, GM_CID_URL FROM Venues WHERE VenueNumber = ?', [venueNumber]);
+        const [rows] = await database_js_1.default.query('SELECT VenueNumber, VenueName, GoogleMapAddress, Street, City, State, Zip, VenueWebsite, Latitude, Longitude, GM_CID_URL FROM Venues WHERE VenueNumber = ?', [venueNumber]);
         return rows[0] || null;
     }
     static async findLinkedConcerts(venueNumber) {

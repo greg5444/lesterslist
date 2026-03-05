@@ -60,7 +60,7 @@ async function showFestival(req, res) {
         const mapAddress = festival.GoogleMapAddress && festival.GoogleMapAddress.trim()
             ? festival.GoogleMapAddress
             : [
-                festival.VenueStreetAddress,
+                festival.Street,
                 festival.City,
                 festival.State,
                 festival.Zip

@@ -34,7 +34,7 @@
           <div style="margin-bottom:1.5rem;">
             <h3 class="venue-name" style="font-size:1.5rem;"><%= concert.Venue.VenueName %></h3>
             <div style="color:#666;font-size:1.05rem;">
-              <% if (concert.Venue.VenueStreetAddress) { %><%= concert.Venue.VenueStreetAddress %><br><% } %>
+              <% if (concert.Venue.Street) { %><%= concert.Venue.Street %><br><% } %>
               <%= concert.Venue.City %>, <%= concert.Venue.State %> <%= concert.Venue.Zip || '' %>
             </div>
           </div>
@@ -112,7 +112,7 @@
           <% if (concert.Venue && concert.Venue.VenueName) { %>
             <div style="font-weight:700;margin-bottom:0.5rem;color:#225675;"><%= concert.Venue.VenueName %></div>
           <% } %>
-          <div><%= concert.VenueStreetAddress %></div>
+          <div><%= concert.Street %></div>
           <div><%= concert.City %>, <%= concert.State %> <%= concert.Zip %></div>
         </div>
         <% if (concert.GoogleMapAddress) { %>

@@ -117,19 +117,19 @@ export function showVenueForm(req, res) {
 }
 
 export async function submitVenue(req, res) {
-  const { VenueName, VenueURL, VenueStreetAddress, City, State, Zip, GoogleMapAddress, Notes, ContactName, ContactEmail, ContactPhone, AuthorizedToSubmit } = req.body;
+  const { VenueName, VenueWebsite, Street, City, State, Zip, GoogleMapAddress, Notes, ContactName, ContactEmail, ContactPhone, AuthorizedToSubmit } = req.body;
 
   if (isHoneypotTripped(req.body)) return res.redirect('/submit');
 
   const renderForm = (error) =>
     res.render('submit/venue', { title: 'Submit a Venue', success: false, error, formData: req.body });
 
-  if (!VenueName || !VenueStreetAddress || !City || !State || !GoogleMapAddress) return renderForm('Please fill in all required fields.');
+  if (!VenueName || !Street || !City || !State || !GoogleMapAddress) return renderForm('Please fill in all required fields.');
   if (!ContactName || !ContactEmail) return renderForm('Contact name and email are required.');
   if (!emailRegex.test(ContactEmail)) return renderForm('Please enter a valid email address.');
   if (!AuthorizedToSubmit) return renderForm('You must confirm authorization to submit.');
 
-  const data = { VenueName, VenueURL: VenueURL || null, VenueStreetAddress, City, State, Zip: Zip || null, GoogleMapAddress, Notes: Notes || null };
+  const data = { VenueName, VenueWebsite: VenueWebsite || null, Street, City, State, Zip: Zip || null, GoogleMapAddress, Notes: Notes || null };
 
   try {
     await Submission.create('venue', data, ContactName, ContactEmail, ContactPhone || null);

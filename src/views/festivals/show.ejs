@@ -81,13 +81,13 @@
               <% if (festival.VenueName) { %>
                 <div style="font-weight:700;margin-bottom:0.5rem;color:#225675;"><%= festival.VenueName %></div>
               <% } %>
-              <% if (festival.VenueStreetAddress) { %>
-                <div><%= festival.VenueStreetAddress %></div>
+              <% if (festival.Street) { %>
+                <div><%= festival.Street %></div>
               <% } %>
               <div><%= festival.City %>, <%= festival.State %> <%= festival.Zip || '' %></div>
-              <% if (festival.VenueURL && festival.VenueURL.trim()) { %>
+              <% if (festival.VenueWebsite && festival.VenueWebsite.trim()) { %>
                 <% 
-                  const festivalVenueWebsiteRaw = festival.VenueURL.trim();
+                  const festivalVenueWebsiteRaw = festival.VenueWebsite.trim();
                   const festivalVenueWebsiteUrl = festivalVenueWebsiteRaw.startsWith('http') ? festivalVenueWebsiteRaw : 'https://' + festivalVenueWebsiteRaw;
                   const festivalVenueWebsiteDisplay = festivalVenueWebsiteRaw.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
                   const festivalVenueWebsiteText = festivalVenueWebsiteDisplay.length <= 38

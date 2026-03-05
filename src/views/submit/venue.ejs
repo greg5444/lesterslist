@@ -24,10 +24,10 @@
                  value="<%= typeof formData !== 'undefined' && formData.VenueName ? formData.VenueName : '' %>">
         </div>
         <div class="submit-field full-width">
-          <label for="VenueURL">Venue Website</label>
-          <input type="url" id="VenueURL" name="VenueURL"
+          <label for="VenueWebsite">Venue Website</label>
+          <input type="url" id="VenueWebsite" name="VenueWebsite"
                  placeholder="https://..."
-                 value="<%= typeof formData !== 'undefined' && formData.VenueURL ? formData.VenueURL : '' %>">
+                 value="<%= typeof formData !== 'undefined' && formData.VenueWebsite ? formData.VenueWebsite : '' %>">
         </div>
       </div>
     </div>
@@ -37,10 +37,10 @@
       <h3 class="submit-section-title">Location</h3>
       <div class="submit-grid-2">
         <div class="submit-field full-width">
-          <label for="VenueStreetAddress">Street Address <span class="req">*</span></label>
-          <input type="text" id="VenueStreetAddress" name="VenueStreetAddress"
+          <label for="Street">Street Address <span class="req">*</span></label>
+          <input type="text" id="Street" name="Street"
                  placeholder="123 Main St" required
-                 value="<%= typeof formData !== 'undefined' && formData.VenueStreetAddress ? formData.VenueStreetAddress : '' %>">
+                 value="<%= typeof formData !== 'undefined' && formData.Street ? formData.Street : '' %>">
         </div>
         <div class="submit-field">
           <label for="City">City <span class="req">*</span></label>

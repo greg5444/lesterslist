@@ -9,6 +9,10 @@
     });
     return query.toString() ? '?' + query.toString() : '';
   }
+  // Base filter params to carry through pagination/view changes
+  const activeFilters = {};
+  if (filterState) activeFilters.state = filterState;
+  if (filterMonth) activeFilters.month = filterMonth;
 %>
 
 <article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:2.5rem auto 0 auto;">
@@ -19,6 +23,43 @@
       </div>
     </header>
 
+    <!-- Filter Bar -->
+    <form method="GET" action="/concerts" style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;">
+      <input type="hidden" name="view" value="<%= currentView %>">
+      <input type="hidden" name="limit" value="<%= itemsPerPage %>">
+      <div style="display:flex;flex-direction:column;gap:0.3rem;">
+        <label style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;">State</label>
+        <select name="state" style="padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;background:#fff;min-width:140px;">
+          <option value="">All States</option>
+          <% filterOptions.states.forEach(s => { %>
+            <option value="<%= s %>" <%= filterState === s ? 'selected' : '' %>><%= s %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.3rem;">
+        <label style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;">Month</label>
+        <select name="month" style="padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;background:#fff;min-width:140px;">
+          <option value="">All Months</option>
+          <% filterOptions.months.forEach(m => { %>
+            <option value="<%= m.value %>" <%= filterMonth === m.value ? 'selected' : '' %>><%= m.label %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:flex-end;">
+        <button type="submit" style="padding:0.55rem 1.2rem;background:var(--color-primary-teal);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">Filter</button>
+        <% if (filterState || filterMonth) { %>
+          <a href="/concerts<%= buildQueryString({ view: currentView, limit: itemsPerPage }) %>" style="padding:0.55rem 1rem;background:#e9ecef;color:#555;border-radius:6px;font-size:0.9rem;font-weight:600;text-decoration:none;">Clear</a>
+        <% } %>
+      </div>
+      <% if (filterState || filterMonth) { %>
+        <div style="align-self:flex-end;font-size:0.85rem;color:var(--color-primary-teal);font-weight:600;">
+          <%= totalCount %> result<%= totalCount !== 1 ? 's' : '' %>
+          <% if (filterState) { %> in <strong><%= filterState %></strong><% } %>
+          <% if (filterMonth) { %> &middot; <strong><%= filterOptions.months.find(m => m.value === filterMonth)?.label || filterMonth %></strong><% } %>
+        </div>
+      <% } %>
+    </form>
+
     <!-- Toolbar: Pagination + View Toggle + Items Per Page -->
     <div class="toolbar" style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem 0;margin-bottom:1.5rem;border-bottom:1px solid #eee;flex-wrap:wrap;gap:1rem;">
       <div class="pagination-info" style="color:#666;font-size:0.95rem;">
@@ -28,19 +69,19 @@
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:0.5rem;">
           <label style="color:#666;font-size:0.9rem;font-weight:600;">Show:</label>
-          <select onchange="window.location.href='/concerts<%= buildQueryString({ page: 1, view: currentView, limit: undefined }) %>&limit=' + this.value" 
+          <select onchange="window.location.href='/concerts<%= buildQueryString({ page: 1, view: currentView, limit: undefined, ...activeFilters }) %>&limit=' + this.value" 
                   style="padding:0.4rem 0.7rem;border:1px solid #ddd;border-radius:4px;font-size:0.9rem;font-weight:600;cursor:pointer;background:#fff;">
             <option value="30" <%= itemsPerPage === 30 ? 'selected' : '' %>>30</option>
             <option value="60" <%= itemsPerPage === 60 ? 'selected' : '' %>>60</option>
           </select>
         </div>
         <div class="view-toggle" style="display:flex;gap:0.5rem;">
-          <a href="/concerts<%= buildQueryString({ page: currentPage, view: 'gallery', limit: itemsPerPage }) %>" 
+          <a href="/concerts<%= buildQueryString({ page: currentPage, view: 'gallery', limit: itemsPerPage, ...activeFilters }) %>" 
              style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'gallery' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
              title="Gallery View">
             ⊞ Gallery
           </a>
-          <a href="/concerts<%= buildQueryString({ page: currentPage, view: 'list', limit: itemsPerPage }) %>" 
+          <a href="/concerts<%= buildQueryString({ page: currentPage, view: 'list', limit: itemsPerPage, ...activeFilters }) %>" 
              style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'list' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
              title="List View">
             ☰ List
@@ -136,7 +177,7 @@
     <% if (totalPages > 1) { %>
       <nav class="pagination" style="display:flex;justify-content:center;gap:0.5rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee;">
         <% if (currentPage > 1) { %>
-          <a href="/concerts<%= buildQueryString({ page: currentPage - 1, view: currentView, limit: itemsPerPage }) %>" 
+          <a href="/concerts<%= buildQueryString({ page: currentPage - 1, view: currentView, limit: itemsPerPage, ...activeFilters }) %>" 
              style="padding:0.5rem 1rem;background:#f0f0f0;color:#333;font-weight:600;border-radius:4px;text-decoration:none;transition:background 0.2s;"
              onmouseover="this.style.background='#e0e0e0'"
              onmouseout="this.style.background='#f0f0f0'">
@@ -146,7 +187,7 @@
         
         <% for (let i = 1; i <= totalPages; i++) { 
           if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
-            <a href="/concerts<%= buildQueryString({ page: i, view: currentView, limit: itemsPerPage }) %>" 
+            <a href="/concerts<%= buildQueryString({ page: i, view: currentView, limit: itemsPerPage, ...activeFilters }) %>" 
                style="padding:0.5rem 0.85rem;border-radius:4px;text-decoration:none;font-weight:600;<%= i === currentPage ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#333;' %>transition:background 0.2s;"
                <% if (i !== currentPage) { %>
                  onmouseover="this.style.background='#e0e0e0'"
@@ -160,7 +201,7 @@
         <% } %>
         
         <% if (currentPage < totalPages) { %>
-          <a href="/concerts<%= buildQueryString({ page: currentPage + 1, view: currentView, limit: itemsPerPage }) %>" 
+          <a href="/concerts<%= buildQueryString({ page: currentPage + 1, view: currentView, limit: itemsPerPage, ...activeFilters }) %>" 
              style="padding:0.5rem 1rem;background:#f0f0f0;color:#333;font-weight:600;border-radius:4px;text-decoration:none;transition:background 0.2s;"
              onmouseover="this.style.background='#e0e0e0'"
              onmouseout="this.style.background='#f0f0f0'">
