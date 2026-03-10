@@ -254,10 +254,10 @@
 <div class="listings-ribbon">
   <div class="ribbon-container">
     <form id="filter-form" class="ribbon-filters">
-      <!-- Near Me Button (Now First) -->
+      <!-- Near Me Toggle (Near Me / Anywhere) -->
       <button type="button" id="near-me-btn" class="near-me-btn filter-pill" onclick="toggleNearMe()">
-        <span class="icon">📍</span>
-        <span class="text">Find Near Me</span>
+        <span class="icon" id="near-me-icon">📍</span>
+        <span class="text" id="near-me-text">Find Near Me</span>
       </button>
 
       <!-- State Filter Pill (Second) -->
@@ -481,13 +481,23 @@ function toggleNearMe() {
   const btn = document.getElementById('near-me-btn');
   const latInput = document.getElementById('lat-input');
   const lngInput = document.getElementById('lng-input');
-  const text = btn.querySelector('.text');
+  const text = document.getElementById('near-me-text');
+  const icon = document.getElementById('near-me-icon');
   
   if (btn.classList.contains('active')) {
+    // Switch to ANYWHERE
     latInput.value = '';
     lngInput.value = '';
     btn.classList.remove('active');
-    text.textContent = 'Find Near Me';
+    text.textContent = 'See All U.S.A.';
+    icon.textContent = '🇺🇸';
+    
+    // Briefly show 'See All U.S.A. 🇺🇸', then reset for next use
+    setTimeout(() => {
+        text.textContent = 'Find Near Me';
+        icon.textContent = '📍';
+    }, 1500);
+
     handleFilterChange();
     return;
   }
@@ -506,12 +516,14 @@ function toggleNearMe() {
       lngInput.value = position.coords.longitude;
       btn.classList.add('active');
       text.textContent = 'Near Me';
+      icon.textContent = '📍';
       handleFilterChange();
     },
     (error) => {
       console.error('Geolocation error:', error);
       alert('Unable to retrieve your location. Check your browser permissions.');
       text.textContent = 'Find Near Me';
+      icon.textContent = '📍';
     }
   );
 }
@@ -519,12 +531,20 @@ function toggleNearMe() {
 // Check on page load if lat/lng are in URL to set active state
 window.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
+  const btn = document.getElementById('near-me-btn');
+  const text = document.getElementById('near-me-text');
+  const icon = document.getElementById('near-me-icon');
+
   if (urlParams.has('lat') && urlParams.get('lat') !== '') {
-    const btn = document.getElementById('near-me-btn');
     btn.classList.add('active');
-    btn.querySelector('.text').textContent = 'Exploring Near Me';
+    text.textContent = 'Near Me';
+    icon.textContent = '📍';
     document.getElementById('lat-input').value = urlParams.get('lat');
     document.getElementById('lng-input').value = urlParams.get('lng');
+  } else {
+    // Default starting state
+    text.textContent = 'Find Near Me';
+    icon.textContent = '📍';
   }
 });
 
