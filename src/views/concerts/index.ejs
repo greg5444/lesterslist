@@ -489,10 +489,10 @@ function toggleNearMe() {
     latInput.value = '';
     lngInput.value = '';
     btn.classList.remove('active');
-    text.textContent = 'See All U.S.A.';
+    text.textContent = 'Finding All';
     icon.textContent = '🇺🇸';
     
-    // Briefly show 'See All U.S.A. 🇺🇸', then reset for next use
+    // Briefly show 'Finding All 🇺🇸', then reset for next use
     setTimeout(() => {
         text.textContent = 'Find Near Me';
         icon.textContent = '📍';
@@ -515,8 +515,8 @@ function toggleNearMe() {
       latInput.value = position.coords.latitude;
       lngInput.value = position.coords.longitude;
       btn.classList.add('active');
-      text.textContent = 'Near Me';
-      icon.textContent = '📍';
+      text.textContent = 'See All U.S.A.';
+      icon.textContent = '🇺🇸';
       handleFilterChange();
     },
     (error) => {
@@ -537,8 +537,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   if (urlParams.has('lat') && urlParams.get('lat') !== '') {
     btn.classList.add('active');
-    text.textContent = 'Near Me';
-    icon.textContent = '📍';
+    text.textContent = 'See All U.S.A.';
+    icon.textContent = '🇺🇸';
     document.getElementById('lat-input').value = urlParams.get('lat');
     document.getElementById('lng-input').value = urlParams.get('lng');
   } else {
