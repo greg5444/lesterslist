@@ -66,10 +66,10 @@
                onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
                onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
               <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
-                 <img src="<%= (festival.FestivalFlyerURL && festival.FestivalFlyerURL.length > 5) ? festival.FestivalFlyerURL : (festival.FeaturedImageURL && festival.FeaturedImageURL.length > 5 ? festival.FeaturedImageURL : 'https://images.lesterslist.com/media/lesterlogo_sq.png') %>" 
+                 <img src="<%= (festival.imageUrl) %>" 
                      alt="<%= festival.FestivalName %>"
                      onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';"
-                     style="width:100%;height:100%;object-fit:cover;object-position:top;">
+                     style="width:100%;height:100%;object-fit:cover;object-position:<%= festival.imageAlignment || 'top' %>;">
                 <!-- Location Badge Overlay (Bottom Left) -->
                 <% if (location) { %>
                 <div style="position:absolute;bottom:10px;left:10px;background:rgba(61,140,149,0.95);color:#fff;padding:0.5rem 0.85rem;border-radius:6px;text-align:center;max-width:180px;box-shadow:0 2px 6px rgba(0,0,0,0.4);font-size:0.8rem;font-weight:600;line-height:1.3;">

@@ -8,14 +8,7 @@ exports.showFestival = showFestival;
 // src/controllers/festivalController.js
 const festivalModel_js_1 = __importDefault(require("../models/festivalModel.js"));
 const constants_js_1 = require("../config/constants.js");
-const BAND_IMAGE_BASE = 'https://images.lesterslist.com/media/';
-function resolveBandImage(pictureUrl) {
-    if (!pictureUrl || pictureUrl.trim() === '')
-        return constants_js_1.DEFAULT_IMAGE_URL;
-    if (/^https?:\/\//i.test(pictureUrl))
-        return pictureUrl;
-    return BAND_IMAGE_BASE + pictureUrl;
-}
+const imageUtils_js_1 = require("../config/imageUtils.js");
 async function listFestivals(req, res) {
     try {
         const currentView = req.query.view === 'list' ? 'list' : 'gallery';
@@ -25,9 +18,19 @@ async function listFestivals(req, res) {
         const festivals = await festivalModel_js_1.default.findAllPaginated(itemsPerPage, offset);
         const totalCount = await festivalModel_js_1.default.countAll();
         const totalPages = Math.ceil(totalCount / itemsPerPage);
+        // Attach resolved image URLs and alignment to each festival
+        const festivalsWithImages = festivals.map(festival => {
+            const rawUrl = (festival.FestivalFlyerURL && festival.FestivalFlyerURL.length > 5)
+                ? (0, imageUtils_js_1.resolveImageUrl)(festival.FestivalFlyerURL)
+                : (festival.FeaturedImageURL && festival.FeaturedImageURL.length > 5
+                    ? (0, imageUtils_js_1.resolveImageUrl)(festival.FeaturedImageURL)
+                    : constants_js_1.DEFAULT_IMAGE_URL);
+            const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)(rawUrl);
+            return { ...festival, imageUrl, imageAlignment };
+        });
         res.render('festivals/index', {
             title: 'All Festivals',
-            festivals,
+            festivals: festivalsWithImages,
             currentView,
             currentPage,
             totalPages,
@@ -46,18 +49,23 @@ async function showFestival(req, res) {
         if (!result)
             return res.status(404).render('404', { message: 'Festival not found' });
         const { festival, bands } = result;
-        // Hero image: FeaturedImageURL only, fallback to generic
-        let heroImage = 'https://images.lesterslist.com/media/All-bluegrass.jpg';
-        if (festival.FeaturedImageURL && festival.FeaturedImageURL.trim().length > 5) {
-            heroImage = festival.FeaturedImageURL;
-        }
-        // Attach resolved image URLs to bands
-        const bandsWithImages = bands.map(band => ({
-            ...band,
-            imageUrl: resolveBandImage(band.PictureURL)
-        }));
+        // Hero image logic: extract alignment
+        const rawHeroUrl = (festival.FeaturedImageURL && festival.FeaturedImageURL.trim().length > 5)
+            ? (0, imageUtils_js_1.resolveImageUrl)(festival.FeaturedImageURL)
+            : 'https://images.lesterslist.com/media/All-bluegrass.jpg';
+        const { url: heroImage, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)(rawHeroUrl);
+        // Attach resolved image URLs and alignment to bands
+        const bandsWithImages = bands.map(band => {
+            const { url: imageUrl, alignment: bandImageAlignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(band.PictureURL));
+            return {
+                ...band,
+                imageUrl,
+                imageAlignment: bandImageAlignment
+            };
+        });
         const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
-        const mapAddress = festival.GoogleMapAddress && festival.GoogleMapAddress.trim()
+        // Determine the map address: prefer non-URL strings
+        let mapAddress = festival.GoogleMapAddress && festival.GoogleMapAddress.trim()
             ? festival.GoogleMapAddress
             : [
                 festival.Street,
@@ -65,10 +73,20 @@ async function showFestival(req, res) {
                 festival.State,
                 festival.Zip
             ].filter(Boolean).join(', ');
+        // If mapAddress looks like a CID URL (e.g. from a Venue), fallback to structured address
+        if (mapAddress && (mapAddress.includes('http') || mapAddress.includes('cid='))) {
+            mapAddress = [
+                festival.Street,
+                festival.City,
+                festival.State,
+                festival.Zip
+            ].filter(Boolean).join(', ');
+        }
         res.render('festivals/show', {
             title: festival.FestivalName,
             festival,
             heroImage,
+            imageAlignment,
             bands: bandsWithImages,
             googleMapsApiKey,
             mapAddress

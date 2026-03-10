@@ -1,6 +1,7 @@
 // src/controllers/homeController.js
 import pool from '../config/database.js';
 import SiteSettings from '../models/siteSettingsModel.js';
+import { resolveImageUrl, parseImageAlignment } from '../config/imageUtils.js';
 
 export async function showHome(req, res) {
   try {
@@ -111,6 +112,28 @@ export async function showHome(req, res) {
       console.error('Error parsing ticker messages:', e);
     }
     
+    // Discovery Trio - Process Images & Alignment
+    if (featuredBand) {
+      const { url, alignment } = parseImageAlignment(resolveImageUrl(featuredBand.PictureURL));
+      featuredBand.PictureURL = url;
+      featuredBand.imageAlignment = alignment;
+    }
+    if (featuredFestival) {
+      const { url, alignment } = parseImageAlignment(resolveImageUrl(featuredFestival.FeaturedImageURL));
+      featuredFestival.FeaturedImageURL = url;
+      featuredFestival.imageAlignment = alignment;
+    }
+    if (featuredConcert) {
+      const rawConcertUrl = (featuredConcert.ConcertImage && featuredConcert.ConcertImage.trim().length > 5)
+        ? resolveImageUrl(featuredConcert.ConcertImage)
+        : (featuredConcert.BandPhoto && featuredConcert.BandPhoto.trim().length > 5)
+          ? resolveImageUrl(featuredConcert.BandPhoto)
+          : 'https://images.lesterslist.com/media/All-bluegrass.jpg';
+      const { url, alignment } = parseImageAlignment(rawConcertUrl);
+      featuredConcert.imageUrl = url;
+      featuredConcert.imageAlignment = alignment;
+    }
+
     res.render('index', {
       title: "Lester's List - Bluegrass Events",
       tickerEnabled: tickerSettings.ticker_enabled !== false,
@@ -142,6 +165,17 @@ export async function showContact(req, res) {
     });
   } catch (err) {
     console.error('Error loading contact page:', err);
+    res.status(500).render('500', { message: 'Server error' });
+  }
+}
+
+export async function showAbout(req, res) {
+  try {
+    res.render('about', {
+      title: "About Us - Lester's List"
+    });
+  } catch (err) {
+    console.error('Error loading about page:', err);
     res.status(500).render('500', { message: 'Server error' });
   }
 }

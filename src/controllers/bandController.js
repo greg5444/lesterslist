@@ -1,14 +1,7 @@
 // src/controllers/bandController.js
 import Band from '../models/bandModel.js';
 import { DEFAULT_IMAGE_URL } from '../config/constants.js';
-
-const IMAGE_BASE_URL = 'https://images.lesterslist.com/media/';
-
-function resolveBandImage(pictureUrl) {
-  if (!pictureUrl || pictureUrl.trim() === '') return DEFAULT_IMAGE_URL;
-  if (/^https?:\/\//i.test(pictureUrl)) return pictureUrl;
-  return IMAGE_BASE_URL + pictureUrl;
-}
+import { resolveImageUrl, parseImageAlignment } from '../config/imageUtils.js';
 
 export async function listBands(req, res) {
   try {
@@ -36,10 +29,14 @@ export async function listBands(req, res) {
     const totalPages = Math.ceil(totalCount / itemsPerPage);
     
     // Attach resolved image URLs to each band
-    const bandsWithImages = bands.map(band => ({
-      ...band,
-      imageUrl: resolveBandImage(band.PictureURL)
-    }));
+    const bandsWithImages = bands.map(band => {
+      const { url: imageUrl, alignment: imageAlignment } = parseImageAlignment(resolveImageUrl(band.PictureURL));
+      return {
+        ...band,
+        imageUrl,
+        imageAlignment
+      };
+    });
     
     res.render('bands/index', {
       title: letter === 'All' ? 'All Bands' : `Bands Starting with ${letter}`,
@@ -61,7 +58,7 @@ export async function showBand(req, res) {
   try {
     const band = await Band.findById(req.params.id);
     if (!band) return res.status(404).render('404', { message: 'Band not found' });
-    const imageUrl = resolveBandImage(band.PictureURL);
+    const { url: imageUrl, alignment: imageAlignment } = parseImageAlignment(resolveImageUrl(band.PictureURL));
     const concerts = await Band.findLinkedConcerts(req.params.id);
     // Band detail map: all appearances with valid coordinates (stored directly on Venues)
     const allAppearances = await Band.findAllAppearancesWithCoords(req.params.id);
@@ -75,6 +72,7 @@ export async function showBand(req, res) {
       title: band.BandName,
       band,
       imageUrl,
+      imageAlignment,
       concerts,
       mapData,
       GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY

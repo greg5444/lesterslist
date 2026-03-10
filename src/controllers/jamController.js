@@ -1,21 +1,59 @@
-export async function showJamDetail(req, res) {
-  const { JamID } = req.params;
-  if (!JamID || isNaN(Number(JamID))) {
-    return res.status(400).render('400', { message: 'Invalid Jam ID.' });
-  }
-  const jam = await LocalJam.findById(JamID);
-  if (!jam) {
-    return res.status(404).render('404', { message: 'Jam not found.' });
-  }
-  res.render('jams/detail', { title: jam.JamName, jam });
-}
 // src/controllers/jamController.js
 import LocalJam from '../models/localJamModel.js';
 import { sendJamNotification } from '../config/email.js';
 
 export async function listJams(req, res) {
-  const jams = await LocalJam.findPublished();
-  res.render('jams/index', { title: 'Local Jams', jams });
+  try {
+    const currentView = req.query.view === 'list' ? 'list' : 'gallery';
+    const currentPage = parseInt(req.query.page) || 1;
+    const itemsPerPage = [30, 60].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 30;
+    const offset = (currentPage - 1) * itemsPerPage;
+    const filterState = req.query.state || '';
+    const filters = { state: filterState || null };
+
+    const [jams, totalCount, filterOptions] = await Promise.all([
+      LocalJam.findPublishedFiltered(itemsPerPage, offset, filters),
+      LocalJam.countPublishedFiltered(filters),
+      LocalJam.getFilterOptions()
+    ]);
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+    res.render('jams/index', {
+      title: 'Local Bluegrass Jams',
+      jams,
+      currentView,
+      currentPage,
+      totalPages,
+      totalCount,
+      itemsPerPage,
+      filterState,
+      filterOptions
+    });
+  } catch (err) {
+    console.error('Error fetching jams:', err);
+    res.status(500).render('500', { message: 'Server error' });
+  }
+}
+
+export async function showJamDetail(req, res) {
+  try {
+    const { JamID } = req.params;
+    if (!JamID || isNaN(Number(JamID))) {
+      return res.status(400).render('400', { message: 'Invalid Jam ID.' });
+    }
+    const jam = await LocalJam.findById(JamID);
+    if (!jam) {
+      return res.status(404).render('404', { message: 'Jam not found.' });
+    }
+    res.render('jams/detail', { 
+      title: jam.JamName, 
+      jam,
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY 
+    });
+  } catch (err) {
+    console.error('Error fetching jam detail:', err);
+    res.status(500).render('500', { message: 'Server error' });
+  }
 }
 
 export function showJamForm(req, res) {

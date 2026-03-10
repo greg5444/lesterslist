@@ -8,10 +8,15 @@ exports.showCamp = showCamp;
 // src/controllers/campController.js
 const campModel_js_1 = __importDefault(require("../models/campModel.js"));
 const constants_js_1 = require("../config/constants.js");
+const imageUtils_js_1 = require("../config/imageUtils.js");
 async function listCamps(req, res) {
     try {
         const camps = await campModel_js_1.default.findAll();
-        res.render('camps/index', { title: 'Camps & Workshops', camps });
+        const campsWithImages = camps.map(camp => {
+            const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(camp.ImageURL));
+            return { ...camp, imageUrl, imageAlignment };
+        });
+        res.render('camps/index', { title: 'Camps & Workshops', camps: campsWithImages });
     }
     catch (err) {
         console.error('Error fetching camps:', err);
@@ -23,13 +28,14 @@ async function showCamp(req, res) {
         const camp = await campModel_js_1.default.findById(req.params.id);
         if (!camp)
             return res.status(404).render('404', { message: 'Camp/Workshop not found' });
-        const imageUrl = camp.ImageURL && camp.ImageURL.trim() ? camp.ImageURL : constants_js_1.DEFAULT_IMAGE_URL;
+        const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(camp.ImageURL));
         // Use GoogleMapAddress directly from Camps table
         const mapAddress = camp.GoogleMapAddress && camp.GoogleMapAddress.trim() ? camp.GoogleMapAddress : null;
         res.render('camps/show', {
             title: camp.EventName,
             camp,
             imageUrl,
+            imageAlignment,
             mapAddress,
             googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
         });

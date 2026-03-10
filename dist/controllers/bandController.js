@@ -8,14 +8,7 @@ exports.showBand = showBand;
 // src/controllers/bandController.js
 const bandModel_js_1 = __importDefault(require("../models/bandModel.js"));
 const constants_js_1 = require("../config/constants.js");
-const IMAGE_BASE_URL = 'https://images.lesterslist.com/media/';
-function resolveBandImage(pictureUrl) {
-    if (!pictureUrl || pictureUrl.trim() === '')
-        return constants_js_1.DEFAULT_IMAGE_URL;
-    if (/^https?:\/\//i.test(pictureUrl))
-        return pictureUrl;
-    return IMAGE_BASE_URL + pictureUrl;
-}
+const imageUtils_js_1 = require("../config/imageUtils.js");
 async function listBands(req, res) {
     try {
         const letter = req.query.letter || 'All';
@@ -39,10 +32,14 @@ async function listBands(req, res) {
         }
         const totalPages = Math.ceil(totalCount / itemsPerPage);
         // Attach resolved image URLs to each band
-        const bandsWithImages = bands.map(band => ({
-            ...band,
-            imageUrl: resolveBandImage(band.PictureURL)
-        }));
+        const bandsWithImages = bands.map(band => {
+            const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(band.PictureURL));
+            return {
+                ...band,
+                imageUrl,
+                imageAlignment
+            };
+        });
         res.render('bands/index', {
             title: letter === 'All' ? 'All Bands' : `Bands Starting with ${letter}`,
             bands: bandsWithImages,
@@ -64,7 +61,7 @@ async function showBand(req, res) {
         const band = await bandModel_js_1.default.findById(req.params.id);
         if (!band)
             return res.status(404).render('404', { message: 'Band not found' });
-        const imageUrl = resolveBandImage(band.PictureURL);
+        const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(band.PictureURL));
         const concerts = await bandModel_js_1.default.findLinkedConcerts(req.params.id);
         // Band detail map: all appearances with valid coordinates (stored directly on Venues)
         const allAppearances = await bandModel_js_1.default.findAllAppearancesWithCoords(req.params.id);
@@ -78,6 +75,7 @@ async function showBand(req, res) {
             title: band.BandName,
             band,
             imageUrl,
+            imageAlignment,
             concerts,
             mapData,
             GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY

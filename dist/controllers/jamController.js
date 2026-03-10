@@ -3,27 +3,64 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.showJamDetail = showJamDetail;
 exports.listJams = listJams;
+exports.showJamDetail = showJamDetail;
 exports.showJamForm = showJamForm;
 exports.submitJam = submitJam;
-async function showJamDetail(req, res) {
-    const { JamID } = req.params;
-    if (!JamID || isNaN(Number(JamID))) {
-        return res.status(400).render('400', { message: 'Invalid Jam ID.' });
-    }
-    const jam = await localJamModel_js_1.default.findById(JamID);
-    if (!jam) {
-        return res.status(404).render('404', { message: 'Jam not found.' });
-    }
-    res.render('jams/detail', { title: jam.JamName, jam });
-}
 // src/controllers/jamController.js
 const localJamModel_js_1 = __importDefault(require("../models/localJamModel.js"));
 const email_js_1 = require("../config/email.js");
 async function listJams(req, res) {
-    const jams = await localJamModel_js_1.default.findPublished();
-    res.render('jams/index', { title: 'Local Jams', jams });
+    try {
+        const currentView = req.query.view === 'list' ? 'list' : 'gallery';
+        const currentPage = parseInt(req.query.page) || 1;
+        const itemsPerPage = [30, 60].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 30;
+        const offset = (currentPage - 1) * itemsPerPage;
+        const filterState = req.query.state || '';
+        const filters = { state: filterState || null };
+        const [jams, totalCount, filterOptions] = await Promise.all([
+            localJamModel_js_1.default.findPublishedFiltered(itemsPerPage, offset, filters),
+            localJamModel_js_1.default.countPublishedFiltered(filters),
+            localJamModel_js_1.default.getFilterOptions()
+        ]);
+        const totalPages = Math.ceil(totalCount / itemsPerPage);
+        res.render('jams/index', {
+            title: 'Local Bluegrass Jams',
+            jams,
+            currentView,
+            currentPage,
+            totalPages,
+            totalCount,
+            itemsPerPage,
+            filterState,
+            filterOptions
+        });
+    }
+    catch (err) {
+        console.error('Error fetching jams:', err);
+        res.status(500).render('500', { message: 'Server error' });
+    }
+}
+async function showJamDetail(req, res) {
+    try {
+        const { JamID } = req.params;
+        if (!JamID || isNaN(Number(JamID))) {
+            return res.status(400).render('400', { message: 'Invalid Jam ID.' });
+        }
+        const jam = await localJamModel_js_1.default.findById(JamID);
+        if (!jam) {
+            return res.status(404).render('404', { message: 'Jam not found.' });
+        }
+        res.render('jams/detail', {
+            title: jam.JamName,
+            jam,
+            googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
+        });
+    }
+    catch (err) {
+        console.error('Error fetching jam detail:', err);
+        res.status(500).render('500', { message: 'Server error' });
+    }
 }
 function showJamForm(req, res) {
     res.render('jams/new', { title: 'Submit a Jam', success: false, error: null });

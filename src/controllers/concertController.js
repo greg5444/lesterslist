@@ -1,23 +1,7 @@
 // src/controllers/concertController.js
 import Concert from '../models/concertModel.js';
 import { DEFAULT_IMAGE_URL } from '../config/constants.js';
-
-const IMAGE_BASE_URL = 'https://images.lesterslist.com/media/';
-
-function resolveBandImage(pictureUrl) {
-  if (!pictureUrl || pictureUrl.trim() === '') return DEFAULT_IMAGE_URL;
-  if (/^https?:\/\//i.test(pictureUrl)) return pictureUrl;
-  return IMAGE_BASE_URL + pictureUrl;
-}
-
-function normalizeImageUrl(url) {
-  if (!url || url.trim() === '') return null;
-  // Fix old WordPress paths → CDN paths
-  url = url.replace('/wp-content/media/', '/media/');
-  // Remove WordPress -scaled suffix (e.g. image-scaled.jpg → image.jpg)
-  url = url.replace(/-scaled(\.[a-zA-Z]+)$/, '$1');
-  return url;
-}
+import { resolveImageUrl, parseImageAlignment } from '../config/imageUtils.js';
 
 export async function listConcerts(req, res) {
   try {
@@ -27,7 +11,17 @@ export async function listConcerts(req, res) {
     const offset = (currentPage - 1) * itemsPerPage;
     const filterState = req.query.state || '';
     const filterMonth = req.query.month || '';
-    const filters = { state: filterState || null, month: filterMonth || null };
+    const lat = req.query.lat ? parseFloat(req.query.lat) : null;
+    const lng = req.query.lng ? parseFloat(req.query.lng) : null;
+    const radius = parseInt(req.query.radius) || 50;
+
+    const filters = { 
+      state: filterState || null, 
+      month: filterMonth || null,
+      lat,
+      lng,
+      radius
+    };
 
     const [concerts, totalCount, filterOptions] = await Promise.all([
       Concert.findUpcomingFiltered(itemsPerPage, offset, filters),
@@ -37,18 +31,31 @@ export async function listConcerts(req, res) {
     const totalPages = Math.ceil(totalCount / itemsPerPage);
 
     // Resolve image URLs for each concert
-    const concertsWithImages = concerts.map(concert => {
-      const concertImg = normalizeImageUrl(concert.ConcertImage);
-      const bandImg = concert.BandPictureURL ? resolveBandImage(normalizeImageUrl(concert.BandPictureURL)) : null;
-      const imageUrl = (concertImg && concertImg.length > 5 ? concertImg : null)
-        || (bandImg && bandImg.length > 5 ? bandImg : null)
+    const filteredConcerts = concerts.map(concert => {
+      const concertImg = concert.ConcertImage;
+      const bandImg = concert.BandPictureURL;
+      const rawImageUrl = (concertImg && concertImg.trim().length > 5 ? resolveImageUrl(concertImg) : null)
+        || (bandImg && bandImg.trim().length > 5 ? resolveImageUrl(bandImg) : null)
         || DEFAULT_IMAGE_URL;
-      return { ...concert, imageUrl };
+      
+      const { url: imageUrl, alignment: imageAlignment } = parseImageAlignment(rawImageUrl);
+      return { ...concert, imageUrl, imageAlignment };
     });
+
+    // Handle AJAX request for Infinite Scroll
+    if (req.xhr || req.headers.accept === 'application/json') {
+      return res.json({
+        concerts: filteredConcerts,
+        totalCount,
+        totalPages,
+        currentPage,
+        itemsPerPage
+      });
+    }
 
     res.render('concerts/index', {
       title: 'Upcoming Concerts',
-      concerts: concertsWithImages,
+      concerts: filteredConcerts,
       currentView,
       currentPage,
       totalPages,
@@ -70,11 +77,11 @@ export async function showConcert(req, res) {
     if (!concert) return res.status(404).render('404', { message: 'Concert not found' });
     
     // Explicit Image Fallback Logic (Priority Order)
-    const concertImg = normalizeImageUrl(concert.ConcertImage);
-    const bandImg = concert.BandPictureURL ? resolveBandImage(normalizeImageUrl(concert.BandPictureURL)) : null;
-    const displayImage = (concertImg && concertImg.length > 5 ? concertImg : null)
-      || (bandImg && bandImg.length > 5 ? bandImg : null)
+    const rawImageUrl = (concert.ConcertImage && concert.ConcertImage.trim().length > 5 ? resolveImageUrl(concert.ConcertImage) : null)
+      || (concert.BandPictureURL && concert.BandPictureURL.trim().length > 5 ? resolveImageUrl(concert.BandPictureURL) : null)
       || DEFAULT_IMAGE_URL;
+
+    const { url: displayImage, alignment: imageAlignment } = parseImageAlignment(rawImageUrl);
     
     // Restructure flat SQL result into nested objects for view compatibility
     const structuredConcert = {
@@ -118,6 +125,7 @@ export async function showConcert(req, res) {
       title: concert.ConcertName,
       concert: structuredConcert,
       displayImage,
+      imageAlignment,
       concertMonth,
       concertDay,
       googleMapsApiKey

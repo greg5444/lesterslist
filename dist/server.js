@@ -8,6 +8,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const helmet_1 = __importDefault(require("helmet"));
 const express_session_1 = __importDefault(require("express-session"));
+const express_mysql_session_1 = __importDefault(require("express-mysql-session"));
 const ejs_mate_1 = __importDefault(require("ejs-mate"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
@@ -27,6 +28,9 @@ const submitController_js_1 = require("./controllers/submitController.js");
 const database_js_1 = __importDefault(require("./config/database.js"));
 const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT) || 3000;
+// Session database store setup
+const MySQLStore = (0, express_mysql_session_1.default)(express_session_1.default);
+const sessionStore = new MySQLStore({}, database_js_1.default);
 // Middleware
 // Only apply helmet security headers in production — locally it blocks images, fonts, maps etc.
 if (process.env.NODE_ENV === 'production') {
@@ -50,7 +54,9 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.static(path_1.default.join(__dirname, '../src/public')));
 // Session middleware
 app.use((0, express_session_1.default)({
+    key: 'session_cookie_name',
     secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 } // 24 hours; secure=true in production (HTTPS only)

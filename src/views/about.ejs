@@ -1,0 +1,108 @@
+<%- include('_header', { title: 'About Lester’s List' }) %>
+
+<section class="hero about-hero">
+  <div class="hero-image" style="background-image: url('https://images.lesterslist.com/media/bluegrass-band-sunset.jpg');">
+    <div class="overlay">
+      <h1>About Lester’s List</h1>
+      <p>Helping you find the music, the festivals, and the bands you love.</p>
+    </div>
+  </div>
+</section>
+
+<section class="content about-page">
+  <div class="container narrow">
+    <p>
+      Lester’s List was built to help you discover bluegrass music — the concerts, the festivals, and the players that keep it alive. 
+      We’re not here to sell tickets or list showtimes. Our goal is simple: to guide you straight to the official websites of festival organizers and bluegrass bands, 
+      connecting you with the real people behind the music you love.
+    </p>
+
+    <p>
+      As this site came together, one thing stood out — bluegrass is far from gone. 
+      In fact, it’s thriving. Look at the map and you’ll see bluegrass happening everywhere across the United States: 
+      hometown jams, local halls, and wide-open festival fields. While the focus here is on traditional bluegrass, 
+      the music continues to branch out through Americana and Progressive Bluegrass — all part of a living, growing community.
+    </p>
+
+    <p>
+      To stay connected with that world, visit 
+      <a href="https://bluegrasstoday.com" target="_blank">Bluegrass Today</a> for daily updates, 
+      <a href="https://bluegrassunlimited.com" target="_blank">Bluegrass Unlimited</a> and 
+      <a href="https://thebluegrassstandard.com" target="_blank">The Bluegrass Standard</a> for deeper stories, 
+      and <a href="https://thebluegrasssituation.com" target="_blank">The Bluegrass Situation</a> to explore the broader Americana and progressive side. 
+      Together, they’ll help you discover even more of the people, places, and sounds that make bluegrass special.
+    </p>
+
+    <p>
+      And about the name? Lester’s List is named after my old hound dog, Lester. 
+      Loyal, gentle, and always listening, he had a way of staying close without getting in the way — 
+      just being there when you needed him. That’s the same spirit behind this site: 
+      to quietly help you find what you’re looking for — honest music, good folks, and a place that feels like home.
+    </p>
+  </div>
+</section>
+
+<style>
+.about-hero .hero-image {
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+}
+
+.about-hero .overlay {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.about-hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  font-family: 'Playfair Display', serif;
+}
+
+.about-hero p {
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+
+.about-page {
+  padding: 4rem 0;
+  line-height: 1.8;
+  font-size: 1.15rem;
+}
+
+.container.narrow {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.about-page p {
+  margin-bottom: 2rem;
+}
+
+.about-page a {
+  color: #008C95;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.about-page a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .about-hero h1 { font-size: 2.5rem; }
+  .about-hero p { font-size: 1.2rem; }
+  .about-hero .hero-image { height: 300px; }
+}
+</style>
+
+<%- include('_footer') %>

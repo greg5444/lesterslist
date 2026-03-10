@@ -1,69 +1,185 @@
+<% /* Jams Directory - Hybrid View (Gallery/List) with Pagination */ %>
 <% layout('layout') %>
+<%
+  // Build query params for pagination/view links
+  function buildQueryString(params) {
+    const query = new URLSearchParams();
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null) query.set(key, params[key]);
+    });
+    return query.toString() ? '?' + query.toString() : '';
+  }
+  // Base filter params to carry through pagination/view changes
+  const activeFilters = {};
+  if (filterState) activeFilters.state = filterState;
+%>
 
-<div style="max-width:1200px;margin:2rem auto;padding:0 1.5rem;">
-  <!-- Header -->
-  <header style="margin-bottom:2rem;border-bottom:3px solid var(--color-primary-teal);padding-bottom:1rem;">
-    <h1 style="font-family:var(--font-display);font-size:2.5rem;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;">
-      🎻 Local Jams
-    </h1>
-    <p style="color:#666;font-size:1.1rem;margin:0 0 1rem 0;">Find regular bluegrass jam sessions in your area. All skill levels welcome!</p>
-    <a href="/jams/new" style="display:inline-block;background:var(--color-highlight-orange);color:#fff;padding:0.75rem 1.5rem;border-radius:6px;text-decoration:none;font-weight:600;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-      + Submit a Jam
-    </a>
-  </header>
+<article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:2.5rem auto 0 auto;">
+  <div class="boldwp-box-inside">
+    <header class="entry-header" style="text-align:center;">
+      <div class="entry-header-inside">
+        <h1 class="entry-title" style="font-size:2.5rem;margin:1rem 0;">Local Bluegrass Jams</h1>
+      </div>
+    </header>
 
-    <!-- Card/Grid Layout for Jams -->
-    <div class="jam-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;">
-      <% jams.forEach(jam => { %>
-        <div>
-        <a href="/jams/<%= jam.JamID %>" class="jam-card" style="display:block;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:1.2rem 1.2rem 1rem 1.2rem;text-decoration:none;color:inherit;transition:transform 0.18s,box-shadow 0.18s;position:relative;min-height:180px;"
-          onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.12)';"
-          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)';">
-          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.7rem;">
-            <div style="background:var(--color-primary-teal);color:#fff;border-radius:8px;padding:0.7rem 1.1rem;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:70px;">
-              <div style="font-size:1.1rem;font-weight:700;line-height:1.1;white-space:nowrap;"><%= jam.JamName %></div>
-            </div>
-            <div style="flex:1;">
-              <div style="font-size:0.98rem;color:#666;font-weight:500;">
-                <% if (jam.City && jam.State) { %>
-                  <%= jam.City %>, <%= jam.State %>
-                <% } else { %>
-                  <span style="color:#999;">—</span>
-                <% } %>
-              </div>
-              <% if (jam.VenueName) { %>
-                <div style="font-size:0.92rem;color:#888;">@ <%= jam.VenueName %></div>
-              <% } %>
-            </div>
-          </div>
-          <div style="font-size:0.97rem;color:#444;margin-bottom:0.5rem;">
-            <%= jam.Schedule ? jam.Schedule.substring(0, 80) : '—' %><%= jam.Schedule && jam.Schedule.length > 80 ? '...' : '' %>
-          </div>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
-            <% if (jam.AllWelcome) { %>
-              <span style="background:#28a745;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.82rem;font-weight:600;">All Welcome</span>
-            <% } %>
-            <% if (jam.BeginnersWelcome) { %>
-              <span style="background:#007bff;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.82rem;font-weight:600;">Beginners</span>
-            <% } %>
-            <% if (jam.AdvancedOnly) { %>
-              <span style="background:#e53935;color:#fff;padding:0.2rem 0.7rem;border-radius:4px;font-size:0.82rem;font-weight:600;">Advanced Only</span>
-            <% } %>
-          </div>
-          <div style="font-size:0.95rem;color:#666;">
-            <% if (jam.ContactName) { %>
-              <span style="font-weight:600;color:#333;"><%= jam.ContactName %></span>
-              <% if (jam.ContactEmail) { %>
-                <span style="color:#888;margin-left:0.5rem;">(<%= jam.ContactEmail %>)</span>
-              <% } %>
-            <% } else { %>
-              <span style="color:#999;">—</span>
-            <% } %>
-          </div>
-        </a>
-      <% }) %>
+    <!-- Filter Bar -->
+    <form method="GET" action="/jams" style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;">
+      <input type="hidden" name="view" value="<%= currentView %>">
+      <input type="hidden" name="limit" value="<%= itemsPerPage %>">
+      
+      <div style="display:flex;flex-direction:column;gap:0.3rem;">
+        <label style="font-size:0.8rem;font-weight:700;color:#666;text-transform:uppercase;">Filter by State</label>
+        <select name="state" style="padding:0.5rem;border-radius:4px;border:1px solid #ccc;min-width:160px;">
+          <option value="">All States</option>
+          <% filterOptions.states.forEach(state => { %>
+            <option value="<%= state %>" <%= filterState === state ? 'selected' : '' %>><%= state %></option>
+          <% }) %>
+        </select>
+      </div>
 
+      <button type="submit" style="background:var(--color-primary-teal);color:#fff;border:none;padding:0.55rem 1.5rem;border-radius:4px;font-weight:600;cursor:pointer;">Apply Filters</button>
+      <a href="/jams" style="color:#666;text-decoration:none;font-size:0.9rem;padding-bottom:0.5rem;">Clear All</a>
+      
+      <!-- Submission Link -->
+      <div style="margin-left:auto; display:flex; align-items:center; gap:1rem;">
+        <a href="/jams/new" style="background:var(--color-highlight-orange);color:#fff;padding:0.6rem 1.2rem;border-radius:6px;text-decoration:none;font-weight:700;font-size:0.95rem;box-shadow:0 2px 4px rgba(0,0,0,0.1);">+ Submit a Jam</a>
+        
+        <!-- View Toggle -->
+        <div style="background:#fff;border:1px solid #ddd;border-radius:6px;display:flex;overflow:hidden;">
+          <a href="/jams<%= buildQueryString({...activeFilters, view:'gallery', limit:itemsPerPage}) %>" 
+             style="padding:0.5rem 0.8rem;text-decoration:none;color:<%= currentView === 'gallery' ? '#fff' : '#666' %>;background:<%= currentView === 'gallery' ? 'var(--color-secondary-blue)' : '#fff' %>;display:flex;align-items:center;" title="Gallery View">
+            <span style="font-size:1.1rem;">田</span>
+          </a>
+          <a href="/jams<%= buildQueryString({...activeFilters, view:'list', limit:itemsPerPage}) %>" 
+             style="padding:0.5rem 0.8rem;text-decoration:none;color:<%= currentView === 'list' ? '#fff' : '#666' %>;background:<%= currentView === 'list' ? 'var(--color-secondary-blue)' : '#fff' %>;display:flex;align-items:center;" title="List View">
+            <span style="font-size:1.1rem;">☰</span>
+          </a>
+        </div>
+      </div>
+    </form>
+
+    <div class="entry-content">
+      <% if (jams.length === 0) { %>
+        <div style="text-align:center;padding:3rem;background:#f9f9f9;border-radius:8px;">
+          <h3 style="color:#666;">No jams found matching your filters.</h3>
+          <p><a href="/jams" style="color:var(--color-primary-teal);">View all upcoming jams</a></p>
+        </div>
+      <% } else if (currentView === 'gallery') { %>
+        <!-- Gallery Mode: Card Grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;">
+          <% 
+            const jamImages = [
+              'https://images.lesterslist.com/media/wpic2.jpg',
+              'https://images.lesterslist.com/media/general-28.jpg',
+              'https://images.lesterslist.com/media/lesterlogo_sq.png'
+            ];
+          %>
+          <% jams.forEach((jam, index) => { 
+             const randomImage = jamImages[index % jamImages.length];
+          %>
+            <a href="/jams/<%= jam.JamID %>" class="gallery-card"
+                 style="text-decoration:none;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;display:flex;flex-direction:column;"
+                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
+                 onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+                
+                <!-- Image Container -->
+                <div style="width:100%; height:200px; overflow:hidden; background:#f0f0f0; position:relative;">
+                  <img src="<%= randomImage %>" alt="<%= jam.JamName %>" style="width:100%; height:100%; object-fit:cover; object-position:center;">
+                  
+                  <!-- Tag Overlays (Bottom Left) -->
+                  <div style="position:absolute; bottom:10px; left:10px; display:flex; gap:5px; flex-wrap:wrap; max-width: calc(100% - 20px);">
+                    <% 
+                      let tags = [];
+                      if (jam.BeginnersWelcome) tags.push({ text: 'Beginner Friendly', bg: 'rgba(21,101,192,0.9)' });
+                      if (jam.AllWelcome) tags.push({ text: 'All Welcome', bg: 'rgba(46,125,50,0.9)' });
+                      if (jam.AdvancedOnly) tags.push({ text: 'Advanced Only', bg: 'rgba(230,81,0,0.9)' });
+                      
+                      // Limit to two tags
+                      tags.slice(0, 2).forEach(tag => { 
+                    %>
+                      <div style="background:<%= tag.bg %>; color:#fff; padding:0.25rem 0.6rem; border-radius:4px; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap;"><%= tag.text %></div>
+                    <% }) %>
+                  </div>
+                </div>
+
+                <div style="padding:1.25rem; flex-grow: 1; text-align:center;">
+                  <h3 style="font-size:1.2rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;"><%= jam.JamName %></h3>
+                  <div style="font-size:0.95rem; color:#666; font-weight:600;"><%= jam.VenueName || 'Local Venue' %></div>
+                  <div style="font-size:0.9rem; color:var(--color-primary-teal); font-weight:600;"><%= jam.City %>, <%= jam.State %></div>
+                </div>
+                
+                <div style="background:#f8f9fa;padding:0.75rem 1rem;border-top:1px solid #eee;text-align:center;">
+                  <span style="color:var(--color-highlight-orange);font-weight:700;font-size:0.9rem;text-transform:uppercase;letter-spacing:0.5px;">View Details ›</span>
+                </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <!-- List Mode: Striped Table -->
+        <table class="list-table" style="width:100%;border-collapse:collapse;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <thead>
+            <tr style="background:var(--color-secondary-blue);color:#fff;">
+              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Jam Name</th>
+              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Location</th>
+              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Schedule</th>
+              <th style="padding:1rem;text-align:right;font-weight:600;font-size:0.95rem;width:120px;">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% jams.forEach((jam, index) => { %>
+              <tr style="<%= index % 2 === 0 ? 'background:#fff;' : 'background:#f9f9f9;' %>border-bottom:1px solid #eee;">
+                <td style="padding:1rem;">
+                  <div style="font-weight:700;color:var(--color-secondary-blue);font-size:1.05rem;"><%= jam.JamName %></div>
+                  <div style="font-size:0.85rem;color:#888;"><%= jam.VenueName %></div>
+                </td>
+                <td style="padding:1rem;">
+                  <div style="color:#444;font-size:0.95rem;"><%= jam.City %>, <%= jam.State %></div>
+                </td>
+                <td style="padding:1rem;">
+                  <div style="color:#666;font-size:0.9rem;max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<%= jam.Schedule %>">
+                    <%= jam.Schedule %>
+                  </div>
+                </td>
+                <td style="padding:1rem;text-align:right;">
+                  <a href="/jams/<%= jam.JamID %>" 
+                     style="display:inline-block;padding:0.5rem 1.2rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:4px;text-decoration:none;font-size:0.85rem;transition:opacity 0.2s;"
+                     onmouseover="this.style.opacity='0.85'"
+                     onmouseout="this.style.opacity='1'">
+                    View
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+
+      <!-- Pagination Pagination -->
+      <% if (totalPages > 1) { %>
+        <div style="margin-top:2.5rem;display:flex;justify-content:center;gap:0.5rem;flex-wrap:wrap;">
+          <% if (currentPage > 1) { %>
+            <a href="/jams<%= buildQueryString({...activeFilters, view:currentView, limit:itemsPerPage, page:currentPage-1}) %>" 
+               style="padding:0.6rem 1rem;background:#fff;border:1px solid #ddd;border-radius:6px;text-decoration:none;color:#555;font-weight:600;">« Previous</a>
+          <% } %>
+          
+          <% for(let i=1; i<=totalPages; i++) { %>
+            <a href="/jams<%= buildQueryString({...activeFilters, view:currentView, limit:itemsPerPage, page:i}) %>" 
+               style="padding:0.6rem 1.1rem;background:<%= i === currentPage ? 'var(--color-primary-teal)' : '#fff' %>;color:<%= i === currentPage ? '#fff' : '#555' %>;border:1px solid <%= i === currentPage ? 'var(--color-primary-teal)' : '#ddd' %>;border-radius:6px;text-decoration:none;font-weight:700;">
+              <%= i %>
+            </a>
+          <% } %>
+
+          <% if (currentPage < totalPages) { %>
+            <a href="/jams<%= buildQueryString({...activeFilters, view:currentView, limit:itemsPerPage, page:currentPage+1}) %>" 
+               style="padding:0.6rem 1rem;background:#fff;border:1px solid #ddd;border-radius:6px;text-decoration:none;color:#555;font-weight:600;">Next »</a>
+          <% } %>
+        </div>
+      <% } %>
     </div>
-</div>
+  </div>
+</article>
+
+<div style="text-align:center;margin:3rem 0;color:#888;font-size:0.95rem;">
+  Showing <%= jams.length %> of <%= totalCount %> published jams
 </div>
 

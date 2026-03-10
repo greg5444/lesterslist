@@ -3,6 +3,7 @@
 import express from 'express';
 import helmet from 'helmet';
 import session from 'express-session';
+import MySQLStoreFactory from 'express-mysql-session';
 import engine from 'ejs-mate';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -23,6 +24,10 @@ import pool from './config/database.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+
+// Session database store setup
+const MySQLStore = MySQLStoreFactory(session);
+const sessionStore = new MySQLStore({}, pool);
 
 // Middleware
 // Only apply helmet security headers in production — locally it blocks images, fonts, maps etc.
@@ -48,7 +53,9 @@ app.use(express.static(path.join(__dirname, '../src/public')));
 
 // Session middleware
 app.use(session({
+  key: 'session_cookie_name',
   secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 } // 24 hours; secure=true in production (HTTPS only)

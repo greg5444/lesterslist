@@ -43,9 +43,11 @@ class Concert {
     /**
      * Fetch upcoming concerts with filters + pagination
      */
-    static async findUpcomingFiltered(limit, offset, { state, month } = {}) {
+    static async findUpcomingFiltered(limit, offset, { state, month, lat, lng, radius = 50 } = {}) {
         const conditions = ['c.ConcertDate >= CURDATE()'];
         const params = [];
+        let orderBy = 'c.ConcertDate ASC';
+        let distanceField = '';
         if (state) {
             conditions.push('(v.State = ? OR c.State = ?)');
             params.push(state, state);
@@ -54,16 +56,32 @@ class Concert {
             conditions.push('DATE_FORMAT(c.ConcertDate, \'%Y-%m\') = ?');
             params.push(month);
         }
+        if (lat && lng) {
+            // Add distance calculation (Haversine formula approximated or standard)
+            // Radius is in miles
+            distanceField = `, (
+        3959 * acos(
+          cos(radians(?)) * cos(radians(v.Latitude)) *
+          cos(radians(v.Longitude) - radians(?)) +
+          sin(radians(?)) * sin(radians(v.Latitude))
+        )
+      ) AS distance`;
+            params.unshift(lat, lng, lat);
+            conditions.push('v.Latitude IS NOT NULL AND v.Longitude IS NOT NULL');
+            conditions.push('((3959 * acos(cos(radians(?)) * cos(radians(v.Latitude)) * cos(radians(v.Longitude) - radians(?)) + sin(radians(?)) * sin(radians(v.Latitude)))) <= ?)');
+            params.push(lat, lng, lat, radius);
+            orderBy = 'distance ASC, c.ConcertDate ASC';
+        }
         const where = conditions.join(' AND ');
         const [rows] = await database_js_1.default.query(`
       SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
              v.VenueName, COALESCE(v.City, c.City) as City, COALESCE(v.State, c.State) as State,
-             b.PictureURL as BandPictureURL
+             b.PictureURL as BandPictureURL ${distanceField}
       FROM Concerts c
       LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
       LEFT JOIN Bands b ON c.BandNumber = b.BandNumber
       WHERE ${where}
-      ORDER BY c.ConcertDate ASC
+      ORDER BY ${orderBy}
       LIMIT ? OFFSET ?
     `, [...params, limit, offset]);
         return rows;
@@ -71,7 +89,7 @@ class Concert {
     /**
      * Count upcoming concerts with filters
      */
-    static async countUpcomingFiltered({ state, month } = {}) {
+    static async countUpcomingFiltered({ state, month, lat, lng, radius = 50 } = {}) {
         const conditions = ['c.ConcertDate >= CURDATE()'];
         const params = [];
         if (state) {
@@ -81,6 +99,11 @@ class Concert {
         if (month) {
             conditions.push('DATE_FORMAT(c.ConcertDate, \'%Y-%m\') = ?');
             params.push(month);
+        }
+        if (lat && lng) {
+            conditions.push('v.Latitude IS NOT NULL AND v.Longitude IS NOT NULL');
+            conditions.push('((3959 * acos(cos(radians(?)) * cos(radians(v.Latitude)) * cos(radians(v.Longitude) - radians(?)) + sin(radians(?)) * sin(radians(v.Latitude)))) <= ?)');
+            params.push(lat, lng, lat, radius);
         }
         const where = conditions.join(' AND ');
         const [rows] = await database_js_1.default.query(`

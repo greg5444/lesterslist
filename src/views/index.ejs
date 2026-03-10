@@ -60,7 +60,7 @@
     <% randomizedSlots.forEach((slot) => { %>
       <% if (slot.type === 'artist') { %>
         <a href="/bands/<%= slot.data.BandNumber %>" style="position:relative;display:block;height:360px;border-radius:8px;overflow:hidden;text-decoration:none;box-shadow:0 4px 12px rgba(34,86,117,0.1);transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
-          <img src="<%= slot.data.PictureURL %>" alt="<%= slot.data.BandName %>" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
+          <img src="<%= slot.data.PictureURL %>" alt="<%= slot.data.BandName %>" style="width:100%;height:100%;object-fit:cover;object-position:<%= slot.data.imageAlignment || 'top' %>;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
           <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%);"></div>
           <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;color:#fff;">
             <div style="display:inline-block;font-size:0.9rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.5rem;color:#fff;font-weight:900;background:rgba(230,135,60,0.95);padding:0.4rem 1rem;border-radius:4px;text-shadow:0 2px 4px rgba(0,0,0,0.5);">Spotlight Artist</div>
@@ -71,7 +71,7 @@
 
       <% if (slot.type === 'festival') { %>
         <a href="/festivals/<%= slot.data.FestivalNumber %>" style="position:relative;display:block;height:360px;border-radius:8px;overflow:hidden;text-decoration:none;box-shadow:0 4px 12px rgba(34,86,117,0.1);transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
-          <img src="<%= slot.data.FeaturedImageURL %>" alt="<%= slot.data.FestivalName %>" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
+          <img src="<%= slot.data.FeaturedImageURL %>" alt="<%= slot.data.FestivalName %>" style="width:100%;height:100%;object-fit:cover;object-position:<%= slot.data.imageAlignment || 'top' %>;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
           <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%);"></div>
           <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;color:#fff;">
             <h3 style="font-size:1.4rem;font-weight:700;margin:0 0 0.5rem 0;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.8);"><%= slot.data.FestivalName %></h3>
@@ -85,14 +85,10 @@
 
       <% if (slot.type === 'concert') { %>
         <% 
-          const concertDisplayImage = (slot.data.ConcertImage && slot.data.ConcertImage.trim()) 
-            ? slot.data.ConcertImage 
-            : (slot.data.BandPhoto && slot.data.BandPhoto.trim()) 
-              ? slot.data.BandPhoto 
-              : 'https://images.lesterslist.com/media/All-bluegrass.jpg';
+          const concertDisplayImage = slot.data.imageUrl || 'https://images.lesterslist.com/media/All-bluegrass.jpg';
         %>
         <a href="/concerts/<%= slot.data.ConcertNumber %>" style="position:relative;display:block;height:360px;border-radius:8px;overflow:hidden;text-decoration:none;box-shadow:0 4px 12px rgba(34,86,117,0.1);transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
-          <img src="<%= concertDisplayImage %>" alt="<%= slot.data.ConcertName %>" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
+          <img src="<%= concertDisplayImage %>" alt="<%= slot.data.ConcertName %>" style="width:100%;height:100%;object-fit:cover;object-position:<%= slot.data.imageAlignment || 'top' %>;" onerror="this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';">
           <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%);"></div>
           <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;color:#fff;">
             <h3 style="font-size:1.4rem;font-weight:700;margin:0 0 0.5rem 0;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.8);"><%= slot.data.ConcertName %></h3>

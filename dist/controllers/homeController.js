@@ -5,9 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.showHome = showHome;
 exports.showContact = showContact;
+exports.showAbout = showAbout;
 // src/controllers/homeController.js
 const database_js_1 = __importDefault(require("../config/database.js"));
 const siteSettingsModel_js_1 = __importDefault(require("../models/siteSettingsModel.js"));
+const imageUtils_js_1 = require("../config/imageUtils.js");
 async function showHome(req, res) {
     try {
         const today = new Date().toISOString().split('T')[0];
@@ -85,6 +87,27 @@ async function showHome(req, res) {
         catch (e) {
             console.error('Error parsing ticker messages:', e);
         }
+        // Discovery Trio - Process Images & Alignment
+        if (featuredBand) {
+            const { url, alignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(featuredBand.PictureURL));
+            featuredBand.PictureURL = url;
+            featuredBand.imageAlignment = alignment;
+        }
+        if (featuredFestival) {
+            const { url, alignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(featuredFestival.FeaturedImageURL));
+            featuredFestival.FeaturedImageURL = url;
+            featuredFestival.imageAlignment = alignment;
+        }
+        if (featuredConcert) {
+            const rawConcertUrl = (featuredConcert.ConcertImage && featuredConcert.ConcertImage.trim().length > 5)
+                ? (0, imageUtils_js_1.resolveImageUrl)(featuredConcert.ConcertImage)
+                : (featuredConcert.BandPhoto && featuredConcert.BandPhoto.trim().length > 5)
+                    ? (0, imageUtils_js_1.resolveImageUrl)(featuredConcert.BandPhoto)
+                    : 'https://images.lesterslist.com/media/All-bluegrass.jpg';
+            const { url, alignment } = (0, imageUtils_js_1.parseImageAlignment)(rawConcertUrl);
+            featuredConcert.imageUrl = url;
+            featuredConcert.imageAlignment = alignment;
+        }
         res.render('index', {
             title: "Lester's List - Bluegrass Events",
             tickerEnabled: tickerSettings.ticker_enabled !== false,
@@ -117,6 +140,17 @@ async function showContact(req, res) {
     }
     catch (err) {
         console.error('Error loading contact page:', err);
+        res.status(500).render('500', { message: 'Server error' });
+    }
+}
+async function showAbout(req, res) {
+    try {
+        res.render('about', {
+            title: "About Us - Lester's List"
+        });
+    }
+    catch (err) {
+        console.error('Error loading about page:', err);
         res.status(500).render('500', { message: 'Server error' });
     }
 }

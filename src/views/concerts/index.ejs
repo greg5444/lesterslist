@@ -1,256 +1,364 @@
-<% /* Concerts Directory - Hybrid View (Gallery/List) with Pagination */ %>
 <% layout('layout') %>
-<%
-  // Build query params for pagination/view links
-  function buildQueryString(params) {
-    const query = new URLSearchParams();
-    Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null) query.set(key, params[key]);
-    });
-    return query.toString() ? '?' + query.toString() : '';
-  }
-  // Base filter params to carry through pagination/view changes
-  const activeFilters = {};
-  if (filterState) activeFilters.state = filterState;
-  if (filterMonth) activeFilters.month = filterMonth;
-%>
 
-<article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:2.5rem auto 0 auto;">
-  <div class="boldwp-box-inside">
-    <header class="entry-header" style="text-align:center;">
-      <div class="entry-header-inside">
-        <h1 class="entry-title" style="font-size:2.5rem;margin:1rem 0;">Upcoming Concerts</h1>
-      </div>
-    </header>
+<style>
+/* Modern Sticky Ribbon Style */
+.listings-ribbon {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #eaeaea;
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
 
-    <!-- Filter Bar -->
-    <form method="GET" action="/concerts" style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;">
-      <input type="hidden" name="view" value="<%= currentView %>">
-      <input type="hidden" name="limit" value="<%= itemsPerPage %>">
-      <div style="display:flex;flex-direction:column;gap:0.3rem;">
-        <label style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;">State</label>
-        <select name="state" style="padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;background:#fff;min-width:140px;">
-          <option value="">All States</option>
-          <% filterOptions.states.forEach(s => { %>
-            <option value="<%= s %>" <%= filterState === s ? 'selected' : '' %>><%= s %></option>
-          <% }) %>
-        </select>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:0.3rem;">
-        <label style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;">Month</label>
-        <select name="month" style="padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;background:#fff;min-width:140px;">
-          <option value="">All Months</option>
-          <% filterOptions.months.forEach(m => { %>
-            <option value="<%= m.value %>" <%= filterMonth === m.value ? 'selected' : '' %>><%= m.label %></option>
-          <% }) %>
-        </select>
-      </div>
-      <div style="display:flex;gap:0.5rem;align-items:flex-end;">
-        <button type="submit" style="padding:0.55rem 1.2rem;background:var(--color-primary-teal);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">Filter</button>
-        <% if (filterState || filterMonth) { %>
-          <a href="/concerts<%= buildQueryString({ view: currentView, limit: itemsPerPage }) %>" style="padding:0.55rem 1rem;background:#e9ecef;color:#555;border-radius:6px;font-size:0.9rem;font-weight:600;text-decoration:none;">Clear</a>
-        <% } %>
-      </div>
-      <% if (filterState || filterMonth) { %>
-        <div style="align-self:flex-end;font-size:0.85rem;color:var(--color-primary-teal);font-weight:600;">
-          <%= totalCount %> result<%= totalCount !== 1 ? 's' : '' %>
-          <% if (filterState) { %> in <strong><%= filterState %></strong><% } %>
-          <% if (filterMonth) { %> &middot; <strong><%= filterOptions.months.find(m => m.value === filterMonth)?.label || filterMonth %></strong><% } %>
-        </div>
-      <% } %>
+.ribbon-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ribbon-filters {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex: 1;
+}
+
+.ribbon-select {
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ribbon-select:hover { border-color: var(--color-primary-teal); }
+
+.near-me-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.near-me-btn:hover {
+  border-color: var(--color-primary-teal);
+  color: var(--color-primary-teal);
+  background: #f0fdfa;
+}
+
+.near-me-btn.active {
+  background: var(--color-primary-teal);
+  color: #fff;
+  border-color: var(--color-primary-teal);
+}
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.view-toggle-btn:hover { background: #eee; }
+
+/* Grid vs List Layouts */
+.listings-container.grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.listings-container.list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* List Item Style */
+.list-view .gallery-card {
+  display: flex !important;
+  flex-direction: row !important;
+  height: 100px !important;
+  align-items: center;
+}
+.list-view .gallery-card > div:first-child {
+  width: 150px !important;
+  height: 100% !important;
+  flex-shrink: 0;
+}
+.list-view .gallery-card > div:last-child {
+  padding: 0 1.5rem !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .ribbon-container { flex-direction: column; align-items: stretch; }
+  .ribbon-filters { overflow-x: auto; padding-bottom: 2px; }
+  .list-view .gallery-card { height: auto !important; flex-direction: column !important; }
+  .list-view .gallery-card > div:first-child { width: 100% !important; height: 180px !important; }
+}
+
+#infinite-loader {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+  font-weight: 600;
+}
+</style>
+
+<div class="listings-ribbon">
+  <div class="ribbon-container">
+    <form id="filter-form" class="ribbon-filters">
+      <select name="state" class="ribbon-select" onchange="handleFilterChange()">
+        <option value="">All States</option>
+        <% filterOptions.states.forEach(s => { %>
+          <option value="<%= s %>" <%= filterState === s ? 'selected' : '' %>><%= s %></option>
+        <% }) %>
+      </select>
+      <select name="month" class="ribbon-select" onchange="handleFilterChange()">
+        <option value="">All Months</option>
+        <% filterOptions.months.forEach(m => { %>
+          <option value="<%= m.value %>" <%= filterMonth === m.value ? 'selected' : '' %>><%= m.label %></option>
+        <% }) %>
+      </select>
+      
+      <button type="button" id="near-me-btn" class="near-me-btn" onclick="toggleNearMe()">
+        <span class="icon">📍</span>
+        <span class="text">Find Near Me</span>
+      </button>
+      
+      <input type="hidden" name="lat" id="lat-input">
+      <input type="hidden" name="lng" id="lng-input">
+      <input type="hidden" name="radius" value="50">
     </form>
 
-    <!-- Toolbar: Pagination + View Toggle + Items Per Page -->
-    <div class="toolbar" style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem 0;margin-bottom:1.5rem;border-bottom:1px solid #eee;flex-wrap:wrap;gap:1rem;">
-      <div class="pagination-info" style="color:#666;font-size:0.95rem;">
-        Page <strong><%= currentPage %></strong> of <strong><%= totalPages || 1 %></strong>
-        <span style="margin-left:0.5rem;color:#999;">(<%= totalCount %> total)</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:0.5rem;">
-          <label style="color:#666;font-size:0.9rem;font-weight:600;">Show:</label>
-          <select onchange="window.location.href='/concerts<%= buildQueryString({ page: 1, view: currentView, limit: undefined, ...activeFilters }) %>&limit=' + this.value" 
-                  style="padding:0.4rem 0.7rem;border:1px solid #ddd;border-radius:4px;font-size:0.9rem;font-weight:600;cursor:pointer;background:#fff;">
-            <option value="30" <%= itemsPerPage === 30 ? 'selected' : '' %>>30</option>
-            <option value="60" <%= itemsPerPage === 60 ? 'selected' : '' %>>60</option>
-          </select>
-        </div>
-        <div class="view-toggle" style="display:flex;gap:0.5rem;">
-          <a href="/concerts<%= buildQueryString({ page: currentPage, view: 'gallery', limit: itemsPerPage, ...activeFilters }) %>" 
-             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'gallery' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
-             title="Gallery View">
-            ⊞ Gallery
-          </a>
-          <a href="/concerts<%= buildQueryString({ page: currentPage, view: 'list', limit: itemsPerPage, ...activeFilters }) %>" 
-             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'list' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
-             title="List View">
-            ☰ List
-          </a>
-        </div>
-      </div>
+    <div class="ribbon-actions">
+      <button id="view-toggle" class="view-toggle-btn" onclick="toggleView()">
+        <span class="icon"><%= currentView === 'grid' ? '☰' : '⊞' %></span>
+        <span class="text"><%= currentView === 'grid' ? 'Switch to List' : 'Switch to Grid' %></span>
+      </button>
     </div>
-    
-    <div class="entry-content">
-      <% if (concerts.length === 0) { %>
-        <div style="color:#888;text-align:center;padding:2rem;">No upcoming concerts found.</div>
-      <% } else if (currentView === 'gallery') { %>
-        <!-- Gallery Mode: Cards with Date Overlay (Top Right) -->
-        <div class="concert-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;">
-          <% concerts.forEach(concert => {
-            const concertDate = new Date(concert.ConcertDate);
-            const month = concertDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-            const day = concertDate.getDate();
-          %>
-            <a href="/concerts/<%= concert.ConcertNumber %>" class="gallery-card"
-                 style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;flex:1;"
-                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
-                 onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
-                <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
-                  <img src="<%= concert.imageUrl %>"
-                       alt="<%= concert.ConcertName %>"
-                       onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
-                       style="width:100%;height:100%;object-fit:cover;object-position:top;">
-                  <div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.5rem 0.75rem;border-radius:6px;text-align:center;min-width:60px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">
-                    <div style="font-size:0.75rem;font-weight:600;letter-spacing:0.5px;line-height:1;"><%= month %></div>
-                    <div style="font-size:1.5rem;font-weight:800;line-height:1;margin-top:2px;"><%= day %></div>
-                  </div>
-                </div>
-                <div style="padding:1rem;">
-                  <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;"><%= concert.ConcertName %></h3>
-                  <div style="color:#666;font-size:0.9rem;">
-                    <% if (concert.City && concert.State) { %>
-                      <%= concert.City %>, <%= concert.State %>
-                    <% } %>
-                  </div>
-                </div>
-              </a>
-          <% }) %>
-        </div>
-      <% } else { %>
-        <!-- List Mode: Striped Table -->
-        <table class="list-table" style="width:100%;border-collapse:collapse;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-          <thead>
-            <tr style="background:var(--color-secondary-blue);color:#fff;">
-              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;width:100px;">Date</th>
-              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Concert Name</th>
-              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Location</th>
-              <th style="padding:1rem;text-align:right;font-weight:600;font-size:0.95rem;width:120px;">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% concerts.forEach((concert, index) => { 
-              const concertDate = new Date(concert.ConcertDate);
-            %>
-              <tr style="<%= index % 2 === 0 ? 'background:#fff;' : 'background:#f9f9f9;' %>border-bottom:1px solid #eee;">
-                <td style="padding:1rem;">
-                  <div style="font-weight:600;color:var(--color-primary-teal);font-size:0.9rem;">
-                    <%= concertDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
-                  </div>
-                </td>
-                <td style="padding:1rem;">
-                  <span style="font-weight:600;color:var(--color-secondary-blue);font-size:1rem;"><%= concert.ConcertName %></span>
-                  <% if (concert.VenueName) { %>
-                    <div style="color:#888;font-size:0.85rem;margin-top:0.2rem;"><%= concert.VenueName %></div>
-                  <% } %>
-                </td>
-                <td style="padding:1rem;color:#666;font-size:0.9rem;">
-                  <% if (concert.City && concert.State) { %>
-                    <%= concert.City %>, <%= concert.State %>
-                  <% } %>
-                </td>
-                <td style="padding:1rem;text-align:right;">
-                  <a href="/concerts/<%= concert.ConcertNumber %>"
-                     style="display:inline-block;padding:0.5rem 1.2rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:4px;text-decoration:none;font-size:0.85rem;transition:opacity 0.2s;"
-                     onmouseover="this.style.opacity='0.85'"
-                     onmouseout="this.style.opacity='1'">
-                    View
-                  </a>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      <% } %>
-    </div>
+  </div>
+</div>
 
-    <!-- Pagination Controls -->
-    <% if (totalPages > 1) { %>
-      <nav class="pagination" style="display:flex;justify-content:center;gap:0.5rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee;">
-        <% if (currentPage > 1) { %>
-          <a href="/concerts<%= buildQueryString({ page: currentPage - 1, view: currentView, limit: itemsPerPage, ...activeFilters }) %>" 
-             style="padding:0.5rem 1rem;background:#f0f0f0;color:#333;font-weight:600;border-radius:4px;text-decoration:none;transition:background 0.2s;"
-             onmouseover="this.style.background='#e0e0e0'"
-             onmouseout="this.style.background='#f0f0f0'">
-            ← Prev
-          </a>
-        <% } %>
-        
-        <% for (let i = 1; i <= totalPages; i++) { 
-          if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
-            <a href="/concerts<%= buildQueryString({ page: i, view: currentView, limit: itemsPerPage, ...activeFilters }) %>" 
-               style="padding:0.5rem 0.85rem;border-radius:4px;text-decoration:none;font-weight:600;<%= i === currentPage ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#333;' %>transition:background 0.2s;"
-               <% if (i !== currentPage) { %>
-                 onmouseover="this.style.background='#e0e0e0'"
-                 onmouseout="this.style.background='#f0f0f0'"
-               <% } %>>
-              <%= i %>
-            </a>
-          <% } else if (i === currentPage - 3 || i === currentPage + 3) { %>
-            <span style="padding:0.5rem 0.5rem;color:#999;">...</span>
-          <% } %>
-        <% } %>
-        
-        <% if (currentPage < totalPages) { %>
-          <a href="/concerts<%= buildQueryString({ page: currentPage + 1, view: currentView, limit: itemsPerPage, ...activeFilters }) %>" 
-             style="padding:0.5rem 1rem;background:#f0f0f0;color:#333;font-weight:600;border-radius:4px;text-decoration:none;transition:background 0.2s;"
-             onmouseover="this.style.background='#e0e0e0'"
-             onmouseout="this.style.background='#f0f0f0'">
-            Next →
-          </a>
-        <% } %>
-      </nav>
+<article style="max-width:1200px;margin:0 auto;padding:0 1rem 4rem;">
+  <header style="margin-bottom: 2rem; text-align: center;">
+    <h1 style="font-size: 2.5rem; color: var(--color-secondary-blue); margin-bottom: 0.5rem;">Upcoming Concerts</h1>
+    <p style="color: #666;">Browse the latest live music events</p>
+  </header>
+
+  <div id="listings-wrapper" class="listings-container <%= currentView === 'list' ? 'list-view' : 'grid-view' %>">
+    <% if (concerts.length === 0) { %>
+      <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: #999;">
+        <h3>No concerts found matching your criteria.</h3>
+      </div>
+    <% } else { %>
+      <% concerts.forEach(concert => { %>
+        <%- include('_card', { concert }) %>
+      <% }) %>
     <% } %>
+  </div>
+
+  <div id="infinite-loader">
+    <div class="loading-spinner" style="display: none;">Loading more concerts...</div>
+    <div class="end-message" style="display: none;">You've reached the end of the list.</div>
   </div>
 </article>
 
-<style>
-@media (max-width: 768px) {
-  .toolbar {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 1rem;
+<script>
+let currentPage = <%= currentPage %>;
+const totalPages = <%= totalPages %>;
+let isLoading = false;
+let currentView = '<%= currentView %>';
+
+// Initial state for observer
+const loader = document.getElementById('infinite-loader');
+const wrapper = document.getElementById('listings-wrapper');
+const spinner = loader.querySelector('.loading-spinner');
+const endMsg = loader.querySelector('.end-message');
+
+const observer = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && !isLoading && currentPage < totalPages) {
+    loadMore();
   }
-  .list-table {
-    font-size: 0.85rem !important;
-  }
-  .list-table th, .list-table td {
-    padding: 0.75rem 0.5rem !important;
-  }
-  .list-table th:nth-child(3), .list-table td:nth-child(3) {
-    display: none;
-  }
-}
-</style>
-@media (max-width: 768px) {
-  .concert-list {
-    grid-template-columns: 1fr !important;
+}, { threshold: 0.1 });
+
+observer.observe(loader);
+
+async function loadMore() {
+  isLoading = true;
+  spinner.style.display = 'block';
+  
+  const form = document.getElementById('filter-form');
+  const formData = new FormData(form);
+  const params = new URLSearchParams(formData);
+  params.append('page', currentPage + 1);
+  params.set('view', currentView);
+  params.set('ajax', '1');
+
+  try {
+    const response = await fetch(`/concerts?${params.toString()}`);
+    const data = await response.json();
+    
+    if (data.concerts && data.concerts.length > 0) {
+      currentPage = data.currentPage;
+      
+      // We need to fetch the HTML for these cards or render them client-side.
+      // For speed, let's assume the controller returns raw HTML partials if we asked,
+      // OR we just build them here. Since we have _card.ejs, let's use the JSON 
+      // data to build simple HTML strings to maintain the look.
+      
+      data.concerts.forEach(concert => {
+        const cardHtml = createCardHtml(concert);
+        wrapper.insertAdjacentHTML('beforeend', cardHtml);
+      });
+    }
+
+    if (currentPage >= data.totalPages) {
+      spinner.style.display = 'none';
+      endMsg.style.display = 'block';
+      observer.unobserve(loader);
+    }
+  } catch (err) {
+    console.error('Error loading more:', err);
+  } finally {
+    isLoading = false;
+    spinner.style.display = 'none';
   }
 }
 
-@media (max-width: 640px) {
-  .concert-item {
-    flex-direction: column;
-    align-items: flex-start !important;
-  }
-  .concert-date {
-    align-self: flex-start;
-  }
-  .concert-action {
-    align-self: stretch;
-  }
-  .concert-action a {
-    display: block;
-    text-align: center;
-  }
+function createCardHtml(c) {
+  const date = new Date(c.ConcertDate);
+  const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+  const day = date.getDate();
+  const alignment = c.imageAlignment || 'top';
+  const placeholder = 'https://images.lesterslist.com/media/lesterlogo_sq.png';
+  
+  return `
+    <a href="/concerts/${c.ConcertNumber}" class="gallery-card"
+       style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;display:block;">
+        <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
+          <img src="${c.imageUrl}"
+               alt="${c.ConcertName}"
+               onerror="this.onerror=null;this.src='${placeholder}';"
+               style="width:100%;height:100%;object-fit:cover;object-position:${alignment};">
+          <div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.5rem 0.75rem;border-radius:6px;text-align:center;min-width:60px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">
+            <div style="font-size:0.75rem;font-weight:600;letter-spacing:0.5px;line-height:1;">${month}</div>
+            <div style="font-size:1.5rem;font-weight:800;line-height:1;margin-top:2px;">${day}</div>
+          </div>
+        </div>
+        <div style="padding:1rem;">
+          <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;">${c.ConcertName}</h3>
+          <div style="color:#666;font-size:0.9rem;">
+            ${c.City && c.State ? `${c.City}, ${c.State}` : ''}
+          </div>
+        </div>
+      </a>
+  `;
 }
-</style>
+
+function handleFilterChange() {
+  const form = document.getElementById('filter-form');
+  const params = new URLSearchParams(new FormData(form));
+  params.set('view', currentView);
+  window.location.href = '/concerts?' + params.toString();
+}
+
+function toggleNearMe() {
+  const btn = document.getElementById('near-me-btn');
+  const latInput = document.getElementById('lat-input');
+  const lngInput = document.getElementById('lng-input');
+  const text = btn.querySelector('.text');
+  
+  if (btn.classList.contains('active')) {
+    latInput.value = '';
+    lngInput.value = '';
+    btn.classList.remove('active');
+    text.textContent = 'Find Near Me';
+    handleFilterChange();
+    return;
+  }
+
+  text.textContent = 'Locating...';
+  
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser');
+    text.textContent = 'Find Near Me';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      latInput.value = position.coords.latitude;
+      lngInput.value = position.coords.longitude;
+      btn.classList.add('active');
+      text.textContent = 'Near Me';
+      handleFilterChange();
+    },
+    (error) => {
+      console.error('Geolocation error:', error);
+      alert('Unable to retrieve your location. Check your browser permissions.');
+      text.textContent = 'Find Near Me';
+    }
+  );
+}
+
+// Check on page load if lat/lng are in URL to set active state
+window.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('lat') && urlParams.get('lat') !== '') {
+    const btn = document.getElementById('near-me-btn');
+    btn.classList.add('active');
+    btn.querySelector('.text').textContent = 'Exploring Near Me';
+    document.getElementById('lat-input').value = urlParams.get('lat');
+    document.getElementById('lng-input').value = urlParams.get('lng');
+  }
+});
+
+function toggleView() {
+  currentView = currentView === 'grid' ? 'list' : 'grid';
+  wrapper.className = 'listings-container ' + (currentView === 'list' ? 'list-view' : 'grid-view');
+  
+  const btn = document.getElementById('view-toggle');
+  btn.querySelector('.icon').textContent = currentView === 'grid' ? '☰' : '⊞';
+  btn.querySelector('.text').textContent = currentView === 'grid' ? 'Switch to List' : 'Switch to Grid';
+  
+  // Save preference if needed, or just update URL without reload
+  const url = new URL(window.location);
+  url.searchParams.set('view', currentView);
+  window.history.pushState({}, '', url);
+}
+</script>

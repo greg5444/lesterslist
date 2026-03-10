@@ -85,7 +85,7 @@
               <div style="width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
                 <img src="<%= band.imageUrl %>" alt="<%= band.BandName %>" 
                      onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
-                     style="width:100%;height:100%;object-fit:cover;object-position:top;">
+                     style="width:100%;height:100%;object-fit:cover;object-position:<%= band.imageAlignment || 'top' %>;">
               </div>
               <div style="padding:1rem;text-align:center;">
                 <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0;"><%= band.BandName %></h3>
@@ -109,7 +109,7 @@
                   <div style="display:flex;align-items:center;gap:1rem;">
                     <img src="<%= band.imageUrl %>" alt="<%= band.BandName %>"
                          onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
-                         style="width:50px;height:50px;object-fit:cover;border-radius:4px;flex-shrink:0;">
+                         style="width:50px;height:50px;object-fit:cover;object-position:<%= band.imageAlignment || 'top' %>;border-radius:4px;flex-shrink:0;">
                     <span style="font-weight:600;color:var(--color-secondary-blue);font-size:1rem;"><%= band.BandName %></span>
                   </div>
                 </td>
