@@ -490,9 +490,9 @@ function toggleNearMe() {
     lngInput.value = '';
     btn.classList.remove('active');
     text.textContent = 'Finding All';
-    icon.textContent = '🇺🇸';
+    icon.innerHTML = '<img src="https://flagcdn.com/w80/us.png" alt="US Flag" width="15">';
     
-    // Briefly show 'Finding All 🇺🇸', then reset for next use
+    // Briefly show 'Finding All' with flag, then reset for next use
     setTimeout(() => {
         text.textContent = 'Find Near Me';
         icon.textContent = '📍';
@@ -516,7 +516,7 @@ function toggleNearMe() {
       lngInput.value = position.coords.longitude;
       btn.classList.add('active');
       text.textContent = 'See All U.S.A.';
-      icon.textContent = '🇺🇸';
+      icon.innerHTML = '<img src="https://flagcdn.com/w80/us.png" alt="US Flag" width="15">';
       handleFilterChange();
     },
     (error) => {
@@ -538,7 +538,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (urlParams.has('lat') && urlParams.get('lat') !== '') {
     btn.classList.add('active');
     text.textContent = 'See All U.S.A.';
-    icon.textContent = '🇺🇸';
+    icon.innerHTML = '<img src="https://flagcdn.com/w80/us.png" alt="US Flag" width="15">';
     document.getElementById('lat-input').value = urlParams.get('lat');
     document.getElementById('lng-input').value = urlParams.get('lng');
   } else {
