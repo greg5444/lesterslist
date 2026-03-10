@@ -52,35 +52,144 @@
 
 <section class="boldwp-box detail-page-section" style="max-width:900px;margin:2rem auto 0 auto;width:100%;">
   <div class="boldwp-box-inside">
-    <h2 style="color:var(--color-secondary);margin-bottom:1rem;font-size:1.3rem;">Upcoming Appearances</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+      <h2 style="color:var(--color-secondary); margin:0; font-size:1.3rem;">Upcoming Appearances</h2>
+      
+      <!-- Mini Filter Bar -->
+      <div style="display:flex; gap:0.6rem; align-items:center;">
+        <!-- State pill -->
+        <div id="state-pill" onclick="openStateModal()" style="cursor:pointer; background:#f5f5f5; border:1px solid #ddd; border-radius:50px; padding:0.4rem 1rem; font-size:0.82rem; font-weight:700; color:#555; display:flex; align-items:center; gap:0.4rem;">
+          <span class="pill-text">All States</span>
+          <span style="font-size:0.6rem; opacity:0.7;">▼</span>
+        </div>
+
+        <!-- Date pill -->
+        <div id="date-pill" onclick="openDateModal()" style="cursor:pointer; background:#f5f5f5; border:1px solid #ddd; border-radius:50px; padding:0.4rem 1rem; font-size:0.82rem; font-weight:700; color:#555; display:flex; align-items:center; gap:0.4rem;">
+          <span class="pill-text">All Dates</span>
+          <span style="font-size:0.6rem; opacity:0.7;">▼</span>
+        </div>
+
+        <button id="view-toggle" style="cursor:pointer; background:#f5f5f5; border:1px solid #ddd; border-radius:50px; padding:0.4rem 1rem; font-size:0.82rem; font-weight:700; color:#555; display:flex; align-items:center; gap:0.4rem;" onclick="toggleLocalView()">
+          <span id="view-toggle-icon">☰</span>
+          <span id="view-toggle-text">Switch to Gallery</span>
+        </button>
+      </div>
+    </div>
+
     <% if (concerts.length === 0) { %>
       <div style="color:#888;font-size:0.9rem;">No appearances listed yet.</div>
     <% } else { %>
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <% concerts.forEach(concert => { %>
-          <a href="/concerts/<%= concert.ConcertNumber %>" 
-             style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem;background:#fcfcfc;border:1px solid #f0f0f0;border-radius:6px;text-decoration:none;transition:background 0.1s ease;gap:1.5rem;"
-             onmouseover="this.style.background='#f3f7f9';this.style.borderColor='#e2e8f0'"
-             onmouseout="this.style.background='#fcfcfc';this.style.borderColor='#f0f0f0'">
-            <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0;">
-              <span style="font-weight:700;color:var(--color-secondary-blue);font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">
-                <%= concert.ConcertName %>
-              </span>
-              <span style="color:#666;font-size:0.85rem;white-space:nowrap;flex-shrink:0;">
-                <% if (concert.City || concert.State) { %>
-                  📍 <%= [concert.City, concert.State].filter(Boolean).join(', ') %>
-                <% } %>
-              </span>
-            </div>
-            <div style="font-weight:600;color:var(--color-primary-teal);font-size:0.85rem;white-space:nowrap;flex-shrink:0;">
-              <%= new Date(concert.ConcertDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
-            </div>
-          </a>
-        <% }) %>
+      <!-- Container for both views -->
+      <div id="appearances-container">
+        <!-- List View (Default) -->
+        <div id="list-view-content" style="display:flex; flex-direction:column; gap:4px;">
+          <% concerts.forEach(concert => { %>
+            <a href="/concerts/<%= concert.ConcertNumber %>" 
+               class="appearance-list-item"
+               data-date="<%= concert.ConcertDate %>"
+               data-state="<%= concert.State %>"
+               style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem;background:#fcfcfc;border:1px solid #f0f0f0;border-radius:6px;text-decoration:none;transition:background 0.1s ease;gap:1.5rem;"
+               onmouseover="this.style.background='#f3f7f9';this.style.borderColor='#e2e8f0'"
+               onmouseout="this.style.background='#fcfcfc';this.style.borderColor='#f0f0f0'">
+              <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0;">
+                <span style="font-weight:700;color:var(--color-secondary-blue);font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">
+                  <%= concert.ConcertName %>
+                </span>
+                <span style="color:#666;font-size:0.85rem;white-space:nowrap;flex-shrink:0;">
+                  <% if (concert.City || concert.State) { %>
+                    📍 <%= [concert.City, concert.State].filter(Boolean).join(', ') %>
+                  <% } %>
+                </span>
+              </div>
+              <div style="font-weight:600;color:var(--color-primary-teal);font-size:0.85rem;white-space:nowrap;flex-shrink:0;">
+                <%= new Date(concert.ConcertDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+
+        <!-- Gallery View (Hidden by default) -->
+        <div id="gallery-view-content" style="display:none; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem;">
+          <% concerts.forEach(concert => { %>
+            <% 
+              // 1. Prioritize Concert Image, 2. Fallback to Band Image (imageUrl), 3. Final fallback to Logo
+              const cardImage = concert.ImagePath 
+                ? (concert.ImagePath.startsWith('http') ? concert.ImagePath : 'https://images.lesterslist.com/media/' + concert.ImagePath) 
+                : (typeof imageUrl !== 'undefined' ? imageUrl : 'https://images.lesterslist.com/media/lesterlogo_sq.png');
+              
+              const cardDate = new Date(concert.ConcertDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            %>
+            <a href="/concerts/<%= concert.ConcertNumber %>" class="gallery-card appearance-gallery-item" data-date="<%= concert.ConcertDate %>" data-state="<%= concert.State %>" style="text-decoration:none; color:inherit; display:block; background:#fff; border:1px solid #eee; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); transition:transform 0.2s;">
+              <div style="height:160px; overflow:hidden; background:#f9f9f9;">
+                <img src="<%= cardImage %>" style="width:100%; height:100%; object-fit:cover; object-position:top;" loading="lazy">
+              </div>
+              <div style="padding:0.75rem;">
+                <div style="font-weight:700; font-size:0.9rem; color:var(--color-secondary-blue); margin-bottom:0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= concert.ConcertName %></div>
+                <div style="font-size:0.8rem; color:#666; display:flex; justify-content:space-between; align-items:center;">
+                  <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-right:4px;">📍 <%= [concert.City, concert.State].filter(Boolean).join(', ') %></span>
+                  <span style="color:var(--color-primary-teal); font-weight:600; flex-shrink:0;"><%= cardDate %></span>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
       </div>
     <% } %>
   </div>
 </section>
+
+<!-- Date Filter Modal -->
+<div id="band-date-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:#fff; width:100%; max-width:320px; border-radius:16px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+    <div style="padding:1.25rem; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1.1rem; color:var(--color-secondary-blue);">Filter by Date</h3>
+      <button onclick="closeDateModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#999; line-height:1;">&times;</button>
+    </div>
+    <div style="padding:0.75rem; max-height:60vh; overflow-y:auto;">
+      <div id="opt-date-all" class="date-opt" onclick="applyBandDateFilter('all', 'All Dates')" style="padding:0.85rem 1rem; border-radius:10px; cursor:pointer; font-weight:700; color:#444; margin-bottom:0.4rem; background:#f0fdfa;">All Dates</div>
+      <div id="opt-date-2weeks" class="date-opt" onclick="applyBandDateFilter('2weeks', 'Next 2 Weeks')" style="padding:0.85rem 1rem; border-radius:10px; cursor:pointer; font-weight:700; color:#444; margin-bottom:0.2rem;">Next 2 Weeks</div>
+      
+      <% 
+        // Generate dynamic months from actual concerts
+        const availableMonths = [];
+        concerts.forEach(c => {
+          const d = new Date(c.ConcertDate);
+          const mNum = (d.getMonth() + 1).toString().padStart(2, '0');
+          const mLabel = d.toLocaleDateString('en-US', { month: 'long' });
+          const year = d.getFullYear();
+          const key = `${mNum}-${year}`;
+          if (!availableMonths.find(m => m.key === key)) {
+            availableMonths.push({ key, label: `${mLabel} ${year}`, mNum, year });
+          }
+        });
+        availableMonths.sort((a,b) => (a.year - b.year) || (a.mNum - b.mNum));
+
+        availableMonths.forEach(m => {
+      %>
+        <div id="opt-date-<%= m.key %>" class="date-opt" onclick="applyBandDateFilter('<%= m.key %>', '<%= m.label %>')" style="padding:0.85rem 1rem; border-radius:10px; cursor:pointer; font-weight:700; color:#444; margin-bottom:0.2rem;"><%= m.label %></div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<!-- State Filter Modal -->
+<div id="band-state-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:#fff; width:100%; max-width:320px; border-radius:16px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+    <div style="padding:1.25rem; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1.1rem; color:var(--color-secondary-blue);">Filter by State</h3>
+      <button onclick="closeStateModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#999; line-height:1;">&times;</button>
+    </div>
+    <div style="padding:0.75rem; max-height:60vh; overflow-y:auto;">
+      <div id="opt-state-all" class="state-opt" onclick="applyBandStateFilter('all', 'All States')" style="padding:0.85rem 1rem; border-radius:10px; cursor:pointer; font-weight:700; color:#444; margin-bottom:0.4rem; background:#f0fdfa;">All States</div>
+      <% 
+        const availableStates = [...new Set(concerts.map(c => c.State).filter(Boolean))].sort();
+        availableStates.forEach(state => {
+      %>
+        <div id="opt-state-<%= state %>" class="state-opt" onclick="applyBandStateFilter('<%= state %>', '<%= state %>')" style="padding:0.85rem 1rem; border-radius:10px; cursor:pointer; font-weight:700; color:#444; margin-bottom:0.2rem;"><%= state %></div>
+      <% }) %>
+    </div>
+  </div>
+</div>
 
 <!-- Report a Problem -->
 <div class="report-problem" style="max-width:900px;margin:0 auto 4rem auto;padding:1.5rem 0;">
@@ -111,6 +220,134 @@
         }, 100);
       }
     }
+  }
+
+  /* Band Modal Control */
+  function openDateModal() {
+    document.getElementById('band-date-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDateModal() {
+    document.getElementById('band-date-modal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+  function openStateModal() {
+    document.getElementById('band-state-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function closeStateModal() {
+    document.getElementById('band-state-modal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  let activeDateFilter = 'all';
+  let activeStateFilter = 'all';
+
+  function applyBandDateFilter(mode, label) {
+    activeDateFilter = mode;
+    const pill = document.querySelector('#date-pill .pill-text');
+    pill.innerText = label;
+    
+    document.querySelectorAll('.date-opt').forEach(opt => opt.style.background = 'transparent');
+    const activeOpt = document.getElementById('opt-date-' + mode);
+    if (activeOpt) activeOpt.style.background = '#f0fdfa';
+
+    runCombinedFilters();
+    closeDateModal();
+  }
+
+  function applyBandStateFilter(state, label) {
+    activeStateFilter = state;
+    const pill = document.querySelector('#state-pill .pill-text');
+    pill.innerText = label === 'all' ? 'All States' : label;
+    
+    document.querySelectorAll('.state-opt').forEach(opt => opt.style.background = 'transparent');
+    const activeOpt = document.getElementById('opt-state-' + state);
+    if (activeOpt) activeOpt.style.background = '#f0fdfa';
+
+    runCombinedFilters();
+    closeStateModal();
+  }
+
+  function runCombinedFilters() {
+    const listItems = document.querySelectorAll('.appearance-list-item');
+    const galItems = document.querySelectorAll('.appearance-gallery-item');
+    
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const limit = new Date();
+    limit.setDate(now.getDate() + 14);
+
+    const checkItem = (item) => {
+      // 1. Date Check
+      let dateMatch = false;
+      const dStr = item.getAttribute('data-date');
+      const d = new Date(dStr);
+      
+      if (activeDateFilter === 'all') {
+        dateMatch = true;
+      } else if (activeDateFilter === '2weeks') {
+        dateMatch = (d >= now && d <= limit);
+      } else {
+        // Format: MM-YYYY
+        const m = (d.getMonth() + 1).toString().padStart(2, '0');
+        const y = d.getFullYear();
+        dateMatch = (`${m}-${y}` === activeDateFilter);
+      }
+
+      // 2. State Check
+      let stateMatch = (activeStateFilter === 'all' || item.getAttribute('data-state') === activeStateFilter);
+
+      return dateMatch && stateMatch;
+    };
+
+    listItems.forEach(item => {
+      const show = checkItem(item);
+      item.style.display = (show && currentLocalView === 'list') ? 'flex' : 'none';
+      item.setAttribute('data-visible-filtered', show ? 'true' : 'false');
+    });
+
+    galItems.forEach(item => {
+      const show = checkItem(item);
+      item.style.display = (show && currentLocalView === 'gallery') ? 'block' : 'none';
+      item.setAttribute('data-visible-filtered', show ? 'true' : 'false');
+    });
+  }
+
+  /* Local List/Gallery View Toggle */
+  let currentLocalView = 'list';
+  function toggleLocalView() {
+    const listView = document.getElementById('list-view-content');
+    const galleryView = document.getElementById('gallery-view-content');
+    const icon = document.getElementById('view-toggle-icon');
+    const text = document.getElementById('view-toggle-text');
+
+    if (currentLocalView === 'list') {
+      currentLocalView = 'gallery';
+      listView.style.display = 'none';
+      galleryView.style.display = 'grid';
+      icon.innerText = '⊞';
+      text.innerText = 'Switch to List';
+    } else {
+      currentLocalView = 'list';
+      listView.style.display = 'flex';
+      galleryView.style.display = 'none';
+      icon.innerText = '☰';
+      text.innerText = 'Switch to Gallery';
+    }
+
+    // After toggle, refresh based on filters
+    const listItems = document.querySelectorAll('.appearance-list-item');
+    const galItems = document.querySelectorAll('.appearance-gallery-item');
+    
+    listItems.forEach(item => {
+      const isFiltered = item.getAttribute('data-visible-filtered') !== 'false';
+      item.style.display = (currentLocalView === 'list' && isFiltered) ? 'flex' : 'none';
+    });
+    galItems.forEach(item => {
+      const isFiltered = item.getAttribute('data-visible-filtered') !== 'false';
+      item.style.display = (currentLocalView === 'gallery' && isFiltered) ? 'block' : 'none';
+    });
   }
 
   function initBandMap() {

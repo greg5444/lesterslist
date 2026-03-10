@@ -83,15 +83,15 @@ export default class Band {
 
   static async findLinkedConcerts(bandNumber) {
     if (!bandNumber) throw new Error('BandNumber is required');
-    // TODO: Re-enable date filtering for production
-    // DEV MODE: Show ALL concerts regardless of date
+    // Filter to show only today and future concerts
+    const today = new Date().toISOString().split('T')[0];
     const [rows] = await pool.query(`
       SELECT c.ConcertNumber, TRIM(REGEXP_REPLACE(c.ConcertName, ' [0-9]{4}$', '')) as ConcertName, c.ConcertDate, v.VenueName, v.City, v.State
       FROM Concerts c
       LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
-      WHERE c.BandNumber = ?
+      WHERE c.BandNumber = ? AND c.ConcertDate >= ?
       ORDER BY c.ConcertDate ASC
-    `, [bandNumber]);
+    `, [bandNumber, today]);
     return rows;
   }
 }

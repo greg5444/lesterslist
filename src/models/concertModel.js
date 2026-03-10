@@ -52,8 +52,12 @@ export default class Concert {
       params.push(state, state);
     }
     if (month) {
-      conditions.push('DATE_FORMAT(c.ConcertDate, \'%Y-%m\') = ?');
-      params.push(month);
+      if (month === 'next-two-weeks') {
+        conditions.push('c.ConcertDate <= DATE_ADD(CURDATE(), INTERVAL 14 DAY)');
+      } else {
+        conditions.push('DATE_FORMAT(c.ConcertDate, \'%Y-%m\') = ?');
+        params.push(month);
+      }
     }
     if (lat && lng) {
       // Add distance calculation (Haversine formula approximated or standard)
@@ -98,8 +102,12 @@ export default class Concert {
       params.push(state, state);
     }
     if (month) {
-      conditions.push('DATE_FORMAT(c.ConcertDate, \'%Y-%m\') = ?');
-      params.push(month);
+      if (month === 'next-two-weeks') {
+        conditions.push('c.ConcertDate <= DATE_ADD(CURDATE(), INTERVAL 14 DAY)');
+      } else {
+        conditions.push('DATE_FORMAT(c.ConcertDate, \'%Y-%m\') = ?');
+        params.push(month);
+      }
     }
     if (lat && lng) {
       conditions.push('v.Latitude IS NOT NULL AND v.Longitude IS NOT NULL');

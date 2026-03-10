@@ -236,22 +236,22 @@
         </h3>
         <div class="boldwp-widget-content">
           <div class="stats-grid">
-            <div class="stats-card">
-              <div class="stats-number"><%= concertCount %></div>
-              <div class="stats-label">Concerts</div>
-            </div>
-            <div class="stats-card">
-              <div class="stats-number"><%= festivalCount %></div>
-              <div class="stats-label">Festivals</div>
-            </div>
-            <div class="stats-card">
-              <div class="stats-number"><%= jamCount %></div>
-              <div class="stats-label">Jams</div>
-            </div>
-            <div class="stats-card">
-              <div class="stats-number"><%= campCount %></div>
-              <div class="stats-label">Camps</div>
-            </div>
+            <a href="/concerts" class="stats-card" style="text-decoration:none;">
+              <div class="stats-number" style="color:#E6873C;"><%= concertCount %></div>
+              <div class="stats-label" style="color:#fff; font-weight:600; letter-spacing:0.5px; opacity:0.9;">CONCERTS</div>
+            </a>
+            <a href="/festivals" class="stats-card" style="text-decoration:none;">
+              <div class="stats-number" style="color:#E6873C;"><%= festivalCount %></div>
+              <div class="stats-label" style="color:#fff; font-weight:600; letter-spacing:0.5px; opacity:0.9;">FESTIVALS</div>
+            </a>
+            <a href="/jams" class="stats-card" style="text-decoration:none;">
+              <div class="stats-number" style="color:#E6873C;"><%= jamCount %></div>
+              <div class="stats-label" style="color:#fff; font-weight:600; letter-spacing:0.5px; opacity:0.9;">JAMS</div>
+            </a>
+            <a href="/camps" class="stats-card" style="text-decoration:none;">
+              <div class="stats-number" style="color:#E6873C;"><%= campCount %></div>
+              <div class="stats-label" style="color:#fff; font-weight:600; letter-spacing:0.5px; opacity:0.9;">CAMPS/WORKSHOPS</div>
+            </a>
           </div>
         </div>
       </div>
@@ -260,9 +260,10 @@
     <div class="widget boldwp-widget boldwp-box" style="background:var(--color-secondary-blue);">
       <div class="boldwp-box-inside" style="text-align:center;">
         <div style="font-size:1.15rem;font-weight:700;margin-bottom:0.7rem;color:#fff;">Want to be listed?</div>
-        <a href="/jams/new" style="display:inline-block;padding:0.7rem 1.5rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:6px;text-decoration:none;">Submit a Jam</a>
-        <span style="display:inline-block;width:1.5rem;"></span>
-        <a href="/learn/new" style="display:inline-block;padding:0.7rem 1.5rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:6px;text-decoration:none;">Submit a Resource</a>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; align-items:center;">
+          <a href="/jams/new" style="display:inline-block;width:180px;padding:0.6rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:6px;text-decoration:none;font-size:0.95rem;">Submit a Jam</a>
+          <a href="/submit" style="display:inline-block;width:180px;padding:0.6rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:6px;text-decoration:none;font-size:0.95rem;">Submit a Listing</a>
+        </div>
       </div>
     </div>
   </aside>
