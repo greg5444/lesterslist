@@ -66,6 +66,13 @@ app.engine('ejs', engine);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../src/views'));
 
+// Expose admin session status and current path to all views
+app.use((req, res, next) => {
+  res.locals.isAdmin = !!(req.session && req.session.userId);
+  res.locals.currentPath = req.path;
+  next();
+});
+
 // Health check (must be before all other routes)
 app.get('/health', (req, res) => res.status(200).send('OK'));
 

@@ -33,16 +33,16 @@
   <!-- Mobile Responsive Adjustment -->
   <style>
     @media (max-width: 850px) {
-      footer > div {
-        flex-direction: column !important;
-        text-align: center;
-        gap: 2rem !important;
-      }
-      footer div div {
-        flex-direction: column !important;
-        gap: 2rem !important;
-        align-items: center !important;
-      }
+      footer { padding: 1.2rem 0 !important; }
+      footer > div { gap: 1.5rem !important; padding: 0 1rem !important; }
+      footer > div > div:first-child img { width: 75px !important; height: 75px !important; }
+      footer > div > div:last-child { gap: 3rem !important; }
+      footer li a, footer li span { font-size: 0.9rem !important; }
+      footer ul { gap: 0.5rem !important; }
+    }
+    @media (max-width: 500px) {
+      footer > div { flex-direction: column !important; text-align: center; gap: 1.5rem !important; }
+      footer > div > div:last-child { flex-direction: column !important; gap: 1rem !important; align-items: center !important; }
     }
   </style>
 </footer>

@@ -11,43 +11,74 @@
   }
 %>
 
-<article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:2.5rem auto 0 auto;">
+<style>
+.festival-ribbon {
+  position: sticky;
+  top: <%= isAdmin ? '36px' : '0' %>;
+  z-index: 1000;
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #eaeaea;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.festival-ribbon-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.festival-view-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1.25rem;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  color: #555;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.festival-view-pill:hover { background: #ebebeb; border-color: #ccc; }
+</style>
+
+<div class="festival-ribbon">
+  <div class="festival-ribbon-inner">
+    <div style="color:#666;font-size:0.9rem;">
+      Page <strong><%= currentPage %></strong> of <strong><%= totalPages || 1 %></strong>
+      <span style="margin-left:0.5rem;color:#999;">(<%= totalCount %> total)</span>
+      &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+      <label style="font-weight:600;font-size:0.9rem;">Show:
+        <select onchange="window.location.href='/festivals<%= buildQueryString({ page: 1, view: currentView, limit: undefined }) %>&limit=' + this.value"
+                style="margin-left:0.3rem;padding:0.3rem 0.5rem;border:1px solid #ddd;border-radius:4px;font-size:0.85rem;cursor:pointer;">
+          <option value="30" <%= itemsPerPage === 30 ? 'selected' : '' %>>30</option>
+          <option value="60" <%= itemsPerPage === 60 ? 'selected' : '' %>>60</option>
+        </select>
+      </label>
+    </div>
+    <a href="/festivals<%= buildQueryString({ page: currentPage, view: currentView === 'gallery' ? 'list' : 'gallery', limit: itemsPerPage }) %>"
+       class="festival-view-pill">
+      <span><%= currentView === 'gallery' ? '☰' : '⊞' %></span>
+      <span><%= currentView === 'gallery' ? 'List View' : 'Gallery View' %></span>
+    </a>
+  </div>
+</div>
+
+<article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:0 auto;">
   <div class="boldwp-box-inside">
     <header class="entry-header" style="text-align:center;">
       <div class="entry-header-inside">
         <h1 class="entry-title" style="font-size:2.5rem;margin:1rem 0;">All Festivals</h1>
       </div>
     </header>
-
-    <!-- Toolbar: Pagination + View Toggle + Items Per Page -->
-    <div class="toolbar" style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem 0;margin-bottom:1.5rem;border-bottom:1px solid #eee;flex-wrap:wrap;gap:1rem;">
-      <div class="pagination-info" style="color:#666;font-size:0.95rem;">
-        Page <strong><%= currentPage %></strong> of <strong><%= totalPages || 1 %></strong>
-        <span style="margin-left:0.5rem;color:#999;">(<%= totalCount %> total)</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:0.5rem;">
-          <label style="color:#666;font-size:0.9rem;font-weight:600;">Show:</label>
-          <select onchange="window.location.href='/festivals<%= buildQueryString({ page: 1, view: currentView, limit: undefined }) %>&limit=' + this.value" 
-                  style="padding:0.4rem 0.7rem;border:1px solid #ddd;border-radius:4px;font-size:0.9rem;font-weight:600;cursor:pointer;background:#fff;">
-            <option value="30" <%= itemsPerPage === 30 ? 'selected' : '' %>>30</option>
-            <option value="60" <%= itemsPerPage === 60 ? 'selected' : '' %>>60</option>
-          </select>
-        </div>
-        <div class="view-toggle" style="display:flex;gap:0.5rem;">
-          <a href="/festivals<%= buildQueryString({ page: currentPage, view: 'gallery', limit: itemsPerPage }) %>" 
-             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'gallery' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
-             title="Gallery View">
-            ⊞ Gallery
-          </a>
-          <a href="/festivals<%= buildQueryString({ page: currentPage, view: 'list', limit: itemsPerPage }) %>" 
-             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'list' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
-             title="List View">
-            ☰ List
-          </a>
-        </div>
-      </div>
-    </div>
     
     <div class="entry-content">
       <% if (festivals.length === 0) { %>
@@ -61,6 +92,7 @@
             const dateRange = `${startDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })} - ${endDate.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`;
             const location = festival.City && festival.State ? `${festival.City}, ${festival.State}` : (festival.VenueName || '');
           %>
+            <div style="position:relative;">
             <a href="/festivals/<%= festival.FestivalNumber %>" class="gallery-card"
                style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;flex:1;"
                onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
@@ -69,7 +101,7 @@
                  <img src="<%= (festival.imageUrl) %>" 
                      alt="<%= festival.FestivalName %>"
                      onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';"
-                     style="width:100%;height:100%;object-fit:cover;object-position:<%= festival.imageAlignment || 'top' %>;">
+                     style="width:100%;height:100%;object-fit:cover;object-position:<%= festival.imageAlignment || 'center' %>;">
                 <!-- Location Badge Overlay (Bottom Left) -->
                 <% if (location) { %>
                 <div style="position:absolute;bottom:10px;left:10px;background:rgba(61,140,149,0.95);color:#fff;padding:0.5rem 0.85rem;border-radius:6px;text-align:center;max-width:180px;box-shadow:0 2px 6px rgba(0,0,0,0.4);font-size:0.8rem;font-weight:600;line-height:1.3;">
@@ -84,6 +116,12 @@
                 </div>
               </div>
             </a>
+            <% if (isAdmin) { %>
+              <a href="/admin/edit/festival/<%= festival.FestivalNumber %>"
+                 style="position:absolute;top:8px;right:8px;z-index:10;background:rgba(34,86,117,0.88);color:#fff;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.75rem;text-decoration:none;font-weight:700;backdrop-filter:blur(2px);"
+                 title="Edit in Admin">✏️ Edit</a>
+            <% } %>
+            </div>
           <% }) %>
         </div>
       <% } else { %>

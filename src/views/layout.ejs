@@ -12,6 +12,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <% if (isAdmin) { %>
+  <div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#1a3a50;color:#fff;display:flex;align-items:center;gap:1rem;padding:0 1rem;height:36px;font-size:0.82rem;font-family:sans-serif;box-shadow:0 2px 6px rgba(0,0,0,0.4);">
+    <a href="/admin/dashboard" style="color:#3ec9d6;font-weight:700;text-decoration:none;white-space:nowrap;">⚙️ Admin</a>
+    <span style="color:#555;">|</span>
+    <a href="/bands" style="color:#ccc;text-decoration:none;">Bands</a>
+    <a href="/concerts" style="color:#ccc;text-decoration:none;">Concerts</a>
+    <a href="/festivals" style="color:#ccc;text-decoration:none;">Festivals</a>
+    <a href="/jams" style="color:#ccc;text-decoration:none;">Jams</a>
+    <a href="/camps" style="color:#ccc;text-decoration:none;">Camps</a>
+    <span style="flex:1;"></span>
+    <% const path = locals.currentPath || ''; %>
+    <% const idMatch = path.match(/\/(bands|festivals|concerts)\/([A-Za-z0-9]+)/); %>
+    <% if (idMatch) { %>
+      <a href="/admin/edit/<%= idMatch[1].replace(/s$/, '') %>/<%= idMatch[2] %>" style="background:#e6873c;color:#fff;padding:0.2rem 0.75rem;border-radius:4px;text-decoration:none;font-weight:700;">✏️ Edit This <%= idMatch[1].replace(/s$/, '') %></a>
+    <% } %>
+    <a href="/admin/logout" style="color:#f88;text-decoration:none;margin-left:0.5rem;">Logout</a>
+  </div>
+  <div style="height:36px;"></div>
+  <% } %>
   <!-- Coming Soon Curtain Overlay with Password Unlock -->
   <div id="curtain-overlay" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(34,86,117,0.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:'Inter',sans-serif;text-align:center;">
     <img src="https://images.lesterslist.com/media/lesterlogo_sq.png" alt="Lesterslist Logo" style="width:120px;height:120px;margin-bottom:2rem;filter:drop-shadow(0 2px 8px #000);">

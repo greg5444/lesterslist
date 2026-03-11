@@ -79,6 +79,7 @@
         <!-- Gallery Mode: Image Cards -->
         <div class="band-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem;">
           <% bands.forEach(band => { %>
+            <div style="position:relative;">
             <a href="/bands/<%= band.BandNumber %>" class="gallery-card" style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;"
                onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
                onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
@@ -91,6 +92,12 @@
                 <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0;"><%= band.BandName %></h3>
               </div>
             </a>
+            <% if (isAdmin) { %>
+              <a href="/admin/edit/band/<%= band.BandNumber %>"
+                 style="position:absolute;top:8px;right:8px;z-index:10;background:rgba(34,86,117,0.88);color:#fff;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.75rem;text-decoration:none;font-weight:700;backdrop-filter:blur(2px);"
+                 title="Edit in Admin">✏️ Edit</a>
+            <% } %>
+            </div>
           <% }) %>
         </div>
       <% } else { %>

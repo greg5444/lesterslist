@@ -1,6 +1,6 @@
 // src/routes/adminRoutes.js
 import express from 'express';
-import { showLogin, handleLogin, handleLogout, showDashboard, approveItem, deleteItem, showEditJam, updateJam, showEditLearn, updateLearn, showTickerSettings, saveTickerSettings, showSubmissions, showSubmissionDetail, updateSubmissionStatus } from '../controllers/adminController.js';
+import { showLogin, handleLogin, handleLogout, showDashboard, approveItem, deleteItem, showEditJam, updateJam, showEditLearn, updateLearn, showTickerSettings, saveTickerSettings, showSubmissions, showSubmissionDetail, updateSubmissionStatus, showEditBand, updateBand, showEditFestival, updateFestival, showEditConcert, updateConcert } from '../controllers/adminController.js';
 import { isAuthenticated } from '../middleware/auth.js';
 import pool from '../config/database.js';
 
@@ -16,6 +16,12 @@ router.get('/edit/jam/:id', isAuthenticated, showEditJam);
 router.post('/edit/jam/:id', isAuthenticated, updateJam);
 router.get('/edit/learn/:id', isAuthenticated, showEditLearn);
 router.post('/edit/learn/:id', isAuthenticated, updateLearn);
+router.get('/edit/band/:id', isAuthenticated, showEditBand);
+router.post('/edit/band/:id', isAuthenticated, updateBand);
+router.get('/edit/festival/:id', isAuthenticated, showEditFestival);
+router.post('/edit/festival/:id', isAuthenticated, updateFestival);
+router.get('/edit/concert/:id', isAuthenticated, showEditConcert);
+router.post('/edit/concert/:id', isAuthenticated, updateConcert);
 router.post('/approve/:type/:id', isAuthenticated, approveItem);
 router.post('/delete/:type/:id', isAuthenticated, deleteItem);
 

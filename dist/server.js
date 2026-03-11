@@ -65,6 +65,12 @@ app.use((0, express_session_1.default)({
 app.engine('ejs', ejs_mate_1.default);
 app.set('view engine', 'ejs');
 app.set('views', path_1.default.join(__dirname, '../src/views'));
+// Expose admin session status and current path to all views
+app.use((req, res, next) => {
+    res.locals.isAdmin = !!(req.session && req.session.userId);
+    res.locals.currentPath = req.path;
+    next();
+});
 // Health check (must be before all other routes)
 app.get('/health', (req, res) => res.status(200).send('OK'));
 // Homepage route (must be first)

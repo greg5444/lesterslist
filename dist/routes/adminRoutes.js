@@ -19,6 +19,12 @@ router.get('/edit/jam/:id', auth_js_1.isAuthenticated, adminController_js_1.show
 router.post('/edit/jam/:id', auth_js_1.isAuthenticated, adminController_js_1.updateJam);
 router.get('/edit/learn/:id', auth_js_1.isAuthenticated, adminController_js_1.showEditLearn);
 router.post('/edit/learn/:id', auth_js_1.isAuthenticated, adminController_js_1.updateLearn);
+router.get('/edit/band/:id', auth_js_1.isAuthenticated, adminController_js_1.showEditBand);
+router.post('/edit/band/:id', auth_js_1.isAuthenticated, adminController_js_1.updateBand);
+router.get('/edit/festival/:id', auth_js_1.isAuthenticated, adminController_js_1.showEditFestival);
+router.post('/edit/festival/:id', auth_js_1.isAuthenticated, adminController_js_1.updateFestival);
+router.get('/edit/concert/:id', auth_js_1.isAuthenticated, adminController_js_1.showEditConcert);
+router.post('/edit/concert/:id', auth_js_1.isAuthenticated, adminController_js_1.updateConcert);
 router.post('/approve/:type/:id', auth_js_1.isAuthenticated, adminController_js_1.approveItem);
 router.post('/delete/:type/:id', auth_js_1.isAuthenticated, adminController_js_1.deleteItem);
 router.get('/submissions', auth_js_1.isAuthenticated, adminController_js_1.showSubmissions);

@@ -332,3 +332,168 @@ export async function updateSubmissionStatus(req, res) {
   const back = filter ? `/admin/submissions?filter=${filter}` : '/admin/submissions';
   res.redirect(back);
 }
+
+// ── Band Edit ────────────────────────────────────────────────────────────────
+
+export async function showEditBand(req, res) {
+  try {
+    const { id } = req.params;
+    const [rows] = await pool.query(
+      'SELECT BandNumber, BandName, BandWebsite, PictureURL FROM Bands WHERE BandNumber = ?',
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).send('Band not found');
+    const band = rows[0];
+    // Parse existing alignment from URL
+    const hashIdx = (band.PictureURL || '').indexOf('#');
+    const cleanUrl = hashIdx !== -1 ? band.PictureURL.substring(0, hashIdx) : (band.PictureURL || '');
+    const rawAlignment = hashIdx !== -1 ? band.PictureURL.substring(hashIdx + 1).toLowerCase() : 'top';
+    const imageAlignment = ['top', 'center', 'bottom'].includes(rawAlignment) ? rawAlignment : 'top';
+    res.render('admin/edit-band', {
+      title: `Edit Band: ${band.BandName}`,
+      band: { ...band, PictureURL: cleanUrl },
+      imageAlignment,
+      saved: req.query.saved === '1',
+      username: req.session.username
+    });
+  } catch (err) {
+    console.error('Error loading band for edit:', err);
+    res.status(500).send('Server error');
+  }
+}
+
+export async function updateBand(req, res) {
+  try {
+    const { id } = req.params;
+    const { BandName, BandWebsite, PictureURL, ImageAlignment } = req.body;
+    const cleanUrl = (PictureURL || '').replace(/#.*$/, '').trim();
+    const alignment = ['center', 'bottom'].includes((ImageAlignment || '').toLowerCase())
+      ? ImageAlignment.toLowerCase() : 'top';
+    const finalUrl = (cleanUrl && alignment !== 'top') ? `${cleanUrl}#${alignment}` : cleanUrl;
+    await pool.query(
+      'UPDATE Bands SET BandName = ?, BandWebsite = ?, PictureURL = ? WHERE BandNumber = ?',
+      [BandName, BandWebsite || null, finalUrl || null, id]
+    );
+    res.redirect(`/admin/edit/band/${id}?saved=1`);
+  } catch (err) {
+    console.error('Error updating band:', err);
+    res.status(500).send('Server error');
+  }
+}
+
+// ── Festival Edit ────────────────────────────────────────────────────────────
+
+export async function showEditFestival(req, res) {
+  try {
+    const { id } = req.params;
+    const [rows] = await pool.query(
+      'SELECT FestivalNumber, FestivalName, FeaturedImageURL, FestivalFlyerURL FROM Festivals WHERE FestivalNumber = ?',
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).send('Festival not found');
+    const festival = rows[0];
+
+    // Parse alignment from FeaturedImageURL
+    const parseAlign = (url) => {
+      const h = (url || '').indexOf('#');
+      if (h === -1) return { cleanUrl: url || '', alignment: 'center' };
+      const a = url.substring(h + 1).toLowerCase();
+      return {
+        cleanUrl: url.substring(0, h),
+        alignment: ['top', 'center', 'bottom'].includes(a) ? a : 'center'
+      };
+    };
+
+    const featured = parseAlign(festival.FeaturedImageURL);
+    const flyer = parseAlign(festival.FestivalFlyerURL);
+
+    res.render('admin/edit-festival', {
+      title: `Edit Festival: ${festival.FestivalName}`,
+      festival: {
+        ...festival,
+        FeaturedImageURL: featured.cleanUrl,
+        FestivalFlyerURL: flyer.cleanUrl
+      },
+      featuredAlignment: featured.alignment,
+      flyerAlignment: flyer.alignment,
+      saved: req.query.saved === '1',
+      username: req.session.username
+    });
+  } catch (err) {
+    console.error('Error loading festival for edit:', err);
+    res.status(500).send('Server error');
+  }
+}
+
+export async function updateFestival(req, res) {
+  try {
+    const { id } = req.params;
+    const { FestivalName, FeaturedImageURL, FeaturedAlignment, FestivalFlyerURL, FlyerAlignment } = req.body;
+
+    const buildUrl = (url, alignment) => {
+      const clean = (url || '').replace(/#.*$/, '').trim();
+      const a = ['top', 'center', 'bottom'].includes((alignment || '').toLowerCase())
+        ? alignment.toLowerCase() : 'center';
+      return (clean && a !== 'center') ? `${clean}#${a}` : clean;
+    };
+
+    const finalFeatured = buildUrl(FeaturedImageURL, FeaturedAlignment);
+    const finalFlyer = buildUrl(FestivalFlyerURL, FlyerAlignment);
+
+    await pool.query(
+      'UPDATE Festivals SET FestivalName = ?, FeaturedImageURL = ?, FestivalFlyerURL = ? WHERE FestivalNumber = ?',
+      [FestivalName, finalFeatured || null, finalFlyer || null, id]
+    );
+    res.redirect(`/admin/edit/festival/${id}?saved=1`);
+  } catch (err) {
+    console.error('Error updating festival:', err);
+    res.status(500).send('Server error');
+  }
+}
+
+// ── Concert Edit ─────────────────────────────────────────────────────────────
+
+export async function showEditConcert(req, res) {
+  try {
+    const { id } = req.params;
+    const [rows] = await pool.query(
+      'SELECT ConcertNumber, ConcertName, ConcertDate, ConcertImage FROM Concerts WHERE ConcertNumber = ?',
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).send('Concert not found');
+    const concert = rows[0];
+    const hashIdx = (concert.ConcertImage || '').indexOf('#');
+    const cleanUrl = hashIdx !== -1 ? concert.ConcertImage.substring(0, hashIdx) : (concert.ConcertImage || '');
+    const rawAlignment = hashIdx !== -1 ? concert.ConcertImage.substring(hashIdx + 1).toLowerCase() : 'top';
+    const imageAlignment = ['top', 'center', 'bottom'].includes(rawAlignment) ? rawAlignment : 'top';
+    res.render('admin/edit-concert', {
+      title: `Edit Concert: ${concert.ConcertName}`,
+      concert: { ...concert, ConcertImage: cleanUrl },
+      imageAlignment,
+      saved: req.query.saved === '1',
+      username: req.session.username
+    });
+  } catch (err) {
+    console.error('Error loading concert for edit:', err);
+    res.status(500).send('Server error');
+  }
+}
+
+export async function updateConcert(req, res) {
+  try {
+    const { id } = req.params;
+    const { ConcertName, ConcertImage, ImageAlignment } = req.body;
+    const cleanUrl = (ConcertImage || '').replace(/#.*$/, '').trim();
+    const alignment = ['center', 'bottom'].includes((ImageAlignment || '').toLowerCase())
+      ? ImageAlignment.toLowerCase() : 'top';
+    const finalUrl = (cleanUrl && alignment !== 'top') ? `${cleanUrl}#${alignment}` : cleanUrl;
+    await pool.query(
+      'UPDATE Concerts SET ConcertName = ?, ConcertImage = ? WHERE ConcertNumber = ?',
+      [ConcertName, finalUrl || null, id]
+    );
+    res.redirect(`/admin/edit/concert/${id}?saved=1`);
+  } catch (err) {
+    console.error('Error updating concert:', err);
+    res.status(500).send('Server error');
+  }
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %> - Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body style="background: #f5f5f5;">
+  <header style="background: #225675; color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <h1 style="margin: 0; font-size: 1.5rem;">Edit Festival</h1>
+    <div>
+      <a href="/festivals/<%= festival.FestivalNumber %>" style="color: #3D8C95; text-decoration: underline; margin-right: 1.5rem;" target="_blank">View Public Page ↗</a>
+      <a href="/admin/dashboard" style="color: #3D8C95; text-decoration: underline; margin-right: 1.5rem;">← Dashboard</a>
+      <span style="margin-right: 1.5rem;">Welcome, <%= username %></span>
+      <a href="/admin/logout" style="color: #3D8C95; text-decoration: underline;">Logout</a>
+    </div>
+  </header>
+  <main style="max-width: 1100px; margin: 2.5rem auto; padding: 0 1rem;">
+    <div style="display: flex; gap: 2rem; align-items: flex-start;">
+      <%- include('_sidebar') %>
+      <div style="flex: 1; min-width: 0;">
+
+        <% if (saved) { %>
+          <div style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;font-weight:600;">
+            ✅ Changes saved successfully.
+          </div>
+        <% } %>
+
+        <section style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,86,117,0.06); padding: 2rem; max-width: 700px;">
+          <h2 style="margin:0 0 1.5rem 0;color:#225675;font-size:1.2rem;"><%= festival.FestivalName %> <span style="color:#888;font-size:0.85rem;font-weight:400;">#<%= festival.FestivalNumber %></span></h2>
+
+          <form method="POST" action="/admin/edit/festival/<%= festival.FestivalNumber %>" style="display: flex; flex-direction: column; gap: 1.2rem;">
+
+            <div>
+              <label style="display:block;font-weight:600;color:#225675;margin-bottom:0.5rem;">Festival Name *</label>
+              <input type="text" name="FestivalName" value="<%= festival.FestivalName || '' %>" required
+                style="width:100%;padding:0.7rem;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;">
+            </div>
+
+            <%# Featured Image + Alignment %>
+            <div style="background:#f0f7fb;border:1px solid #c7dce9;border-radius:8px;padding:1.2rem;">
+              <h3 style="margin:0 0 1rem 0;color:#225675;font-size:1rem;">Featured Image <small style="color:#666;font-weight:400;">(used as hero on detail page and gallery card)</small></h3>
+
+              <div style="margin-bottom:0.75rem;">
+                <label style="display:block;font-weight:600;color:#555;margin-bottom:0.4rem;">Featured Image URL</label>
+                <input type="url" id="featuredUrlInput" name="FeaturedImageURL" value="<%= festival.FeaturedImageURL || '' %>"
+                  placeholder="https://images.lesterslist.com/media/..."
+                  style="width:100%;padding:0.7rem;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;"
+                  oninput="updateFeaturedPreview()">
+                <small style="color:#888;font-size:0.8rem;">Do not include # in the URL — set the alignment below.</small>
+              </div>
+
+              <div style="margin-bottom:1rem;">
+                <label style="display:block;font-weight:600;color:#555;margin-bottom:0.4rem;">Featured Image Position</label>
+                <select id="featuredAlignSelect" name="FeaturedAlignment"
+                  style="padding:0.6rem 1rem;border-radius:5px;border:1px solid #ccc;font-size:0.95rem;background:#fff;"
+                  onchange="updateFeaturedPreview()">
+                  <option value="top"    <%= featuredAlignment === 'top'    ? 'selected' : '' %>>Top — show top of image</option>
+                  <option value="center" <%= featuredAlignment === 'center' ? 'selected' : '' %>>Center — show middle of image (default)</option>
+                  <option value="bottom" <%= featuredAlignment === 'bottom' ? 'selected' : '' %>>Bottom — show bottom of image</option>
+                </select>
+              </div>
+
+              <div>
+                <div style="font-weight:600;color:#555;font-size:0.85rem;margin-bottom:0.4rem;">Preview (gallery card size):</div>
+                <div style="width:220px;height:220px;border-radius:8px;overflow:hidden;background:#eee;border:1px solid #ddd;">
+                  <img id="featuredPreview"
+                    src="<%= festival.FeaturedImageURL || '' %>"
+                    onerror="this.src='https://images.lesterslist.com/media/lesterlogo_sq.png'"
+                    style="width:100%;height:100%;object-fit:cover;object-position:<%= featuredAlignment %>;">
+                </div>
+              </div>
+            </div>
+
+            <%# Flyer Image + Alignment %>
+            <div style="background:#f0f7fb;border:1px solid #c7dce9;border-radius:8px;padding:1.2rem;">
+              <h3 style="margin:0 0 1rem 0;color:#225675;font-size:1rem;">Festival Flyer / Poster <small style="color:#666;font-weight:400;">(shown on detail page, takes priority over featured image for gallery thumbnail)</small></h3>
+
+              <div style="margin-bottom:0.75rem;">
+                <label style="display:block;font-weight:600;color:#555;margin-bottom:0.4rem;">Flyer Image URL</label>
+                <input type="url" id="flyerUrlInput" name="FestivalFlyerURL" value="<%= festival.FestivalFlyerURL || '' %>"
+                  placeholder="https://..."
+                  style="width:100%;padding:0.7rem;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;"
+                  oninput="updateFlyerPreview()">
+              </div>
+
+              <div style="margin-bottom:1rem;">
+                <label style="display:block;font-weight:600;color:#555;margin-bottom:0.4rem;">Flyer Image Position</label>
+                <select id="flyerAlignSelect" name="FlyerAlignment"
+                  style="padding:0.6rem 1rem;border-radius:5px;border:1px solid #ccc;font-size:0.95rem;background:#fff;"
+                  onchange="updateFlyerPreview()">
+                  <option value="top"    <%= flyerAlignment === 'top'    ? 'selected' : '' %>>Top</option>
+                  <option value="center" <%= flyerAlignment === 'center' ? 'selected' : '' %>>Center (default)</option>
+                  <option value="bottom" <%= flyerAlignment === 'bottom' ? 'selected' : '' %>>Bottom</option>
+                </select>
+              </div>
+
+              <div>
+                <div style="font-weight:600;color:#555;font-size:0.85rem;margin-bottom:0.4rem;">Preview:</div>
+                <div style="width:180px;height:240px;border-radius:8px;overflow:hidden;background:#eee;border:1px solid #ddd;">
+                  <img id="flyerPreview"
+                    src="<%= festival.FestivalFlyerURL || '' %>"
+                    onerror="this.style.display='none'"
+                    style="width:100%;height:100%;object-fit:cover;object-position:<%= flyerAlignment %>;">
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:1rem;margin-top:0.5rem;">
+              <button type="submit"
+                style="flex:1;padding:0.8rem;background:#3D8C95;color:#fff;font-weight:600;border:none;border-radius:5px;cursor:pointer;font-size:1rem;">
+                Save Changes
+              </button>
+              <a href="/festivals/<%= festival.FestivalNumber %>"
+                style="flex:1;padding:0.8rem;background:#6c757d;color:#fff;font-weight:600;border:none;border-radius:5px;cursor:pointer;text-align:center;text-decoration:none;display:block;">
+                Cancel
+              </a>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function updateFeaturedPreview() {
+      const url = document.getElementById('featuredUrlInput').value.trim();
+      const align = document.getElementById('featuredAlignSelect').value;
+      const img = document.getElementById('featuredPreview');
+      img.src = url || 'https://images.lesterslist.com/media/lesterlogo_sq.png';
+      img.style.objectPosition = align;
+    }
+    function updateFlyerPreview() {
+      const url = document.getElementById('flyerUrlInput').value.trim();
+      const align = document.getElementById('flyerAlignSelect').value;
+      const img = document.getElementById('flyerPreview');
+      if (url) {
+        img.style.display = '';
+        img.src = url;
+        img.style.objectPosition = align;
+      } else {
+        img.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

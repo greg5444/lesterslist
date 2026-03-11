@@ -6,6 +6,9 @@
     <header class="entry-header" style="text-align:center;">
       <div class="entry-header-inside">
         <h1 class="entry-title" style="font-size:2.5rem;margin:0.5rem 0;"><%= band.BandName %></h1>
+        <% if (isAdmin) { %>
+          <a href="/admin/edit/band/<%= band.BandNumber %>" style="display:inline-block;background:#225675;color:#fff;border-radius:6px;padding:0.3rem 0.8rem;font-size:0.8rem;text-decoration:none;font-weight:700;margin-bottom:0.5rem;">✏️ Edit Band in Admin</a>
+        <% } %>
       </div>
     </header>
 
