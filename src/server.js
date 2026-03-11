@@ -51,6 +51,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../src/public')));
 
+// Trust reverse proxy (required on Hostinger so req.secure is correct and Secure cookies work)
+app.set('trust proxy', 1);
+
 // Session middleware
 app.use(session({
   key: 'session_cookie_name',

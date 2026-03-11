@@ -52,6 +52,8 @@ if (process.env.NODE_ENV === 'production') {
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.static(path_1.default.join(__dirname, '../src/public')));
+// Trust reverse proxy (required on Hostinger so req.secure is correct and Secure cookies work)
+app.set('trust proxy', 1);
 // Session middleware
 app.use((0, express_session_1.default)({
     key: 'session_cookie_name',
