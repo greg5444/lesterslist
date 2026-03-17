@@ -11,31 +11,58 @@ const constants_js_1 = require("../config/constants.js");
 const imageUtils_js_1 = require("../config/imageUtils.js");
 async function listFestivals(req, res) {
     try {
-        const currentView = req.query.view === 'list' ? 'list' : 'gallery';
+        const currentView = req.query.view === 'list' ? 'list' : 'grid';
         const currentPage = parseInt(req.query.page) || 1;
-        const itemsPerPage = [30, 60].includes(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 30;
+        const itemsPerPage = 30;
         const offset = (currentPage - 1) * itemsPerPage;
-        const festivals = await festivalModel_js_1.default.findAllPaginated(itemsPerPage, offset);
-        const totalCount = await festivalModel_js_1.default.countAll();
+        const filterState = req.query.state || '';
+        const filterMonth = req.query.month || '';
+        const lat = req.query.lat ? parseFloat(req.query.lat) : null;
+        const lng = req.query.lng ? parseFloat(req.query.lng) : null;
+        const radius = parseInt(req.query.radius) || 50;
+        const filters = {
+            state: filterState || null,
+            month: filterMonth || null,
+            lat,
+            lng,
+            radius
+        };
+        const [festivals, totalCount, filterOptions] = await Promise.all([
+            festivalModel_js_1.default.findUpcomingFiltered(itemsPerPage, offset, filters),
+            festivalModel_js_1.default.countUpcomingFiltered(filters),
+            festivalModel_js_1.default.getFilterOptions()
+        ]);
         const totalPages = Math.ceil(totalCount / itemsPerPage);
-        // Attach resolved image URLs and alignment to each festival
         const festivalsWithImages = festivals.map(festival => {
-            const rawUrl = (festival.FestivalFlyerURL && festival.FestivalFlyerURL.length > 5)
-                ? (0, imageUtils_js_1.resolveImageUrl)(festival.FestivalFlyerURL)
-                : (festival.FeaturedImageURL && festival.FeaturedImageURL.length > 5
-                    ? (0, imageUtils_js_1.resolveImageUrl)(festival.FeaturedImageURL)
-                    : constants_js_1.DEFAULT_IMAGE_URL);
+            const hasImage = (festival.FestivalFlyerURL && festival.FestivalFlyerURL.trim().length > 5)
+                || (festival.FeaturedImageURL && festival.FeaturedImageURL.trim().length > 5);
+            const rawUrl = hasImage
+                ? (0, imageUtils_js_1.resolveImageUrl)(festival.FestivalFlyerURL && festival.FestivalFlyerURL.trim().length > 5
+                    ? festival.FestivalFlyerURL : festival.FeaturedImageURL)
+                : constants_js_1.DEFAULT_IMAGE_URL;
             const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)(rawUrl);
-            return { ...festival, imageUrl, imageAlignment };
+            return { ...festival, imageUrl, imageAlignment, hasImage };
         });
+        if (req.xhr || req.query.ajax === '1') {
+            return res.json({
+                festivals: festivalsWithImages,
+                totalCount,
+                totalPages,
+                currentPage,
+                itemsPerPage
+            });
+        }
         res.render('festivals/index', {
-            title: 'All Festivals',
+            title: 'Music Festivals',
             festivals: festivalsWithImages,
             currentView,
             currentPage,
             totalPages,
             totalCount,
-            itemsPerPage
+            itemsPerPage,
+            filterState,
+            filterMonth,
+            filterOptions
         });
     }
     catch (err) {
@@ -64,24 +91,7 @@ async function showFestival(req, res) {
             };
         });
         const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
-        // Determine the map address: prefer non-URL strings
-        let mapAddress = festival.GoogleMapAddress && festival.GoogleMapAddress.trim()
-            ? festival.GoogleMapAddress
-            : [
-                festival.Street,
-                festival.City,
-                festival.State,
-                festival.Zip
-            ].filter(Boolean).join(', ');
-        // If mapAddress looks like a CID URL (e.g. from a Venue), fallback to structured address
-        if (mapAddress && (mapAddress.includes('http') || mapAddress.includes('cid='))) {
-            mapAddress = [
-                festival.Street,
-                festival.City,
-                festival.State,
-                festival.Zip
-            ].filter(Boolean).join(', ');
-        }
+        const mapAddress = (0, imageUtils_js_1.sanitizeMapAddress)(festival.GoogleMapAddress, festival);
         res.render('festivals/show', {
             title: festival.FestivalName,
             festival,

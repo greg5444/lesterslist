@@ -29,8 +29,8 @@ async function showCamp(req, res) {
         if (!camp)
             return res.status(404).render('404', { message: 'Camp/Workshop not found' });
         const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(camp.ImageURL));
-        // Use GoogleMapAddress directly from Camps table
-        const mapAddress = camp.GoogleMapAddress && camp.GoogleMapAddress.trim() ? camp.GoogleMapAddress : null;
+        // Sanitize GoogleMapAddress — reject URLs and q=place: junk
+        const mapAddress = (0, imageUtils_js_1.sanitizeMapAddress)(camp.GoogleMapAddress, camp);
         res.render('camps/show', {
             title: camp.EventName,
             camp,

@@ -51,6 +51,117 @@ export default class Festival {
   }
 
   /**
+   * Fetch upcoming festivals with filters + pagination
+   */
+  static async findUpcomingFiltered(limit, offset, { state, month, lat, lng, radius = 50 } = {}) {
+    const conditions = ['f.ExpireDate >= CURDATE()'];
+    const params = [];
+    let orderBy = 'f.StartDate ASC';
+    let distanceField = '';
+
+    if (state) {
+      conditions.push('(COALESCE(v.State, f.State) = ?)');
+      params.push(state);
+    }
+    if (month) {
+      if (month === 'next-two-weeks') {
+        conditions.push('f.StartDate <= DATE_ADD(CURDATE(), INTERVAL 14 DAY)');
+      } else {
+        conditions.push('DATE_FORMAT(f.StartDate, \'%Y-%m\') = ?');
+        params.push(month);
+      }
+    }
+    if (lat && lng) {
+      distanceField = `, (
+        3959 * acos(
+          cos(radians(?)) * cos(radians(v.Latitude)) *
+          cos(radians(v.Longitude) - radians(?)) +
+          sin(radians(?)) * sin(radians(v.Latitude))
+        )
+      ) AS distance`;
+      params.unshift(lat, lng, lat);
+      conditions.push('v.Latitude IS NOT NULL AND v.Longitude IS NOT NULL');
+      conditions.push('((3959 * acos(cos(radians(?)) * cos(radians(v.Latitude)) * cos(radians(v.Longitude) - radians(?)) + sin(radians(?)) * sin(radians(v.Latitude)))) <= ?)');
+      params.push(lat, lng, lat, radius);
+      orderBy = 'distance ASC, f.StartDate ASC';
+    }
+
+    const where = conditions.join(' AND ');
+    const [rows] = await pool.query(`
+      SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate,
+             f.FeaturedImageURL, f.FestivalFlyerURL,
+             COALESCE(v.VenueName, f.FestivalName) AS VenueName,
+             COALESCE(v.City, f.City) AS City,
+             COALESCE(v.State, f.State) AS State ${distanceField}
+      FROM Festivals f
+      LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
+      WHERE ${where}
+      ORDER BY ${orderBy}
+      LIMIT ? OFFSET ?
+    `, [...params, limit, offset]);
+    return rows;
+  }
+
+  /**
+   * Count upcoming festivals with filters
+   */
+  static async countUpcomingFiltered({ state, month, lat, lng, radius = 50 } = {}) {
+    const conditions = ['f.ExpireDate >= CURDATE()'];
+    const params = [];
+    if (state) {
+      conditions.push('(COALESCE(v.State, f.State) = ?)');
+      params.push(state);
+    }
+    if (month) {
+      if (month === 'next-two-weeks') {
+        conditions.push('f.StartDate <= DATE_ADD(CURDATE(), INTERVAL 14 DAY)');
+      } else {
+        conditions.push('DATE_FORMAT(f.StartDate, \'%Y-%m\') = ?');
+        params.push(month);
+      }
+    }
+    if (lat && lng) {
+      conditions.push('v.Latitude IS NOT NULL AND v.Longitude IS NOT NULL');
+      conditions.push('((3959 * acos(cos(radians(?)) * cos(radians(v.Latitude)) * cos(radians(v.Longitude) - radians(?)) + sin(radians(?)) * sin(radians(v.Latitude)))) <= ?)');
+      params.push(lat, lng, lat, radius);
+    }
+    const where = conditions.join(' AND ');
+    const [rows] = await pool.query(`
+      SELECT COUNT(*) as total
+      FROM Festivals f
+      LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
+      WHERE ${where}
+    `, params);
+    return rows[0].total;
+  }
+
+  /**
+   * Get distinct states and months available for upcoming festivals
+   */
+  static async getFilterOptions() {
+    const [states] = await pool.query(`
+      SELECT DISTINCT COALESCE(v.State, f.State) as State
+      FROM Festivals f
+      LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
+      WHERE f.ExpireDate >= CURDATE()
+        AND COALESCE(v.State, f.State) IS NOT NULL
+        AND COALESCE(v.State, f.State) != ''
+      ORDER BY State ASC
+    `);
+    const [months] = await pool.query(`
+      SELECT DISTINCT DATE_FORMAT(StartDate, '%Y-%m') as month,
+                      DATE_FORMAT(StartDate, '%b %Y') as label
+      FROM Festivals
+      WHERE ExpireDate >= CURDATE()
+      ORDER BY month ASC
+    `);
+    return {
+      states: states.map(r => r.State),
+      months: months.map(r => ({ value: r.month, label: r.label }))
+    };
+  }
+
+  /**
    * Fetch festival by FestivalNumber, join Venue, and fetch all participating Bands
    * Returns { festival, bands } or null if not found
    */

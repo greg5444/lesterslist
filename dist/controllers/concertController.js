@@ -91,7 +91,9 @@ async function showConcert(req, res) {
             City: concert.City,
             State: concert.State,
             Zip: concert.Zip,
-            GoogleMapAddress: concert.GoogleMapAddress,
+            GoogleMapAddress: (0, imageUtils_js_1.sanitizeMapAddress)(concert.GoogleMapAddress, {
+                Street: concert.Street, City: concert.City, State: concert.State, Zip: concert.Zip
+            }),
             Band: concert.BandNumber ? {
                 BandNumber: concert.BandNumber,
                 BandName: concert.BandName,

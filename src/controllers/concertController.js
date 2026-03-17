@@ -1,7 +1,7 @@
 // src/controllers/concertController.js
 import Concert from '../models/concertModel.js';
 import { DEFAULT_IMAGE_URL } from '../config/constants.js';
-import { resolveImageUrl, parseImageAlignment } from '../config/imageUtils.js';
+import { resolveImageUrl, parseImageAlignment, sanitizeMapAddress } from '../config/imageUtils.js';
 
 export async function listConcerts(req, res) {
   try {
@@ -93,7 +93,9 @@ export async function showConcert(req, res) {
       City: concert.City,
       State: concert.State,
       Zip: concert.Zip,
-      GoogleMapAddress: concert.GoogleMapAddress,
+      GoogleMapAddress: sanitizeMapAddress(concert.GoogleMapAddress, {
+        Street: concert.Street, City: concert.City, State: concert.State, Zip: concert.Zip
+      }),
       Band: concert.BandNumber ? {
         BandNumber: concert.BandNumber,
         BandName: concert.BandName,

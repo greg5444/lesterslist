@@ -1,7 +1,7 @@
 // src/controllers/campController.js
 import Camp from '../models/campModel.js';
 import { DEFAULT_IMAGE_URL } from '../config/constants.js';
-import { resolveImageUrl, parseImageAlignment } from '../config/imageUtils.js';
+import { resolveImageUrl, parseImageAlignment, sanitizeMapAddress } from '../config/imageUtils.js';
 
 export async function listCamps(req, res) {
   try {
@@ -23,8 +23,8 @@ export async function showCamp(req, res) {
     if (!camp) return res.status(404).render('404', { message: 'Camp/Workshop not found' });
     const { url: imageUrl, alignment: imageAlignment } = parseImageAlignment(resolveImageUrl(camp.ImageURL));
     
-    // Use GoogleMapAddress directly from Camps table
-    const mapAddress = camp.GoogleMapAddress && camp.GoogleMapAddress.trim() ? camp.GoogleMapAddress : null;
+    // Sanitize GoogleMapAddress — reject URLs and q=place: junk
+    const mapAddress = sanitizeMapAddress(camp.GoogleMapAddress, camp);
     
     res.render('camps/show', {
       title: camp.EventName,

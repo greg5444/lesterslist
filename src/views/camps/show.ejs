@@ -35,7 +35,7 @@
       <!-- Left: Poster with Orange Overlay for Duration -->
       <div style="flex:1 1 320px;min-width:280px;display:flex;align-items:flex-start;justify-content:center;">
         <div style="position:relative;width:100%;max-width:340px;">
-          <img src="<%= imageUrl %>" alt="Camp/Workshop Image" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';" style="width:100%;height:340px;object-fit:cover;object-position:<%= typeof imageAlignment !== 'undefined' ? imageAlignment : 'top' %>;border-radius:10px;background:#f8f9fa;box-shadow:0 2px 8px rgba(34,86,117,0.06);">
+          <img src="<%= imageUrl %>" alt="Camp/Workshop Image" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';" style="width:100%;height:340px;object-fit:cover;border-radius:10px;background:#f8f9fa;box-shadow:0 2px 8px rgba(34,86,117,0.06);">
           <% if (durationNum && durationWord) { %>
             <div class="date-badge" style="position:absolute;bottom:15px;left:15px;min-width:75px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
               <span style="font-size:1.8rem;font-weight:800;letter-spacing:1.5px;line-height:1.1;text-transform:uppercase;text-shadow:1px 1px 2px rgba(0,0,0,0.3);font-family:var(--font-display);margin-bottom:3px;">
@@ -91,7 +91,7 @@
               const campWebsiteUrl = campWebsiteRaw.startsWith('http') ? campWebsiteRaw : 'https://' + campWebsiteRaw;
               const campWebsiteDisplay = campWebsiteRaw.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
               const campWebsiteText = campWebsiteDisplay.length <= 38
-                ? `🎵 Visit ${campWebsiteDisplay} Website`
+                ? `🎵 Visit ${campWebsiteDisplay} website`
                 : '🎵 Visit Website';
             %>
             <a href="<%= campWebsiteUrl %>" target="_blank" rel="noopener" style="display:inline-block;background:var(--color-highlight-orange);color:#fff;font-weight:700;border-radius:8px;padding:1rem 2rem;font-size:1.1rem;transition:opacity 0.2s;text-shadow:0 1px 2px rgba(0,0,0,0.2);text-decoration:none;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
@@ -136,9 +136,3 @@
 </section>
 <% } %>
 
-<!-- Report a Problem -->
-<div class="report-problem" style="max-width:1100px;margin:0 auto 4rem auto;padding:1.5rem 0;">
-  <a href="/report?type=camp&id=<%= camp.WorkshopId %>">
-    🚩 Report a problem with any information on this page
-  </a>
-</div>

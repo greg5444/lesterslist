@@ -1,5 +1,625 @@
-<% /* Festivals Directory - Hybrid View (Gallery/List) with Pagination */ %>
 <% layout('layout') %>
+<%
+const PLACEHOLDER_IMAGES = [
+  'https://images.lesterslist.com/media/double-bass-down.jpg',
+  'https://images.lesterslist.com/media/cowboy-hat-and-boots-on-bench.jpg',
+  'https://images.lesterslist.com/media/Bluegrassongrass10.jpg',
+  'https://images.lesterslist.com/media/Bluegrassongrass5.jpg',
+  'https://images.lesterslist.com/media/Bluegrassongrass4.jpg',
+  'https://images.lesterslist.com/media/general-31.jpg',
+  'https://images.lesterslist.com/media/general-24.jpg',
+  'https://images.lesterslist.com/media/general-22.jpg',
+];
+function getPlaceholder(num) {
+  return PLACEHOLDER_IMAGES[num % PLACEHOLDER_IMAGES.length];
+}
+%>
+
+<style>
+.listings-ribbon {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #eaeaea;
+  padding: 0.6rem 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.ribbon-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ribbon-filters {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1.25rem;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  color: #555;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  background: #ebebeb;
+  border-color: #ccc;
+  transform: translateY(-1px);
+}
+
+.filter-pill.active {
+  background: var(--color-primary-teal);
+  color: #fff;
+  border-color: var(--color-primary-teal);
+}
+
+.filter-pill .icon-down {
+  font-size: 0.7rem;
+  margin-left: 0.2rem;
+  opacity: 0.7;
+}
+
+.filter-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modal-content {
+  background: #fff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-secondary-blue);
+  font-family: 'Playfair Display', serif;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+  line-height: 1;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.filter-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-option {
+  padding: 0.85rem 1.25rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #444;
+}
+
+.filter-option:hover {
+  background: #f8f9fa;
+  color: var(--color-primary-teal);
+}
+
+.filter-option.selected {
+  background: #f0fdfa;
+  color: var(--color-primary-teal);
+  font-weight: 700;
+}
+
+.filter-option.selected::after {
+  content: '✓';
+  font-size: 1.1rem;
+}
+
+.modal-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #eee;
+  text-align: right;
+  background: #fafafa;
+}
+
+.modal-btn-primary {
+  background: var(--color-primary-teal);
+  color: #fff;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-btn-primary:hover { opacity: 0.9; }
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.2rem;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  color: #555;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.ribbon-actions {
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .ribbon-container { padding: 0.5rem; gap: 0.4rem; }
+  .ribbon-filters { gap: 0.4rem; display: flex; width: 100%; margin: 0; }
+  .filter-pill { padding: 0.4rem 0.2rem; font-size: 0.72rem; gap: 0.2rem; flex: 1; justify-content: center; min-width: 0; }
+  #near-me-btn #near-me-text { display: none; }
+  #near-me-btn::after { content: 'Near Me'; }
+  #state-pill .pill-text { display: none; }
+  #state-pill::before { content: 'States'; }
+  #date-pill .pill-text { display: none; }
+  #date-pill::before { content: 'Dates'; }
+  .filter-pill .icon-down { margin-left: 0.1rem; }
+  .ribbon-actions { display: none; }
+}
+
+@media (max-width: 768px) {
+  .ribbon-container { flex-direction: row; flex-wrap: wrap; }
+  .ribbon-filters { width: 100%; }
+  .ribbon-actions { width: 100%; margin-top: 0.5rem; }
+  .view-toggle-btn { width: 100%; justify-content: center; }
+}
+
+.listings-container.grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.listings-container.list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid #eee;
+}
+
+.list-view .festival-card {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid #eee;
+  height: auto !important;
+}
+.list-view .festival-card a > div:first-child,
+.list-view .gallery-card > div:first-child {
+  display: none !important;
+}
+.list-view .festival-card a {
+  display: flex !important;
+  align-items: center;
+  padding: 0.85rem 1rem !important;
+}
+.list-view .festival-card a > div:last-child {
+  padding: 0 !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.list-view .gallery-card {
+  display: block !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid #eee;
+}
+.list-view .gallery-card > div:last-child {
+  padding: 0.85rem 1rem !important;
+}
+
+@media (max-width: 900px) {
+  .listings-container.grid-view .festival-card a > div:first-child,
+  .listings-container.grid-view .gallery-card > div:first-child {
+    height: 150px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .ribbon-container { flex-direction: column; align-items: stretch; }
+  .ribbon-filters { overflow-x: auto; padding-bottom: 2px; }
+}
+
+#infinite-loader {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+  font-weight: 600;
+}
+</style>
+
+<div class="listings-ribbon">
+  <div class="ribbon-container">
+    <form id="filter-form" class="ribbon-filters">
+      <button type="button" id="near-me-btn" class="near-me-btn filter-pill" onclick="toggleNearMe()">
+        <span class="icon" id="near-me-icon">📍</span>
+        <span class="text" id="near-me-text">Find Near Me</span>
+      </button>
+
+      <div id="state-pill" class="filter-pill <%= filterState ? 'active' : '' %>" onclick="openModal('state-modal')">
+        <span class="pill-text"><%= filterState || 'All States' %></span>
+        <span class="icon-down">▼</span>
+      </div>
+      <input type="hidden" name="state" id="state-input" value="<%= filterState || '' %>">
+
+      <div id="date-pill" class="filter-pill <%= filterMonth ? 'active' : '' %>" onclick="openModal('date-modal')">
+        <span class="pill-text">
+          <% if (!filterMonth) { %>
+            Date Filter
+          <% } else if (filterMonth === 'next-two-weeks') { %>
+            Next 2 Weeks
+          <% } else { %>
+            <% const mOpt = filterOptions.months.find(m => m.value === filterMonth); %>
+            <%= mOpt ? mOpt.label : 'Date Filter' %>
+          <% } %>
+        </span>
+        <span class="icon-down">▼</span>
+      </div>
+      <input type="hidden" name="month" id="date-input" value="<%= filterMonth || '' %>">
+
+      <input type="hidden" name="lat" id="lat-input">
+      <input type="hidden" name="lng" id="lng-input">
+      <input type="hidden" name="radius" value="50">
+    </form>
+
+    <div class="ribbon-actions">
+      <button id="view-toggle" class="view-toggle-btn" onclick="toggleView()">
+        <span class="icon"><%= currentView === 'grid' ? '☰' : '⊞' %></span>
+        <span class="text"><%= currentView === 'grid' ? 'Switch to List' : 'Switch to Grid' %></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="state-modal" class="filter-modal" onclick="if(event.target === this) closeModal('state-modal')">
+  <div class="modal-content">
+    <header class="modal-header">
+      <h3>Select State</h3>
+      <button class="close-modal" onclick="closeModal('state-modal')">&times;</button>
+    </header>
+    <div class="modal-body">
+      <div class="filter-option-list">
+        <div class="filter-option <%= !filterState ? 'selected' : '' %>" onclick="applyFilter('state', '')">All States</div>
+        <% filterOptions.states.forEach(s => { %>
+          <div class="filter-option <%= filterState === s ? 'selected' : '' %>" onclick="applyFilter('state', '<%= s %>')">
+            <%= s %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="date-modal" class="filter-modal" onclick="if(event.target === this) closeModal('date-modal')">
+  <div class="modal-content">
+    <header class="modal-header">
+      <h3>Date Filter</h3>
+      <button class="close-modal" onclick="closeModal('date-modal')">&times;</button>
+    </header>
+    <div class="modal-body">
+      <div class="filter-option-list">
+        <div class="filter-option <%= !filterMonth ? 'selected' : '' %>" onclick="applyFilter('month', '')">Show All Future Festivals</div>
+        <div class="filter-option <%= filterMonth === 'next-two-weeks' ? 'selected' : '' %>" onclick="applyFilter('month', 'next-two-weeks')">Next Two Weeks</div>
+        <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
+        <% filterOptions.months.forEach(m => { %>
+          <div class="filter-option <%= filterMonth === m.value ? 'selected' : '' %>" onclick="applyFilter('month', '<%= m.value %>')">
+            <%= m.label %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<article style="max-width:1200px;margin:0 auto;padding:0 1rem 4rem;">
+  <header style="margin-bottom: 2rem; text-align: center;">
+    <h1 style="font-size: 2.5rem; color: var(--color-secondary-blue); margin-bottom: 0.5rem;">Music Festivals</h1>
+    <p style="color: #666;">Browse upcoming music festivals</p>
+  </header>
+
+  <div id="listings-wrapper" class="listings-container <%= currentView === 'list' ? 'list-view' : 'grid-view' %>">
+    <% if (festivals.length === 0) { %>
+      <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: #999;">
+        <h3>No festivals found matching your criteria.</h3>
+      </div>
+    <% } else { %>
+      <% festivals.forEach(festival => { %>
+        <div style="position:relative;">
+          <a href="/festivals/<%= festival.FestivalNumber %>" class="gallery-card"
+             style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;display:block;"
+             onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+            <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
+              <img src="<%= festival.hasImage ? festival.imageUrl : getPlaceholder(festival.FestivalNumber) %>"
+                   alt="<%= festival.FestivalName %>"
+                   onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/general-22.jpg';"
+                   style="width:100%;height:100%;object-fit:cover;object-position:<%= festival.imageAlignment || 'top' %>;">
+            </div>
+            <div style="padding:1rem;">
+              <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;"><%= festival.FestivalName %></h3>
+              <div style="color:#666;font-size:0.9rem;">
+                <% if (festival.City && festival.State) { %><%= festival.City %>, <%= festival.State %><% } %>
+              </div>
+            </div>
+          </a>
+          <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+            <a href="/admin/edit/festival/<%= festival.FestivalNumber %>" style="position:absolute;top:8px;right:8px;z-index:10;background:rgba(34,86,117,0.88);color:#fff;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.75rem;text-decoration:none;font-weight:700;backdrop-filter:blur(2px);" title="Edit in Admin">✏️ Edit</a>
+          <% } %>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+  <div id="infinite-loader">
+    <div class="loading-spinner" style="display: none;">Loading more festivals...</div>
+    <div class="end-message" style="display: none;">You've reached the end of the list.</div>
+  </div>
+</article>
+
+<script>
+let currentPage = <%= currentPage %>;
+const totalPages = <%= totalPages %>;
+let isLoading = false;
+let currentView = '<%= currentView %>';
+const isAdmin = <%= typeof isAdmin !== 'undefined' && isAdmin ? 'true' : 'false' %>;
+
+const loader = document.getElementById('infinite-loader');
+const wrapper = document.getElementById('listings-wrapper');
+const spinner = loader.querySelector('.loading-spinner');
+const endMsg = loader.querySelector('.end-message');
+
+const observer = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && !isLoading && currentPage < totalPages) {
+    loadMore();
+  }
+}, { threshold: 0.1 });
+
+observer.observe(loader);
+
+async function loadMore() {
+  isLoading = true;
+  spinner.style.display = 'block';
+
+  const form = document.getElementById('filter-form');
+  const formData = new FormData(form);
+  const params = new URLSearchParams(formData);
+  params.append('page', currentPage + 1);
+  params.set('view', currentView);
+  params.set('ajax', '1');
+
+  try {
+    const response = await fetch(`/festivals?${params.toString()}`);
+    const data = await response.json();
+
+    if (data.festivals && data.festivals.length > 0) {
+      currentPage = data.currentPage;
+      data.festivals.forEach(festival => {
+        wrapper.insertAdjacentHTML('beforeend', createCardHtml(festival));
+      });
+    }
+
+    if (currentPage >= data.totalPages) {
+      spinner.style.display = 'none';
+      endMsg.style.display = 'block';
+      observer.unobserve(loader);
+    }
+  } catch (err) {
+    console.error('Error loading more:', err);
+  } finally {
+    isLoading = false;
+    spinner.style.display = 'none';
+  }
+}
+
+const PLACEHOLDER_IMGS = [
+  'https://images.lesterslist.com/media/double-bass-down.jpg',
+  'https://images.lesterslist.com/media/cowboy-hat-and-boots-on-bench.jpg',
+  'https://images.lesterslist.com/media/Bluegrassongrass10.jpg',
+  'https://images.lesterslist.com/media/Bluegrassongrass5.jpg',
+  'https://images.lesterslist.com/media/Bluegrassongrass4.jpg',
+  'https://images.lesterslist.com/media/general-31.jpg',
+  'https://images.lesterslist.com/media/general-24.jpg',
+  'https://images.lesterslist.com/media/general-22.jpg',
+];
+function getPlaceholderJs(num) {
+  return PLACEHOLDER_IMGS[num % PLACEHOLDER_IMGS.length];
+}
+
+function createCardHtml(f) {
+  const alignment = f.imageAlignment || 'top';
+  const imgSrc = f.hasImage ? f.imageUrl : getPlaceholderJs(f.FestivalNumber);
+  const editBtn = isAdmin
+    ? `<a href="/admin/edit/festival/${f.FestivalNumber}" style="position:absolute;top:8px;right:8px;z-index:10;background:rgba(34,86,117,0.88);color:#fff;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.75rem;text-decoration:none;font-weight:700;backdrop-filter:blur(2px);" title="Edit in Admin">✏️ Edit</a>`
+    : '';
+
+  return `
+    <div style="position:relative;">
+      <a href="/festivals/${f.FestivalNumber}" class="gallery-card"
+         style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;display:block;">
+        <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
+          <img src="${imgSrc}" alt="${f.FestivalName}" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/general-22.jpg';" style="width:100%;height:100%;object-fit:cover;object-position:${alignment};">
+        </div>
+        <div style="padding:1rem;">
+          <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;">${f.FestivalName}</h3>
+          <div style="color:#666;font-size:0.9rem;">
+            ${f.City && f.State ? `${f.City}, ${f.State}` : ''}
+          </div>
+        </div>
+      </a>
+      ${editBtn}
+    </div>
+  `;
+}
+
+function handleFilterChange() {
+  const form = document.getElementById('filter-form');
+  const params = new URLSearchParams(new FormData(form));
+  params.set('view', currentView);
+  window.location.href = '/festivals?' + params.toString();
+}
+
+function openModal(id) {
+  document.getElementById(id).style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function applyFilter(key, value) {
+  const input = key === 'state' ? document.getElementById('state-input') : document.getElementById('date-input');
+  input.value = value;
+  handleFilterChange();
+}
+
+function toggleNearMe() {
+  const btn = document.getElementById('near-me-btn');
+  const latInput = document.getElementById('lat-input');
+  const lngInput = document.getElementById('lng-input');
+  const text = document.getElementById('near-me-text');
+  const icon = document.getElementById('near-me-icon');
+
+  if (btn.classList.contains('active')) {
+    latInput.value = '';
+    lngInput.value = '';
+    btn.classList.remove('active');
+    text.textContent = 'Finding All';
+    icon.innerHTML = '<img src="https://flagcdn.com/w80/us.png" alt="US Flag" width="15">';
+    setTimeout(() => {
+      text.textContent = 'Find Near Me';
+      icon.textContent = '📍';
+    }, 1500);
+    handleFilterChange();
+    return;
+  }
+
+  text.textContent = 'Locating...';
+
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser');
+    text.textContent = 'Find Near Me';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      latInput.value = position.coords.latitude;
+      lngInput.value = position.coords.longitude;
+      btn.classList.add('active');
+      text.textContent = 'See All U.S.A.';
+      icon.innerHTML = '<img src="https://flagcdn.com/w80/us.png" alt="US Flag" width="15">';
+      handleFilterChange();
+    },
+    (error) => {
+      console.error('Geolocation error:', error);
+      alert('Unable to retrieve your location. Check your browser permissions.');
+      text.textContent = 'Find Near Me';
+      icon.textContent = '📍';
+    }
+  );
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const btn = document.getElementById('near-me-btn');
+  const text = document.getElementById('near-me-text');
+  const icon = document.getElementById('near-me-icon');
+
+  if (urlParams.has('lat') && urlParams.get('lat') !== '') {
+    btn.classList.add('active');
+    text.textContent = 'See All U.S.A.';
+    icon.innerHTML = '<img src="https://flagcdn.com/w80/us.png" alt="US Flag" width="15">';
+    document.getElementById('lat-input').value = urlParams.get('lat');
+    document.getElementById('lng-input').value = urlParams.get('lng');
+  } else {
+    text.textContent = 'Find Near Me';
+    icon.textContent = '📍';
+  }
+});
+
+function toggleView() {
+  currentView = currentView === 'grid' ? 'list' : 'grid';
+  wrapper.className = 'listings-container ' + (currentView === 'list' ? 'list-view' : 'grid-view');
+
+  const btn = document.getElementById('view-toggle');
+  btn.querySelector('.icon').textContent = currentView === 'grid' ? '☰' : '⊞';
+  btn.querySelector('.text').textContent = currentView === 'grid' ? 'Switch to List' : 'Switch to Grid';
+
+  const url = new URL(window.location);
+  url.searchParams.set('view', currentView);
+  window.history.pushState({}, '', url);
+}
+</script>
+
 <%
   // Build query params for pagination/view links
   function buildQueryString(params) {
@@ -11,74 +631,43 @@
   }
 %>
 
-<style>
-.festival-ribbon {
-  position: sticky;
-  top: <%= isAdmin ? '36px' : '0' %>;
-  z-index: 1000;
-  background: rgba(255,255,255,0.98);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #eaeaea;
-  padding: 0.6rem 1rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-.festival-ribbon-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.festival-view-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 1.25rem;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 50px;
-  color: #555;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: all 0.2s;
-}
-.festival-view-pill:hover { background: #ebebeb; border-color: #ccc; }
-</style>
-
-<div class="festival-ribbon">
-  <div class="festival-ribbon-inner">
-    <div style="color:#666;font-size:0.9rem;">
-      Page <strong><%= currentPage %></strong> of <strong><%= totalPages || 1 %></strong>
-      <span style="margin-left:0.5rem;color:#999;">(<%= totalCount %> total)</span>
-      &nbsp;&nbsp;&middot;&nbsp;&nbsp;
-      <label style="font-weight:600;font-size:0.9rem;">Show:
-        <select onchange="window.location.href='/festivals<%= buildQueryString({ page: 1, view: currentView, limit: undefined }) %>&limit=' + this.value"
-                style="margin-left:0.3rem;padding:0.3rem 0.5rem;border:1px solid #ddd;border-radius:4px;font-size:0.85rem;cursor:pointer;">
-          <option value="30" <%= itemsPerPage === 30 ? 'selected' : '' %>>30</option>
-          <option value="60" <%= itemsPerPage === 60 ? 'selected' : '' %>>60</option>
-        </select>
-      </label>
-    </div>
-    <a href="/festivals<%= buildQueryString({ page: currentPage, view: currentView === 'gallery' ? 'list' : 'gallery', limit: itemsPerPage }) %>"
-       class="festival-view-pill">
-      <span><%= currentView === 'gallery' ? '☰' : '⊞' %></span>
-      <span><%= currentView === 'gallery' ? 'List View' : 'Gallery View' %></span>
-    </a>
-  </div>
-</div>
-
-<article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:0 auto;">
+<article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:2.5rem auto 0 auto;">
   <div class="boldwp-box-inside">
     <header class="entry-header" style="text-align:center;">
       <div class="entry-header-inside">
         <h1 class="entry-title" style="font-size:2.5rem;margin:1rem 0;">All Festivals</h1>
       </div>
     </header>
+
+    <!-- Toolbar: Pagination + View Toggle + Items Per Page -->
+    <div class="toolbar" style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem 0;margin-bottom:1.5rem;border-bottom:1px solid #eee;flex-wrap:wrap;gap:1rem;">
+      <div class="pagination-info" style="color:#666;font-size:0.95rem;">
+        Page <strong><%= currentPage %></strong> of <strong><%= totalPages || 1 %></strong>
+        <span style="margin-left:0.5rem;color:#999;">(<%= totalCount %> total)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <label style="color:#666;font-size:0.9rem;font-weight:600;">Show:</label>
+          <select onchange="window.location.href='/festivals<%= buildQueryString({ page: 1, view: currentView, limit: undefined }) %>&limit=' + this.value" 
+                  style="padding:0.4rem 0.7rem;border:1px solid #ddd;border-radius:4px;font-size:0.9rem;font-weight:600;cursor:pointer;background:#fff;">
+            <option value="30" <%= itemsPerPage === 30 ? 'selected' : '' %>>30</option>
+            <option value="60" <%= itemsPerPage === 60 ? 'selected' : '' %>>60</option>
+          </select>
+        </div>
+        <div class="view-toggle" style="display:flex;gap:0.5rem;">
+          <a href="/festivals<%= buildQueryString({ page: currentPage, view: 'gallery', limit: itemsPerPage }) %>" 
+             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'gallery' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
+             title="Gallery View">
+            ⊞ Gallery
+          </a>
+          <a href="/festivals<%= buildQueryString({ page: currentPage, view: 'list', limit: itemsPerPage }) %>" 
+             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'list' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
+             title="List View">
+            ☰ List
+          </a>
+        </div>
+      </div>
+    </div>
     
     <div class="entry-content">
       <% if (festivals.length === 0) { %>
@@ -92,16 +681,15 @@
             const dateRange = `${startDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })} - ${endDate.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`;
             const location = festival.City && festival.State ? `${festival.City}, ${festival.State}` : (festival.VenueName || '');
           %>
-            <div style="position:relative;">
-            <a href="/festivals/<%= festival.FestivalNumber %>" class="gallery-card"
-               style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;flex:1;"
+            <a href="/festivals/<%= festival.FestivalNumber %>" class="gallery-card" 
+               style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;"
                onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
                onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
               <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
-                 <img src="<%= (festival.imageUrl) %>" 
+                 <img src="<%= (festival.FestivalFlyerURL && festival.FestivalFlyerURL.length > 5) ? festival.FestivalFlyerURL : (festival.FeaturedImageURL && festival.FeaturedImageURL.length > 5 ? festival.FeaturedImageURL : 'https://images.lesterslist.com/media/lesterlogo_sq.png') %>" 
                      alt="<%= festival.FestivalName %>"
                      onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';"
-                     style="width:100%;height:100%;object-fit:cover;object-position:<%= festival.imageAlignment || 'center' %>;">
+                     style="width:100%;height:100%;object-fit:cover;object-position:top;">
                 <!-- Location Badge Overlay (Bottom Left) -->
                 <% if (location) { %>
                 <div style="position:absolute;bottom:10px;left:10px;background:rgba(61,140,149,0.95);color:#fff;padding:0.5rem 0.85rem;border-radius:6px;text-align:center;max-width:180px;box-shadow:0 2px 6px rgba(0,0,0,0.4);font-size:0.8rem;font-weight:600;line-height:1.3;">
@@ -116,12 +704,6 @@
                 </div>
               </div>
             </a>
-            <% if (isAdmin) { %>
-              <a href="/admin/edit/festival/<%= festival.FestivalNumber %>"
-                 style="position:absolute;top:8px;right:8px;z-index:10;background:rgba(34,86,117,0.88);color:#fff;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.75rem;text-decoration:none;font-weight:700;backdrop-filter:blur(2px);"
-                 title="Edit in Admin">✏️ Edit</a>
-            <% } %>
-            </div>
           <% }) %>
         </div>
       <% } else { %>
@@ -159,7 +741,7 @@
                   <% } %>
                 </td>
                 <td style="padding:1rem;text-align:right;">
-                  <a href="/festivals/<%= festival.FestivalNumber %>"
+                  <a href="/festivals/<%= festival.FestivalNumber %>" 
                      style="display:inline-block;padding:0.5rem 1.2rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:4px;text-decoration:none;font-size:0.85rem;transition:opacity 0.2s;"
                      onmouseover="this.style.opacity='0.85'"
                      onmouseout="this.style.opacity='1'">

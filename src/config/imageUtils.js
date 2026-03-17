@@ -30,6 +30,25 @@ export function resolveImageUrl(path) {
 }
 
 /**
+ * Sanitizes a GoogleMapAddress field for use in Google Maps Embed API.
+ * Returns a plain text address (street, city, state, zip) if the stored value
+ * is a URL or contains junk patterns like q=place: or cid=.
+ * @param {string} rawAddress - The value from the GoogleMapAddress DB field.
+ * @param {object} fallback - Object with Street, City, State, Zip fields.
+ * @returns {string|null} - A usable address string, or null if nothing is available.
+ */
+export function sanitizeMapAddress(rawAddress, { Street, City, State, Zip } = {}) {
+  const BAD_PATTERNS = ['http', 'q=place:', 'cid=', 'maps.google', 'goo.gl'];
+  const isJunk = !rawAddress || !rawAddress.trim()
+    || BAD_PATTERNS.some(p => rawAddress.includes(p));
+
+  if (!isJunk) return rawAddress.trim();
+
+  const parts = [Street, City, State, Zip].filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : null;
+}
+
+/**
  * Parses an image URL for alignment metadata (e.g. #top, #center, #bottom).
  * @param {string} url - The image URL which might contain a hash fragment.
  * @returns {{url: string, alignment: string}} - The clean URL and the alignment value.
