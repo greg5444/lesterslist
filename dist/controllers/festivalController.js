@@ -41,7 +41,9 @@ async function listFestivals(req, res) {
                     ? festival.FestivalFlyerURL : festival.FeaturedImageURL)
                 : constants_js_1.DEFAULT_IMAGE_URL;
             const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)(rawUrl);
-            return { ...festival, imageUrl, imageAlignment, hasImage };
+            const displayName = festival.FestivalName.replace(/\s+\d{4}$/, '').trim();
+            const dateRangeParts = festival.DateRange ? festival.DateRange.split(' - ') : [];
+            return { ...festival, FestivalName: displayName, dateRangeParts, imageUrl, imageAlignment, hasImage };
         });
         if (req.xhr || req.query.ajax === '1') {
             return res.json({

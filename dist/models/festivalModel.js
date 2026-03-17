@@ -13,7 +13,7 @@ class Festival {
     static async findAll() {
         // Filter: Only return festivals that are not expired (ExpireDate >= today)
         const [rows] = await database_js_1.default.query(`
-      SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, f.FestivalFlyerURL,
+      SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, f.DateRange, f.FestivalFlyerURL,
              COALESCE(v.VenueName, f.FestivalName) AS VenueName,
              COALESCE(v.City, f.City) AS City,
              COALESCE(v.State, f.State) AS State
@@ -30,7 +30,7 @@ class Festival {
     static async findAllPaginated(limit, offset) {
         // Filter: Only return festivals that are not expired (ExpireDate >= today)
         const [rows] = await database_js_1.default.query(`
-      SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, 
+      SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, f.DateRange,
              f.FeaturedImageURL, f.FestivalFlyerURL,
              COALESCE(v.VenueName, f.FestivalName) AS VenueName,
              COALESCE(v.City, f.City) AS City,
@@ -88,7 +88,7 @@ class Festival {
         }
         const where = conditions.join(' AND ');
         const [rows] = await database_js_1.default.query(`
-      SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate,
+      SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.EndDate, f.DateRange,
              f.FeaturedImageURL, f.FestivalFlyerURL,
              COALESCE(v.VenueName, f.FestivalName) AS VenueName,
              COALESCE(v.City, f.City) AS City,

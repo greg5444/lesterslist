@@ -401,12 +401,23 @@ function getPlaceholder(num) {
                    alt="<%= festival.FestivalName %>"
                    onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/general-22.jpg';"
                    style="width:100%;height:100%;object-fit:cover;object-position:<%= festival.imageAlignment || 'top' %>;">
+              <% if (festival.City || festival.State) { %>
+              <div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.82rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.4);line-height:1.2;white-space:nowrap;">
+                <%= [festival.City, festival.State].filter(Boolean).join(', ') %>
+              </div>
+              <% } %>
             </div>
             <div style="padding:1rem;">
-              <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;"><%= festival.FestivalName %></h3>
-              <div style="color:#666;font-size:0.9rem;">
-                <% if (festival.City && festival.State) { %><%= festival.City %>, <%= festival.State %><% } %>
+              <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.4rem 0;line-height:1.3;"><%= festival.FestivalName %></h3>
+              <% if (festival.DateRange) { %>
+              <div style="color:#666;font-size:0.9rem;line-height:1.4;">
+                <% if (festival.dateRangeParts && festival.dateRangeParts.length === 2) { %>
+                  <%= festival.dateRangeParts[0] %> &ndash;<br><%= festival.dateRangeParts[1] %>
+                <% } else { %>
+                  <%= festival.DateRange %>
+                <% } %>
               </div>
+              <% } %>
             </div>
           </a>
           <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
@@ -495,6 +506,7 @@ function getPlaceholderJs(num) {
 function createCardHtml(f) {
   const alignment = f.imageAlignment || 'top';
   const imgSrc = f.hasImage ? f.imageUrl : getPlaceholderJs(f.FestivalNumber);
+  const displayName = (f.FestivalName || '').replace(/\s+\d{4}$/, '').trim();
   const editBtn = isAdmin
     ? `<a href="/admin/edit/festival/${f.FestivalNumber}" style="position:absolute;top:8px;right:8px;z-index:10;background:rgba(34,86,117,0.88);color:#fff;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.75rem;text-decoration:none;font-weight:700;backdrop-filter:blur(2px);" title="Edit in Admin">✏️ Edit</a>`
     : '';
@@ -504,13 +516,12 @@ function createCardHtml(f) {
       <a href="/festivals/${f.FestivalNumber}" class="gallery-card"
          style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;display:block;">
         <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
-          <img src="${imgSrc}" alt="${f.FestivalName}" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/general-22.jpg';" style="width:100%;height:100%;object-fit:cover;object-position:${alignment};">
+          <img src="${imgSrc}" alt="${displayName}" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/general-22.jpg';" style="width:100%;height:100%;object-fit:cover;object-position:${alignment};">
+          ${(f.City || f.State) ? `<div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.82rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.4);line-height:1.2;white-space:nowrap;">${[f.City, f.State].filter(Boolean).join(', ')}</div>` : ''}
         </div>
         <div style="padding:1rem;">
-          <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;">${f.FestivalName}</h3>
-          <div style="color:#666;font-size:0.9rem;">
-            ${f.City && f.State ? `${f.City}, ${f.State}` : ''}
-          </div>
+          <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.4rem 0;line-height:1.3;">${displayName}</h3>
+          ${f.DateRange ? (() => { const parts = f.DateRange.split(' - '); return `<div style="color:#666;font-size:0.9rem;line-height:1.4;">${parts.length === 2 ? parts[0] + ' &ndash;<br>' + parts[1] : f.DateRange}</div>`; })() : ''}
         </div>
       </a>
       ${editBtn}
