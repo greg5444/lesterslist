@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.showVenue = showVenue;
 // src/controllers/venueController.js
 const venueModel_js_1 = __importDefault(require("../models/venueModel.js"));
+const imageUtils_js_1 = require("../config/imageUtils.js");
 async function showVenue(req, res) {
     try {
         const venue = await venueModel_js_1.default.findById(req.params.id);
@@ -13,9 +14,13 @@ async function showVenue(req, res) {
             return res.status(404).render('404', { message: 'Venue not found' });
         const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
         const concerts = await venueModel_js_1.default.findLinkedConcerts(req.params.id);
+        const mapAddress = (0, imageUtils_js_1.sanitizeMapAddress)(venue.GoogleMapAddress, {
+            Street: venue.Street, City: venue.City, State: venue.State, Zip: venue.Zip
+        });
         res.render('venues/show', {
             title: venue.VenueName,
             venue,
+            mapAddress,
             googleMapsApiKey,
             concerts
         });

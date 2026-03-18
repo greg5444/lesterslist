@@ -86,7 +86,7 @@ export default class Band {
     // Filter to show only today and future concerts
     const today = new Date().toISOString().split('T')[0];
     const [rows] = await pool.query(`
-      SELECT c.ConcertNumber, TRIM(REGEXP_REPLACE(c.ConcertName, ' [0-9]{4}$', '')) as ConcertName, c.ConcertDate, v.VenueName, v.City, v.State
+      SELECT c.ConcertNumber, TRIM(REGEXP_REPLACE(c.ConcertName, ' [0-9]{4}$', '')) as ConcertName, c.ConcertDate, v.VenueName, v.City, v.State, v.Latitude, v.Longitude
       FROM Concerts c
       LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
       WHERE c.BandNumber = ? AND c.ConcertDate >= ?

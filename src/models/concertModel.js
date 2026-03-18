@@ -180,6 +180,7 @@ export default class Concert {
         c.BandNumber,
         c.VenueNumber,
         c.FestivalNumber,
+        c.ExtraDetail,
         b.BandName,
         b.BandNumber as BandNumberFromBands,
         b.PictureURL AS BandPictureURL,

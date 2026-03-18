@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.search = search;
 // src/controllers/searchController.js
 const database_js_1 = __importDefault(require("../config/database.js"));
+const imageUtils_js_1 = require("../config/imageUtils.js");
 // All 50 US state codes for strict matching
 const STATE_CODES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
 // State name to code mapping for smart search
@@ -67,17 +68,18 @@ async function search(req, res) {
                 // Concerts - strict state match only
                 database_js_1.default.query(`
           SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
-                 v.VenueName, v.City, v.State
+                 v.VenueName, v.City, v.State,
+                 b.PictureURL as BandPictureURL
           FROM Concerts c
           LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
+          LEFT JOIN Bands b ON c.BandNumber = b.BandNumber
           WHERE v.State = ?
           ORDER BY c.ConcertDate ASC
           LIMIT 50
         `, [strictStateCode]),
                 // Festivals - strict state match only
                 database_js_1.default.query(`
-             // Filter: Only return festivals that are not expired (ExpireDate >= today)
-             SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
+             SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL, f.FeaturedImageURL,
                v.VenueName, v.City, v.State
              FROM Festivals f
              LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
@@ -102,9 +104,17 @@ async function search(req, res) {
           LIMIT 50
         `, [strictStateCode])
             ]);
-            const bands = bandsResult[0];
-            const concerts = concertsResult[0];
-            const festivals = festivalsResult[0];
+            const bands = bandsResult[0].map(b => ({ ...b, imageUrl: (0, imageUtils_js_1.resolveImageUrl)(b.PictureURL) }));
+            const concerts = concertsResult[0].map(c => ({
+                ...c,
+                imageUrl: (0, imageUtils_js_1.resolveImageUrl)((c.ConcertImage && c.ConcertImage.trim().length > 5) ? c.ConcertImage : c.BandPictureURL)
+            }));
+            const festivals = festivalsResult[0].map(f => ({
+                ...f,
+                imageUrl: (0, imageUtils_js_1.resolveImageUrl)((f.FestivalFlyerURL && f.FestivalFlyerURL.trim().length > 5)
+                    ? f.FestivalFlyerURL
+                    : f.FeaturedImageURL)
+            }));
             const jams = jamsResult[0];
             const camps = campsResult[0];
             return res.render('search/results', {
@@ -225,9 +235,11 @@ async function search(req, res) {
             // Concerts query (with venue info and date logic)
             database_js_1.default.query(`
          SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
-           v.VenueName, v.City, v.State
+           v.VenueName, v.City, v.State,
+           b.PictureURL as BandPictureURL
          FROM Concerts c
          LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
+         LEFT JOIN Bands b ON c.BandNumber = b.BandNumber
          WHERE (${concertTextConditions.join(' OR ')}) AND c.ConcertDate >= CURDATE()
          ORDER BY c.ConcertDate ASC
          LIMIT 50
@@ -235,7 +247,7 @@ async function search(req, res) {
             // Festivals query (with venue info and date logic)
             database_js_1.default.query(
             // Filter: Only return festivals that are not expired (ExpireDate >= today)
-            `SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
+            `SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL, f.FeaturedImageURL,
                 v.VenueName, v.City, v.State
          FROM Festivals f
          LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
@@ -257,9 +269,17 @@ async function search(req, res) {
          ORDER BY StartDate ASC
          LIMIT 50`, [searchPattern, searchPattern, searchPattern, searchPattern])
         ]);
-        const bands = bandsResult[0];
-        const concerts = concertsResult[0];
-        const festivals = festivalsResult[0];
+        const bands = bandsResult[0].map(b => ({ ...b, imageUrl: (0, imageUtils_js_1.resolveImageUrl)(b.PictureURL) }));
+        const concerts = concertsResult[0].map(c => ({
+            ...c,
+            imageUrl: (0, imageUtils_js_1.resolveImageUrl)((c.ConcertImage && c.ConcertImage.trim().length > 5) ? c.ConcertImage : c.BandPictureURL)
+        }));
+        const festivals = festivalsResult[0].map(f => ({
+            ...f,
+            imageUrl: (0, imageUtils_js_1.resolveImageUrl)((f.FestivalFlyerURL && f.FestivalFlyerURL.trim().length > 5)
+                ? f.FestivalFlyerURL
+                : f.FeaturedImageURL)
+        }));
         const jams = jamsResult[0];
         const camps = campsResult[0];
         res.render('search/results', {

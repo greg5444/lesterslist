@@ -1,5 +1,6 @@
 // src/controllers/searchController.js
 import pool from '../config/database.js';
+import { resolveImageUrl } from '../config/imageUtils.js';
 
 // All 50 US state codes for strict matching
 const STATE_CODES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
@@ -70,9 +71,11 @@ export async function search(req, res) {
         // Concerts - strict state match only
         pool.query(`
           SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
-                 v.VenueName, v.City, v.State
+                 v.VenueName, v.City, v.State,
+                 b.PictureURL as BandPictureURL
           FROM Concerts c
           LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
+          LEFT JOIN Bands b ON c.BandNumber = b.BandNumber
           WHERE v.State = ?
           ORDER BY c.ConcertDate ASC
           LIMIT 50
@@ -80,8 +83,7 @@ export async function search(req, res) {
         
         // Festivals - strict state match only
         pool.query(`
-             // Filter: Only return festivals that are not expired (ExpireDate >= today)
-             SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
+             SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL, f.FeaturedImageURL,
                v.VenueName, v.City, v.State
              FROM Festivals f
              LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
@@ -108,9 +110,21 @@ export async function search(req, res) {
         `, [strictStateCode])
       ]);
 
-      const bands = bandsResult[0];
-      const concerts = concertsResult[0];
-      const festivals = festivalsResult[0];
+      const bands = bandsResult[0].map(b => ({ ...b, imageUrl: resolveImageUrl(b.PictureURL) }));
+      const concerts = concertsResult[0].map(c => ({
+        ...c,
+        imageUrl: resolveImageUrl(
+          (c.ConcertImage && c.ConcertImage.trim().length > 5) ? c.ConcertImage : c.BandPictureURL
+        )
+      }));
+      const festivals = festivalsResult[0].map(f => ({
+        ...f,
+        imageUrl: resolveImageUrl(
+          (f.FestivalFlyerURL && f.FestivalFlyerURL.trim().length > 5)
+            ? f.FestivalFlyerURL
+            : f.FeaturedImageURL
+        )
+      }));
       const jams = jamsResult[0];
       const camps = campsResult[0];
 
@@ -247,9 +261,11 @@ export async function search(req, res) {
       // Concerts query (with venue info and date logic)
       pool.query(`
          SELECT c.ConcertNumber, c.ConcertName, c.ConcertDate, c.ConcertImage,
-           v.VenueName, v.City, v.State
+           v.VenueName, v.City, v.State,
+           b.PictureURL as BandPictureURL
          FROM Concerts c
          LEFT JOIN Venues v ON c.VenueNumber = v.VenueNumber
+         LEFT JOIN Bands b ON c.BandNumber = b.BandNumber
          WHERE (${concertTextConditions.join(' OR ')}) AND c.ConcertDate >= CURDATE()
          ORDER BY c.ConcertDate ASC
          LIMIT 50
@@ -258,7 +274,7 @@ export async function search(req, res) {
       // Festivals query (with venue info and date logic)
       pool.query(
         // Filter: Only return festivals that are not expired (ExpireDate >= today)
-        `SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL,
+        `SELECT f.FestivalNumber, f.FestivalName, f.StartDate, f.FestivalFlyerURL, f.FeaturedImageURL,
                 v.VenueName, v.City, v.State
          FROM Festivals f
          LEFT JOIN Venues v ON f.VenueNumber = v.VenueNumber
@@ -290,9 +306,21 @@ export async function search(req, res) {
       )
     ]);
 
-    const bands = bandsResult[0];
-    const concerts = concertsResult[0];
-    const festivals = festivalsResult[0];
+    const bands = bandsResult[0].map(b => ({ ...b, imageUrl: resolveImageUrl(b.PictureURL) }));
+    const concerts = concertsResult[0].map(c => ({
+      ...c,
+      imageUrl: resolveImageUrl(
+        (c.ConcertImage && c.ConcertImage.trim().length > 5) ? c.ConcertImage : c.BandPictureURL
+      )
+    }));
+    const festivals = festivalsResult[0].map(f => ({
+      ...f,
+      imageUrl: resolveImageUrl(
+        (f.FestivalFlyerURL && f.FestivalFlyerURL.trim().length > 5)
+          ? f.FestivalFlyerURL
+          : f.FeaturedImageURL
+      )
+    }));
     const jams = jamsResult[0];
     const camps = campsResult[0];
 

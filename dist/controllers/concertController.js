@@ -87,6 +87,7 @@ async function showConcert(req, res) {
             ConcertName: concert.ConcertName,
             ConcertDate: concert.ConcertDate,
             ConcertImage: concert.ConcertImage,
+            ExtraDetail: concert.ExtraDetail || null,
             Street: concert.Street,
             City: concert.City,
             State: concert.State,

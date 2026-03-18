@@ -1,6 +1,44 @@
 <% /* Band Profile Detail Page */ %>
 <% layout('layout') %>
 
+<style>
+.band-filter-bar { display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap; margin:0.8rem 0 1.2rem 0; }
+.band-filter-pill {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  padding:0.45rem 1.1rem; background:#f5f5f5; border:1px solid #ddd;
+  border-radius:50px; color:#555; font-size:0.85rem; font-weight:700;
+  cursor:pointer; transition:all 0.2s ease; white-space:nowrap; user-select:none;
+  font-family:inherit;
+}
+.band-filter-pill:hover { background:#ebebeb; border-color:#ccc; }
+.band-filter-pill.active { background:var(--color-primary-teal); color:#fff; border-color:var(--color-primary-teal); }
+.band-filter-modal {
+  display:none; position:fixed; inset:0; z-index:2000;
+  background:rgba(0,0,0,0.55); backdrop-filter:blur(4px);
+  align-items:center; justify-content:center; padding:1.5rem;
+}
+.band-modal-box {
+  background:#fff; width:100%; max-width:360px; border-radius:16px;
+  overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.25);
+  animation:bModalIn 0.25s ease-out;
+}
+@keyframes bModalIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.band-modal-hdr {
+  padding:1rem 1.3rem; border-bottom:1px solid #eee;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.band-modal-hdr h3 { margin:0; font-size:1.05rem; color:var(--color-secondary-blue); }
+.band-modal-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:#999; line-height:1; }
+.band-modal-bdy { padding:1rem 1.3rem; max-height:60vh; overflow-y:auto; }
+.band-fopt {
+  padding:0.7rem 1rem; border-radius:8px; cursor:pointer; font-weight:500;
+  transition:all 0.15s; display:flex; justify-content:space-between; align-items:center; color:#444;
+}
+.band-fopt:hover { background:#f8f9fa; color:var(--color-primary-teal); }
+.band-fopt.sel { background:#f0fdfa; color:var(--color-primary-teal); font-weight:700; }
+.band-fopt.sel::after { content:'✓'; font-size:1rem; }
+</style>
+
 <article class="boldwp-post-singular boldwp-box detail-page-card" style="max-width:900px;margin:2.5rem auto 0 auto;width:100%;">
   <div class="boldwp-box-inside">
     <header class="entry-header" style="text-align:center;">
@@ -14,7 +52,13 @@
         <img src="<%= imageUrl %>" alt="<%= band.BandName %>" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:100%;max-width:420px;height:260px;object-fit:cover;object-position:top;border-radius:12px;box-shadow:0 2px 12px rgba(34,86,117,0.08);background:#fff;" loading="lazy">
       </div>
 
-      <div id="bandMap" style="height:400px;border-radius:6px;margin-bottom:1.5rem;"></div>
+      <div id="bandMapToggle" onclick="toggleBandMap()" style="cursor:pointer;display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;margin-bottom:0.5rem;user-select:none;">
+        <span id="bandMapArrow" style="display:inline-block;font-size:0.9rem;transition:transform 0.2s;transform:rotate(90deg);">&#9658;</span>
+        <span style="color:#225675;font-weight:600;font-size:1rem;">Show Locations</span>
+      </div>
+      <div id="bandMapWrapper" style="margin-bottom:1.5rem;">
+        <div id="bandMap" style="height:400px;border-radius:6px;"></div>
+      </div>
 
       <% if (band.BandWebsite && band.BandWebsite.trim()) { %>
         <%
@@ -33,13 +77,89 @@
   </div>
 </article>
 
+<%
+  const uniqueStates = [...new Set(concerts.map(c => c.State).filter(Boolean))].sort();
+  const seenMonthKeys = new Set();
+  const uniqueMonths = [];
+  concerts.forEach(c => {
+    const d = new Date(c.ConcertDate);
+    const key = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0');
+    if (!seenMonthKeys.has(key)) {
+      seenMonthKeys.add(key);
+      uniqueMonths.push({ value: key, label: new Date(d.getUTCFullYear(), d.getUTCMonth(), 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) });
+    }
+  });
+  uniqueMonths.sort((a, b) => a.value.localeCompare(b.value));
+%>
+
 <section class="boldwp-box detail-page-section" style="max-width:900px;margin:2rem auto 0 auto;width:100%;">
   <div class="boldwp-box-inside">
-    <h2 style="color:var(--color-secondary);margin-bottom:1rem;">Upcoming Appearances</h2>
+    <h2 style="color:var(--color-secondary);margin-bottom:0.8rem;">Upcoming Appearances</h2>
+
+    <% if (concerts.length > 0) { %>
+    <!-- Filter Bar -->
+    <div class="band-filter-bar">
+      <button id="band-near-me-btn" class="band-filter-pill" onclick="bandToggleNearMe()">
+        <span id="band-near-me-icon">📍</span>
+        <span id="band-near-me-text">Find Near Me</span>
+      </button>
+      <% if (uniqueStates.length > 1) { %>
+      <div id="band-state-pill" class="band-filter-pill" onclick="bandOpenModal('band-state-modal')">
+        <span id="band-state-label">All States</span>
+        <span style="font-size:0.7rem;opacity:0.7;">&#9660;</span>
+      </div>
+      <% } %>
+      <% if (uniqueMonths.length > 1) { %>
+      <div id="band-date-pill" class="band-filter-pill" onclick="bandOpenModal('band-date-modal')">
+        <span id="band-date-label">All Dates</span>
+        <span style="font-size:0.7rem;opacity:0.7;">&#9660;</span>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- State Modal -->
+    <% if (uniqueStates.length > 1) { %>
+    <div id="band-state-modal" class="band-filter-modal" onclick="if(event.target===this)bandCloseModal('band-state-modal')">
+      <div class="band-modal-box">
+        <div class="band-modal-hdr">
+          <h3>Filter by State</h3>
+          <button class="band-modal-close" onclick="bandCloseModal('band-state-modal')">&times;</button>
+        </div>
+        <div class="band-modal-bdy">
+          <div class="band-fopt sel" onclick="bandApplyFilter('state','')">All States</div>
+          <% uniqueStates.forEach(s => { %>
+            <div class="band-fopt" onclick="bandApplyFilter('state','<%= s %>')"><%= s %></div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Date Modal -->
+    <% if (uniqueMonths.length > 1) { %>
+    <div id="band-date-modal" class="band-filter-modal" onclick="if(event.target===this)bandCloseModal('band-date-modal')">
+      <div class="band-modal-box">
+        <div class="band-modal-hdr">
+          <h3>Filter by Date</h3>
+          <button class="band-modal-close" onclick="bandCloseModal('band-date-modal')">&times;</button>
+        </div>
+        <div class="band-modal-bdy">
+          <div class="band-fopt sel" onclick="bandApplyFilter('month','')">All Upcoming</div>
+          <div class="band-fopt" onclick="bandApplyFilter('month','next-two-weeks')">Next Two Weeks</div>
+          <hr style="border:0;border-top:1px solid #eee;margin:4px 0;">
+          <% uniqueMonths.forEach(m => { %>
+            <div class="band-fopt" onclick="bandApplyFilter('month','<%= m.value %>')"><%= m.label %></div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+    <% } %>
+
     <% if (concerts.length === 0) { %>
       <div style="color:#888;">No appearances listed yet.</div>
     <% } else { %>
-      <ul style="list-style:none;padding:0;">
+      <ul id="appearances-list" style="list-style:none;padding:0;">
         <% concerts.forEach(concert => { %>
           <li class="boldwp-box" style="margin-bottom:0.8rem;">
             <a href="/concerts/<%= concert.ConcertNumber %>" style="display:block;color:inherit;text-decoration:none;">
@@ -60,6 +180,139 @@
 </section>
 
 <script>
+  // --- Band Appearances Filter (client-side) ---
+  const allBandConcerts = <%- JSON.stringify(concerts) %>;
+  let bandFilterState = '';
+  let bandFilterMonth = '';
+  let bandUserLat = null;
+  let bandUserLng = null;
+  const BAND_RADIUS_MI = 150;
+
+  function bandHaversine(lat1, lng1, lat2, lng2) {
+    const R = 3958.8, r = x => x * Math.PI / 180;
+    const dLat = r(lat2 - lat1), dLng = r(lng2 - lng1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(r(lat1)) * Math.cos(r(lat2)) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function bandOpenModal(id) {
+    document.getElementById(id).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function bandCloseModal(id) {
+    document.getElementById(id).style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function bandApplyFilter(key, value) {
+    if (key === 'state') {
+      bandFilterState = value;
+      const label = document.getElementById('band-state-label');
+      const pill  = document.getElementById('band-state-pill');
+      if (label) label.textContent = value || 'All States';
+      if (pill)  pill.classList.toggle('active', !!value);
+      document.querySelectorAll('#band-state-modal .band-fopt').forEach(el => {
+        el.classList.toggle('sel', el.getAttribute('onclick').includes(`'${value}'`));
+      });
+      bandCloseModal('band-state-modal');
+    }
+    if (key === 'month') {
+      bandFilterMonth = value;
+      const label = document.getElementById('band-date-label');
+      const pill  = document.getElementById('band-date-pill');
+      if (label) {
+        if (!value) label.textContent = 'All Dates';
+        else if (value === 'next-two-weeks') label.textContent = 'Next 2 Weeks';
+        else { const [y,m] = value.split('-'); label.textContent = new Date(+y, +m-1, 1).toLocaleDateString('en-US', {month:'short', year:'numeric'}); }
+      }
+      if (pill) pill.classList.toggle('active', !!value);
+      document.querySelectorAll('#band-date-modal .band-fopt').forEach(el => {
+        el.classList.toggle('sel', el.getAttribute('onclick').includes(`'${value}'`));
+      });
+      bandCloseModal('band-date-modal');
+    }
+    bandRenderList();
+  }
+
+  function bandRenderList() {
+    const list = document.getElementById('appearances-list');
+    if (!list) return;
+    const now = new Date();
+    const twoWeeks = new Date(now.getTime() + 14 * 864e5);
+
+    const filtered = allBandConcerts.filter(c => {
+      const d = new Date(c.ConcertDate);
+      if (bandFilterState && c.State !== bandFilterState) return false;
+      if (bandFilterMonth === 'next-two-weeks') { if (d < now || d > twoWeeks) return false; }
+      else if (bandFilterMonth) {
+        const [y, m] = bandFilterMonth.split('-');
+        if (d.getUTCFullYear() !== +y || d.getUTCMonth() + 1 !== +m) return false;
+      }
+      if (bandUserLat !== null && c.Latitude && c.Longitude) {
+        if (bandHaversine(bandUserLat, bandUserLng, +c.Latitude, +c.Longitude) > BAND_RADIUS_MI) return false;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<li style="color:#888;padding:0.5rem 0;">No appearances match your filters.</li>';
+      return;
+    }
+    list.innerHTML = filtered.map(c => {
+      const ds = new Date(c.ConcertDate).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'});
+      const v  = c.VenueName ? ` @ ${c.VenueName}` : '';
+      const lo = (c.City && c.State) ? ` (${c.City}, ${c.State})` : '';
+      return `<li class="boldwp-box" style="margin-bottom:0.8rem;">
+        <a href="/concerts/${c.ConcertNumber}" style="display:block;color:inherit;text-decoration:none;">
+          <div class="boldwp-box-inside" style="padding:1rem;transition:background 0.15s;">
+            <div style="color:var(--color-secondary);font-weight:600;font-size:1.05rem;">${c.ConcertName}</div>
+            <div style="color:#888;font-size:0.95rem;margin-top:0.3rem;">${ds}${v}${lo}</div>
+          </div>
+        </a>
+      </li>`;
+    }).join('');
+  }
+
+  function bandToggleNearMe() {
+    const btn  = document.getElementById('band-near-me-btn');
+    const text = document.getElementById('band-near-me-text');
+    const icon = document.getElementById('band-near-me-icon');
+    if (btn.classList.contains('active')) {
+      bandUserLat = bandUserLng = null;
+      btn.classList.remove('active');
+      text.textContent = 'Find Near Me';
+      icon.textContent = '📍';
+      bandRenderList();
+      return;
+    }
+    text.textContent = 'Locating…';
+    if (!navigator.geolocation) { alert('Geolocation not supported'); text.textContent = 'Find Near Me'; return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        bandUserLat = pos.coords.latitude;
+        bandUserLng = pos.coords.longitude;
+        btn.classList.add('active');
+        text.textContent = 'Near Me (150 mi)';
+        bandRenderList();
+      },
+      err => {
+        console.error('Geolocation error:', err);
+        alert('Unable to get your location. Check browser permissions.');
+        text.textContent = 'Find Near Me';
+      }
+    );
+  }
+  // --- End Band Filter ---
+
+  function toggleBandMap() {
+    const wrapper = document.getElementById('bandMapWrapper');
+    const arrow = document.getElementById('bandMapArrow');
+    const isOpen = wrapper.style.display !== 'none';
+    wrapper.style.display = isOpen ? 'none' : '';
+    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+    if (!isOpen) setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+  }
+
   function initBandMap() {
     const markers = <%- JSON.stringify(mapData) %>;
 
@@ -115,3 +368,10 @@
   }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=<%= GOOGLE_MAPS_API_KEY %>&callback=initBandMap" async defer></script>
+
+<!-- Report a Problem -->
+<div style="max-width:900px;margin:0.5rem auto 1.5rem auto;padding:0 1rem;">
+  <a href="/report?type=band&id=<%= band.BandNumber %>" style="color:#bbb;font-size:0.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;">
+    🚩 Report a problem with any information on this page
+  </a>
+</div>

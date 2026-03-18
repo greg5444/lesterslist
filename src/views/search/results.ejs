@@ -101,7 +101,7 @@
         <div style="display:grid;gap:1rem;">
           <% bands.forEach(band => { %>
             <a href="/bands/<%= band.BandNumber %>" class="search-results-card" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';">
-              <img src="<%= band.PictureURL || 'https://images.lesterslist.com/media/All-bluegrass.jpg' %>" alt="<%= band.BandName %>" class="search-results-thumb" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;">
+              <img src="<%= band.imageUrl || 'https://images.lesterslist.com/media/All-bluegrass.jpg' %>" alt="<%= band.BandName %>" class="search-results-thumb" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;">
               <div class="search-results-content">
                 <div class="search-results-title" style="font-size:1.1rem;font-weight:600;color:var(--color-secondary-blue);"><%= band.BandName %></div>
               </div>
@@ -120,7 +120,7 @@
         <div style="display:grid;gap:1rem;">
           <% concerts.forEach(concert => { %>
             <a href="/concerts/<%= concert.ConcertNumber %>" class="search-results-card" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';">
-              <img src="<%= concert.ConcertImage || 'https://images.lesterslist.com/media/All-bluegrass.jpg' %>" alt="<%= concert.ConcertName %>" class="search-results-thumb" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;">
+              <img src="<%= concert.imageUrl || 'https://images.lesterslist.com/media/All-bluegrass.jpg' %>" alt="<%= concert.ConcertName %>" class="search-results-thumb" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;">
               <div class="search-results-content" style="flex:1;">
                 <div class="search-results-title" style="font-size:1.1rem;font-weight:600;color:var(--color-secondary-blue);margin-bottom:0.3rem;"><%= concert.ConcertName %></div>
                 <div class="search-results-meta" style="font-size:0.9rem;color:#666;">
@@ -148,7 +148,7 @@
         <div style="display:grid;gap:1rem;">
           <% festivals.forEach(festival => { %>
             <a href="/festivals/<%= festival.FestivalNumber %>" class="search-results-card" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';">
-              <img src="<%= festival.FestivalFlyerURL || 'https://images.lesterslist.com/media/All-bluegrass.jpg' %>" alt="<%= festival.FestivalName %>" class="search-results-thumb" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;">
+              <img src="<%= festival.imageUrl || 'https://images.lesterslist.com/media/All-bluegrass.jpg' %>" alt="<%= festival.FestivalName %>" class="search-results-thumb" onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;">
               <div class="search-results-content">
                 <div class="search-results-title" style="font-size:1.1rem;font-weight:600;color:var(--color-secondary-blue);"><%= festival.FestivalName %></div>
               </div>

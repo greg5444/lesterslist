@@ -22,7 +22,7 @@
           loading="lazy"
           allowfullscreen
           referrerpolicy="no-referrer-when-downgrade"
-          src="https://www.google.com/maps/embed/v1/place?key=<%= googleMapsApiKey %>&q=<%= encodeURIComponent(venue.GoogleMapAddress) %>">
+          src="https://www.google.com/maps/embed/v1/place?key=<%= googleMapsApiKey %>&q=<%= encodeURIComponent(mapAddress) %>">
         </iframe>
       </div>
       
@@ -52,8 +52,8 @@
 </article>
 
 <!-- Report a Problem -->
-<div class="report-problem" style="max-width:900px;margin:0 auto 4rem auto;padding:1.5rem 0;">
-  <a href="/report?type=venue&id=<%= venue.VenueNumber %>">
+<div style="max-width:900px;margin:0.5rem auto 1.5rem auto;padding:0 1rem;">
+  <a href="/report?type=venue&id=<%= venue.VenueNumber %>" style="color:#bbb;font-size:0.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;">
     🚩 Report a problem with any information on this page
   </a>
 </div>
