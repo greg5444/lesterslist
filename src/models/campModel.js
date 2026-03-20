@@ -13,7 +13,7 @@ export default class Camp {
              VenueName, Street, City, State, Zip, GoogleMapAddress
       FROM Camps
       WHERE EndDate >= CURDATE()
-      ORDER BY StartDate DESC
+      ORDER BY StartDate ASC
     `);
     return rows;
   }

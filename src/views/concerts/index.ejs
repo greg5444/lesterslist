@@ -181,16 +181,18 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1.2rem;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
+  background: rgba(230,135,60,0.95);
+  border: 1px solid rgba(230,135,60,0.95);
   border-radius: 50px;
-  color: #555;
+  color: #fff;
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
+
+.view-toggle-btn:hover { opacity: 0.85; }
 
 .ribbon-actions {
   margin-left: auto;
@@ -229,7 +231,10 @@
 
   .filter-pill .icon-down { margin-left: 0.1rem; }
   
-  .ribbon-actions { display: none; } 
+  /* Keep view toggle visible on phone — icon-only, compact */
+  .ribbon-actions { display: flex; margin-left: auto; }
+  .view-toggle-btn { padding: 0.4rem 0.6rem; border-radius: 50px; }
+  .view-toggle-btn .text { display: none; }
 }
 
 @media (max-width: 768px) {
@@ -276,6 +281,8 @@
   align-items: center;
   width: 100%;
 }
+.list-view .concert-card .concert-list-date { display:inline-block !important; order: -1; flex-shrink: 0; }
+.list-view .concert-card a > div:last-child h3 { margin: 0 !important; }
 .list-view .gallery-card {
   display: block !important;
   height: auto !important;
@@ -511,6 +518,7 @@ function createCardHtml(c) {
           <div style="color:#666;font-size:0.9rem;">
             ${c.City && c.State ? `${c.City}, ${c.State}` : ''}
           </div>
+          <span class="concert-list-date" style="display:none;color:#555;font-size:0.9rem;white-space:nowrap;font-weight:600;">${new Date(c.ConcertDate).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })}</span>
         </div>
       </a>
     ${editBtn}

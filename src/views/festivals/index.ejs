@@ -1,4 +1,4 @@
-<% layout('layout') %>
+﻿<% layout('layout') %>
 <%
 const PLACEHOLDER_IMAGES = [
   'https://images.lesterslist.com/media/double-bass-down.jpg',
@@ -193,16 +193,17 @@ function getPlaceholder(num) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1.2rem;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
+  background: rgba(230,135,60,0.95);
+  border: 1px solid rgba(230,135,60,0.95);
   border-radius: 50px;
-  color: #555;
+  color: #fff;
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
+.view-toggle-btn:hover { opacity: 0.85; }
 
 .ribbon-actions {
   margin-left: auto;
@@ -219,7 +220,10 @@ function getPlaceholder(num) {
   #date-pill .pill-text { display: none; }
   #date-pill::before { content: 'Dates'; }
   .filter-pill .icon-down { margin-left: 0.1rem; }
-  .ribbon-actions { display: none; }
+  /* Keep view toggle visible on phone — icon-only, compact */
+  .ribbon-actions { display: flex; margin-left: auto; }
+  .view-toggle-btn { padding: 0.4rem 0.6rem; border-radius: 50px; }
+  .view-toggle-btn .text { display: none; }
 }
 
 @media (max-width: 768px) {
@@ -398,8 +402,7 @@ function getPlaceholder(num) {
              onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
             <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
               <img src="<%= festival.hasImage ? festival.imageUrl : getPlaceholder(festival.FestivalNumber) %>"
-                   alt="<%= festival.FestivalName %>"
-                   onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/general-22.jpg';"
+                   alt="<%= festival.FestivalName %>"                   loading="lazy"                   onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/general-22.jpg';"
                    style="width:100%;height:100%;object-fit:cover;object-position:<%= festival.imageAlignment || 'top' %>;">
               <% if (festival.City || festival.State) { %>
               <div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.82rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.4);line-height:1.2;white-space:nowrap;">
@@ -630,198 +633,3 @@ function toggleView() {
   window.history.pushState({}, '', url);
 }
 </script>
-
-<%
-  // Build query params for pagination/view links
-  function buildQueryString(params) {
-    const query = new URLSearchParams();
-    Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null) query.set(key, params[key]);
-    });
-    return query.toString() ? '?' + query.toString() : '';
-  }
-%>
-
-<article class="boldwp-post-singular boldwp-box" style="max-width:1200px;margin:2.5rem auto 0 auto;">
-  <div class="boldwp-box-inside">
-    <header class="entry-header" style="text-align:center;">
-      <div class="entry-header-inside">
-        <h1 class="entry-title" style="font-size:2.5rem;margin:1rem 0;">All Festivals</h1>
-      </div>
-    </header>
-
-    <!-- Toolbar: Pagination + View Toggle + Items Per Page -->
-    <div class="toolbar" style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem 0;margin-bottom:1.5rem;border-bottom:1px solid #eee;flex-wrap:wrap;gap:1rem;">
-      <div class="pagination-info" style="color:#666;font-size:0.95rem;">
-        Page <strong><%= currentPage %></strong> of <strong><%= totalPages || 1 %></strong>
-        <span style="margin-left:0.5rem;color:#999;">(<%= totalCount %> total)</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:0.5rem;">
-          <label style="color:#666;font-size:0.9rem;font-weight:600;">Show:</label>
-          <select onchange="window.location.href='/festivals<%= buildQueryString({ page: 1, view: currentView, limit: undefined }) %>&limit=' + this.value" 
-                  style="padding:0.4rem 0.7rem;border:1px solid #ddd;border-radius:4px;font-size:0.9rem;font-weight:600;cursor:pointer;background:#fff;">
-            <option value="30" <%= itemsPerPage === 30 ? 'selected' : '' %>>30</option>
-            <option value="60" <%= itemsPerPage === 60 ? 'selected' : '' %>>60</option>
-          </select>
-        </div>
-        <div class="view-toggle" style="display:flex;gap:0.5rem;">
-          <a href="/festivals<%= buildQueryString({ page: currentPage, view: 'gallery', limit: itemsPerPage }) %>" 
-             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'gallery' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
-             title="Gallery View">
-            ⊞ Gallery
-          </a>
-          <a href="/festivals<%= buildQueryString({ page: currentPage, view: 'list', limit: itemsPerPage }) %>" 
-             style="padding:0.5rem 1rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s;<%= currentView === 'list' ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#666;' %>"
-             title="List View">
-            ☰ List
-          </a>
-        </div>
-      </div>
-    </div>
-    
-    <div class="entry-content">
-      <% if (festivals.length === 0) { %>
-        <div style="color:#888;text-align:center;padding:2rem;">No festivals found.</div>
-      <% } else if (currentView === 'gallery') { %>
-        <!-- Gallery Mode: Cards with Location Overlay (Top Right) -->
-        <div class="festival-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;">
-          <% festivals.forEach(festival => { 
-            const startDate = new Date(festival.StartDate);
-            const endDate = new Date(festival.EndDate);
-            const dateRange = `${startDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })} - ${endDate.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`;
-            const location = festival.City && festival.State ? `${festival.City}, ${festival.State}` : (festival.VenueName || '');
-          %>
-            <a href="/festivals/<%= festival.FestivalNumber %>" class="gallery-card" 
-               style="text-decoration:none;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s,box-shadow 0.2s;"
-               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
-               onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
-              <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
-                 <img src="<%= (festival.FestivalFlyerURL && festival.FestivalFlyerURL.length > 5) ? festival.FestivalFlyerURL : (festival.FeaturedImageURL && festival.FeaturedImageURL.length > 5 ? festival.FeaturedImageURL : 'https://images.lesterslist.com/media/lesterlogo_sq.png') %>" 
-                     alt="<%= festival.FestivalName %>"
-                     onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/All-bluegrass.jpg';"
-                     style="width:100%;height:100%;object-fit:cover;object-position:top;">
-                <!-- Location Badge Overlay (Bottom Left) -->
-                <% if (location) { %>
-                <div style="position:absolute;bottom:10px;left:10px;background:rgba(61,140,149,0.95);color:#fff;padding:0.5rem 0.85rem;border-radius:6px;text-align:center;max-width:180px;box-shadow:0 2px 6px rgba(0,0,0,0.4);font-size:0.8rem;font-weight:600;line-height:1.3;">
-                  <%= location %>
-                </div>
-                <% } %>
-              </div>
-              <div style="padding:1rem;">
-                <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.5rem 0;line-height:1.3;"><%= festival.FestivalName %></h3>
-                <div style="color:#666;font-size:0.9rem;">
-                  <%= dateRange %>
-                </div>
-              </div>
-            </a>
-          <% }) %>
-        </div>
-      <% } else { %>
-        <!-- List Mode: Striped Table -->
-        <table class="list-table" style="width:100%;border-collapse:collapse;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-          <thead>
-            <tr style="background:var(--color-secondary-blue);color:#fff;">
-              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;width:180px;">Date Range</th>
-              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Festival Name</th>
-              <th style="padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;">Location</th>
-              <th style="padding:1rem;text-align:right;font-weight:600;font-size:0.95rem;width:120px;">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% festivals.forEach((festival, index) => { 
-              const startDate = new Date(festival.StartDate);
-              const endDate = new Date(festival.EndDate);
-              const dateRange = `${startDate.toLocaleDateString('en-US', { month:'short', day:'numeric' })} - ${endDate.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`;
-            %>
-              <tr style="<%= index % 2 === 0 ? 'background:#fff;' : 'background:#f9f9f9;' %>border-bottom:1px solid #eee;">
-                <td style="padding:1rem;">
-                  <div style="font-weight:600;color:var(--color-primary-teal);font-size:0.9rem;">
-                    <%= dateRange %>
-                  </div>
-                </td>
-                <td style="padding:1rem;">
-                  <span style="font-weight:600;color:var(--color-secondary-blue);font-size:1rem;"><%= festival.FestivalName %></span>
-                  <% if (festival.VenueName) { %>
-                    <div style="color:#888;font-size:0.85rem;margin-top:0.2rem;"><%= festival.VenueName %></div>
-                  <% } %>
-                </td>
-                <td style="padding:1rem;color:#666;font-size:0.9rem;">
-                  <% if (festival.City && festival.State) { %>
-                    <%= festival.City %>, <%= festival.State %>
-                  <% } %>
-                </td>
-                <td style="padding:1rem;text-align:right;">
-                  <a href="/festivals/<%= festival.FestivalNumber %>" 
-                     style="display:inline-block;padding:0.5rem 1.2rem;background:var(--color-highlight-orange);color:#fff;font-weight:600;border-radius:4px;text-decoration:none;font-size:0.85rem;transition:opacity 0.2s;"
-                     onmouseover="this.style.opacity='0.85'"
-                     onmouseout="this.style.opacity='1'">
-                    View
-                  </a>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      <% } %>
-    </div>
-
-    <!-- Pagination Controls -->
-    <% if (totalPages > 1) { %>
-      <nav class="pagination" style="display:flex;justify-content:center;gap:0.5rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee;">
-        <% if (currentPage > 1) { %>
-          <a href="/festivals<%= buildQueryString({ page: currentPage - 1, view: currentView, limit: itemsPerPage }) %>" 
-             style="padding:0.5rem 1rem;background:#f0f0f0;color:#333;font-weight:600;border-radius:4px;text-decoration:none;transition:background 0.2s;"
-             onmouseover="this.style.background='#e0e0e0'"
-             onmouseout="this.style.background='#f0f0f0'">
-            ← Prev
-          </a>
-        <% } %>
-        
-        <% for (let i = 1; i <= totalPages; i++) { 
-          if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
-            <a href="/festivals<%= buildQueryString({ page: i, view: currentView, limit: itemsPerPage }) %>" 
-               style="padding:0.5rem 0.85rem;border-radius:4px;text-decoration:none;font-weight:600;<%= i === currentPage ? 'background:var(--color-primary-teal);color:#fff;' : 'background:#f0f0f0;color:#333;' %>transition:background 0.2s;"
-               <% if (i !== currentPage) { %>
-                 onmouseover="this.style.background='#e0e0e0'"
-                 onmouseout="this.style.background='#f0f0f0'"
-               <% } %>>
-              <%= i %>
-            </a>
-          <% } else if (i === currentPage - 3 || i === currentPage + 3) { %>
-            <span style="padding:0.5rem 0.5rem;color:#999;">...</span>
-          <% } %>
-        <% } %>
-        
-        <% if (currentPage < totalPages) { %>
-          <a href="/festivals<%= buildQueryString({ page: currentPage + 1, view: currentView, limit: itemsPerPage }) %>" 
-             style="padding:0.5rem 1rem;background:#f0f0f0;color:#333;font-weight:600;border-radius:4px;text-decoration:none;transition:background 0.2s;"
-             onmouseover="this.style.background='#e0e0e0'"
-             onmouseout="this.style.background='#f0f0f0'">
-            Next →
-          </a>
-        <% } %>
-      </nav>
-    <% } %>
-  </div>
-</article>
-
-<style>
-@media (max-width: 768px) {
-  .toolbar {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 1rem;
-  }
-  .list-table {
-    font-size: 0.85rem !important;
-  }
-  .list-table th, .list-table td {
-    padding: 0.75rem 0.5rem !important;
-  }
-  .list-table th:nth-child(3), .list-table td:nth-child(3) {
-    display: none;
-  }
-}
-</style>
-

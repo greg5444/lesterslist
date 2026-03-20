@@ -1,6 +1,7 @@
 // src/server.js
 // NOTE: dotenv.config() is called in database.js (imported below) before the pool is created.
 import express from 'express';
+import compression from 'compression';
 import helmet from 'helmet';
 import session from 'express-session';
 import MySQLStoreFactory from 'express-mysql-session';
@@ -47,9 +48,16 @@ if (process.env.NODE_ENV === 'production') {
     }
   }));
 }
+// Gzip compress all responses — significantly reduces HTML/CSS/JSON transfer size
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../src/public')));
+// Serve static files with long-lived cache headers so browsers cache CSS/JS/images
+app.use(express.static(path.join(__dirname, '../src/public'), {
+  maxAge: '7d',
+  etag: true,
+  lastModified: true
+}));
 
 // Trust reverse proxy (required on Hostinger so req.secure is correct and Secure cookies work)
 app.set('trust proxy', 1);

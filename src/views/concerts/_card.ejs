@@ -11,8 +11,7 @@
      onmouseout="this.parentElement.style.transform='translateY(0)';this.parentElement.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
     <div style="position:relative;width:100%;height:200px;overflow:hidden;background:#f8f9fa;">
       <img src="<%= concert.imageUrl %>"
-           alt="<%= concert.ConcertName %>"
-           onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
+           alt="<%= concert.ConcertName %>"           loading="lazy"           onerror="this.onerror=null;this.src='https://images.lesterslist.com/media/lesterlogo_sq.png';"
            style="width:100%;height:100%;object-fit:cover;object-position:<%= concert.imageAlignment || 'top' %>;">
       <div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.5rem 0.75rem;border-radius:6px;text-align:center;min-width:60px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">
         <div style="font-size:0.75rem;font-weight:600;letter-spacing:0.5px;line-height:1;"><%= concertMonth.toUpperCase() %></div>
@@ -26,6 +25,9 @@
           <%= concert.City %>, <%= concert.State %>
         <% } %>
       </div>
+      <span class="concert-list-date" style="display:none;color:#555;font-size:0.9rem;white-space:nowrap;font-weight:600;">
+        <%= new Date(concert.ConcertDate).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }) %>
+      </span>
     </div>
   </a>
 </div>
