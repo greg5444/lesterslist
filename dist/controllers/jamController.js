@@ -25,7 +25,7 @@ async function listJams(req, res) {
         ]);
         const totalPages = Math.ceil(totalCount / itemsPerPage);
         res.render('jams/index', {
-            title: 'Local Bluegrass Jams',
+            title: 'Local Jams – Find Your Circle',
             jams,
             currentView,
             currentPage,

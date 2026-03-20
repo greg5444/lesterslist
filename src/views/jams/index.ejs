@@ -1,5 +1,13 @@
 <% /* Jams Directory - Hybrid View (Gallery/List) with Pagination */ %>
 <% layout('layout') %>
+
+<style>
+/* Force h1 line-break after dash on mobile only */
+.jams-mob-br { display: none; }
+@media (max-width: 600px) {
+  .jams-mob-br { display: block; }
+}
+</style>
 <%
   // Build query params for pagination/view links
   function buildQueryString(params) {
@@ -18,7 +26,7 @@
   <div class="boldwp-box-inside">
     <header class="entry-header" style="text-align:center;">
       <div class="entry-header-inside">
-        <h1 class="entry-title" style="font-size:2.5rem;margin:1rem 0;">Local Bluegrass Jams</h1>
+        <h1 class="entry-title" style="font-size:2.5rem;margin:1rem 0;">Local Jams &ndash;<br class="jams-mob-br"> Find Your Circle</h1>
       </div>
     </header>
 
