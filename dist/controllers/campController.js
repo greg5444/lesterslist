@@ -11,12 +11,27 @@ const constants_js_1 = require("../config/constants.js");
 const imageUtils_js_1 = require("../config/imageUtils.js");
 async function listCamps(req, res) {
     try {
-        const camps = await campModel_js_1.default.findAll();
+        const filterState = req.query.state || '';
+        const filterMonth = req.query.month || '';
+        const lat = req.query.lat ? parseFloat(req.query.lat) : null;
+        const lng = req.query.lng ? parseFloat(req.query.lng) : null;
+        const radius = parseInt(req.query.radius) || 50;
+        const filters = { state: filterState || null, month: filterMonth || null, lat, lng, radius };
+        const [camps, filterOptions] = await Promise.all([
+            campModel_js_1.default.findUpcomingFiltered(200, 0, filters),
+            campModel_js_1.default.getFilterOptions()
+        ]);
         const campsWithImages = camps.map(camp => {
             const { url: imageUrl, alignment: imageAlignment } = (0, imageUtils_js_1.parseImageAlignment)((0, imageUtils_js_1.resolveImageUrl)(camp.ImageURL));
             return { ...camp, imageUrl, imageAlignment };
         });
-        res.render('camps/index', { title: 'Camps & Workshops', camps: campsWithImages });
+        res.render('camps/index', {
+            title: 'Camps & Workshops',
+            camps: campsWithImages,
+            filterState,
+            filterMonth,
+            filterOptions
+        });
     }
     catch (err) {
         console.error('Error fetching camps:', err);

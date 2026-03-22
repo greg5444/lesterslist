@@ -5,12 +5,31 @@ import { resolveImageUrl, parseImageAlignment, sanitizeMapAddress } from '../con
 
 export async function listCamps(req, res) {
   try {
-    const camps = await Camp.findAll();
+    const filterState = req.query.state || '';
+    const filterMonth = req.query.month || '';
+    const lat = req.query.lat ? parseFloat(req.query.lat) : null;
+    const lng = req.query.lng ? parseFloat(req.query.lng) : null;
+    const radius = parseInt(req.query.radius) || 50;
+
+    const filters = { state: filterState || null, month: filterMonth || null, lat, lng, radius };
+
+    const [camps, filterOptions] = await Promise.all([
+      Camp.findUpcomingFiltered(200, 0, filters),
+      Camp.getFilterOptions()
+    ]);
+
     const campsWithImages = camps.map(camp => {
       const { url: imageUrl, alignment: imageAlignment } = parseImageAlignment(resolveImageUrl(camp.ImageURL));
       return { ...camp, imageUrl, imageAlignment };
     });
-    res.render('camps/index', { title: 'Camps & Workshops', camps: campsWithImages });
+
+    res.render('camps/index', {
+      title: 'Camps & Workshops',
+      camps: campsWithImages,
+      filterState,
+      filterMonth,
+      filterOptions
+    });
   } catch (err) {
     console.error('Error fetching camps:', err);
     res.status(500).render('500', { message: 'Server error' });

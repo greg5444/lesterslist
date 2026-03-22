@@ -1,6 +1,6 @@
 // src/routes/adminRoutes.js
 import express from 'express';
-import { showLogin, handleLogin, handleLogout, showDashboard, approveItem, deleteItem, showEditJam, updateJam, showEditLearn, updateLearn, showTickerSettings, saveTickerSettings, showSubmissions, showSubmissionDetail, updateSubmissionStatus, showEditBand, updateBand, showEditFestival, updateFestival, showEditConcert, updateConcert } from '../controllers/adminController.js';
+import { showLogin, handleLogin, handleLogout, showDashboard, approveItem, deleteItem, showEditJam, updateJam, showEditLearn, updateLearn, showTickerSettings, saveTickerSettings, showSubmissions, showSubmissionDetail, updateSubmissionStatus, showEditBand, updateBand, showEditFestival, updateFestival, showEditConcert, updateConcert, showEditCamp, updateCamp } from '../controllers/adminController.js';
 import { isAuthenticated } from '../middleware/auth.js';
 import pool from '../config/database.js';
 
@@ -22,6 +22,8 @@ router.get('/edit/festival/:id', isAuthenticated, showEditFestival);
 router.post('/edit/festival/:id', isAuthenticated, updateFestival);
 router.get('/edit/concert/:id', isAuthenticated, showEditConcert);
 router.post('/edit/concert/:id', isAuthenticated, updateConcert);
+router.get('/edit/camp/:id', isAuthenticated, showEditCamp);
+router.post('/edit/camp/:id', isAuthenticated, updateCamp);
 router.post('/approve/:type/:id', isAuthenticated, approveItem);
 router.post('/delete/:type/:id', isAuthenticated, deleteItem);
 

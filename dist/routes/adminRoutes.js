@@ -25,6 +25,8 @@ router.get('/edit/festival/:id', auth_js_1.isAuthenticated, adminController_js_1
 router.post('/edit/festival/:id', auth_js_1.isAuthenticated, adminController_js_1.updateFestival);
 router.get('/edit/concert/:id', auth_js_1.isAuthenticated, adminController_js_1.showEditConcert);
 router.post('/edit/concert/:id', auth_js_1.isAuthenticated, adminController_js_1.updateConcert);
+router.get('/edit/camp/:id', auth_js_1.isAuthenticated, adminController_js_1.showEditCamp);
+router.post('/edit/camp/:id', auth_js_1.isAuthenticated, adminController_js_1.updateCamp);
 router.post('/approve/:type/:id', auth_js_1.isAuthenticated, adminController_js_1.approveItem);
 router.post('/delete/:type/:id', auth_js_1.isAuthenticated, adminController_js_1.deleteItem);
 router.get('/submissions', auth_js_1.isAuthenticated, adminController_js_1.showSubmissions);

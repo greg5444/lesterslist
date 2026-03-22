@@ -276,8 +276,15 @@ function getPlaceholder(num) {
   border-bottom: 1px solid #eee;
 }
 .list-view .gallery-card > div:last-child {
+  display: flex !important;
+  align-items: center;
+  gap: 1rem;
   padding: 0.85rem 1rem !important;
 }
+.list-view .gallery-card .festival-list-date { display: inline-block !important; order: -1; flex-shrink: 0; width: 355px; color: #555; font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-view .gallery-card .festival-list-location { display: inline-block !important; margin-left: auto; flex-shrink: 0; color: #666; font-size: 0.85rem; white-space: nowrap; }
+.list-view .gallery-card > div:last-child h3 { margin: 0 !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.list-view .gallery-card > div:last-child > div { display: none !important; }
 
 @media (max-width: 900px) {
   .listings-container.grid-view .festival-card a > div:first-child,
@@ -411,7 +418,9 @@ function getPlaceholder(num) {
               <% } %>
             </div>
             <div style="padding:1rem;">
+              <span class="festival-list-date" style="display:none;"><%= festival.DateRange || '' %></span>
               <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.4rem 0;line-height:1.3;"><%= festival.FestivalName %></h3>
+              <span class="festival-list-location" style="display:none;"><%= [festival.City, festival.State].filter(Boolean).join(', ') %></span>
               <% if (festival.DateRange) { %>
               <div style="color:#666;font-size:0.9rem;line-height:1.4;">
                 <% if (festival.dateRangeParts && festival.dateRangeParts.length === 2) { %>
@@ -523,7 +532,9 @@ function createCardHtml(f) {
           ${(f.City || f.State) ? `<div style="position:absolute;bottom:10px;left:10px;background:rgba(230,135,60,0.95);color:#fff;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.82rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.4);line-height:1.2;white-space:nowrap;">${[f.City, f.State].filter(Boolean).join(', ')}</div>` : ''}
         </div>
         <div style="padding:1rem;">
+          <span class="festival-list-date" style="display:none;">${f.DateRange || ''}</span>
           <h3 style="font-size:1.1rem;font-weight:700;color:var(--color-secondary-blue);margin:0 0 0.4rem 0;line-height:1.3;">${displayName}</h3>
+          <span class="festival-list-location" style="display:none;">${[f.City, f.State].filter(Boolean).join(', ')}</span>
           ${f.DateRange ? (() => { const parts = f.DateRange.split(' - '); return `<div style="color:#666;font-size:0.9rem;line-height:1.4;">${parts.length === 2 ? parts[0] + ' &ndash;<br>' + parts[1] : f.DateRange}</div>`; })() : ''}
         </div>
       </a>

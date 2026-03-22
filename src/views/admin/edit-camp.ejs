@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %> - Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body style="background: #f5f5f5;">
+  <header style="background: #225675; color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <h1 style="margin: 0; font-size: 1.5rem;">Edit Camp / Workshop</h1>
+    <div>
+      <a href="/camps/<%= camp.JDNumber %>" style="color: #3D8C95; text-decoration: underline; margin-right: 1.5rem;" target="_blank">View Public Page ↗</a>
+      <a href="/admin/dashboard" style="color: #3D8C95; text-decoration: underline; margin-right: 1.5rem;">← Dashboard</a>
+      <span style="margin-right: 1.5rem;">Welcome, <%= username %></span>
+      <a href="/admin/logout" style="color: #3D8C95; text-decoration: underline;">Logout</a>
+    </div>
+  </header>
+  <main style="max-width: 1100px; margin: 2.5rem auto; padding: 0 1rem;">
+    <div style="display: flex; gap: 2rem; align-items: flex-start;">
+      <%- include('_sidebar') %>
+      <div style="flex: 1; min-width: 0;">
+
+        <% if (saved) { %>
+          <div style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;font-weight:600;">
+            ✅ Changes saved successfully.
+          </div>
+        <% } %>
+
+        <section style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(34,86,117,0.06); padding: 2rem; max-width: 700px;">
+          <h2 style="margin:0 0 1.5rem 0;color:#225675;font-size:1.2rem;"><%= camp.EventName %> <span style="color:#888;font-size:0.85rem;font-weight:400;">#<%= camp.JDNumber %></span></h2>
+
+          <form method="POST" action="/admin/edit/camp/<%= camp.JDNumber %>" style="display: flex; flex-direction: column; gap: 1.2rem;">
+
+            <div>
+              <label style="display:block;font-weight:600;color:#225675;margin-bottom:0.5rem;">Extra Detail</label>
+              <p style="color:#888;font-size:0.85rem;margin:0 0 0.5rem 0;">Additional information shown on the camp detail page below the action buttons (e.g. schedule notes, what to bring, instructor bios).</p>
+              <textarea name="ExtraDetail" rows="6"
+                style="width:100%;padding:0.7rem;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;font-size:0.95rem;font-family:inherit;resize:vertical;"><%= camp.ExtraDetail || '' %></textarea>
+            </div>
+
+            <div style="display:flex;gap:1rem;margin-top:0.5rem;">
+              <button type="submit"
+                style="flex:1;padding:0.8rem;background:#3D8C95;color:#fff;font-weight:600;border:none;border-radius:5px;cursor:pointer;font-size:1rem;">
+                Save Changes
+              </button>
+              <a href="/camps/<%= camp.JDNumber %>"
+                style="flex:1;padding:0.8rem;background:#6c757d;color:#fff;font-weight:600;border:none;border-radius:5px;cursor:pointer;text-align:center;text-decoration:none;display:block;">
+                Cancel
+              </a>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

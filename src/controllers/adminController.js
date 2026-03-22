@@ -497,3 +497,40 @@ export async function updateConcert(req, res) {
     res.status(500).send('Server error');
   }
 }
+
+// ── Camp Edit ─────────────────────────────────────────────────────────────
+
+export async function showEditCamp(req, res) {
+  try {
+    const { id } = req.params;
+    const [rows] = await pool.query(
+      'SELECT JDNumber, EventName, ExtraDetail FROM Camps WHERE JDNumber = ?',
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).send('Camp not found');
+    res.render('admin/edit-camp', {
+      title: `Edit Camp: ${rows[0].EventName}`,
+      camp: rows[0],
+      saved: req.query.saved === '1',
+      username: req.session.username
+    });
+  } catch (err) {
+    console.error('Error loading camp for edit:', err);
+    res.status(500).send('Server error');
+  }
+}
+
+export async function updateCamp(req, res) {
+  try {
+    const { id } = req.params;
+    const { ExtraDetail } = req.body;
+    await pool.query(
+      'UPDATE Camps SET ExtraDetail = ? WHERE JDNumber = ?',
+      [ExtraDetail || null, id]
+    );
+    res.redirect(`/admin/edit/camp/${id}?saved=1`);
+  } catch (err) {
+    console.error('Error updating camp:', err);
+    res.status(500).send('Server error');
+  }
+}
