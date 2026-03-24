@@ -25,8 +25,21 @@ export async function showHome(req, res) {
       // Ticker Data: Latest 5 Concerts
       pool.query('SELECT ConcertNumber, ConcertName, VenueName FROM Concerts ORDER BY ConcertNumber DESC LIMIT 5'),
       
-      // Discovery Trio - Query A: Random Active Band with Photo
-      pool.query('SELECT BandNumber, BandName, PictureURL FROM Bands WHERE Active = 1 AND PictureURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
+      // Discovery Trio - Query A: Random active band with photo and at least one upcoming concert
+      pool.query(`
+        SELECT b.BandNumber, b.BandName, b.PictureURL
+        FROM Bands b
+        WHERE b.Active = 1
+          AND b.PictureURL IS NOT NULL
+          AND EXISTS (
+            SELECT 1
+            FROM Concerts c
+            WHERE c.BandNumber = b.BandNumber
+              AND c.ConcertDate >= CURDATE()
+          )
+        ORDER BY RAND()
+        LIMIT 1
+      `),
       
       // Discovery Trio - Query B: Random Upcoming Festival with Featured Image
       pool.query('SELECT FestivalNumber, FestivalName, StartDate, EndDate, FeaturedImageURL FROM Festivals WHERE StartDate >= CURDATE() AND FeaturedImageURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
