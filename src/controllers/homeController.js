@@ -29,14 +29,15 @@ export async function showHome(req, res) {
       pool.query(`
         SELECT b.BandNumber, b.BandName, b.PictureURL
         FROM Bands b
+        INNER JOIN (
+          SELECT DISTINCT c.BandNumber
+          FROM Concerts c
+          WHERE c.BandNumber IS NOT NULL
+            AND c.ConcertDate >= CURDATE()
+        ) upcoming ON upcoming.BandNumber = b.BandNumber
         WHERE b.Active = 1
           AND b.PictureURL IS NOT NULL
-          AND EXISTS (
-            SELECT 1
-            FROM Concerts c
-            WHERE c.BandNumber = b.BandNumber
-              AND c.ConcertDate >= CURDATE()
-          )
+          AND TRIM(b.PictureURL) <> ''
         ORDER BY RAND()
         LIMIT 1
       `),

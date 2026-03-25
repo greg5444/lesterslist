@@ -65,8 +65,11 @@
           const bandWebsiteRaw = band.BandWebsite.trim();
           const normalizedBandUrl = bandWebsiteRaw.startsWith('http') ? bandWebsiteRaw : 'https://' + bandWebsiteRaw;
           const bandWebsiteDisplay = bandWebsiteRaw.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+          const bandWebsiteDisplayCapitalized = bandWebsiteDisplay
+            ? bandWebsiteDisplay.charAt(0).toUpperCase() + bandWebsiteDisplay.slice(1)
+            : bandWebsiteDisplay;
           const bandWebsiteButtonText = bandWebsiteDisplay.length <= 38
-            ? `🎵 Visit ${bandWebsiteDisplay} website`
+            ? `🎵 Visit ${bandWebsiteDisplayCapitalized} Website`
             : '🎵 Visit Band Website';
         %>
         <a href="<%= normalizedBandUrl %>" target="_blank" rel="noopener" style="display:inline-block;margin-top:1rem;padding:1rem 2rem;background:#3D8C95;color:#fff;font-weight:700;border-radius:8px;text-decoration:none;font-size:1.1rem;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">

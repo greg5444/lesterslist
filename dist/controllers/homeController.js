@@ -17,8 +17,22 @@ async function showHome(req, res) {
         const [[tickerConcerts], [[featuredBand]], [[featuredFestival]], [[featuredConcert]], [upcomingConcerts], [upcomingFestivals], [sidebarJams], [sidebarCamps], [[{ concertCount }]], [[{ festivalCount }]], [[{ jamCount }]], [[{ campCount }]]] = await Promise.all([
             // Ticker Data: Latest 5 Concerts
             database_js_1.default.query('SELECT ConcertNumber, ConcertName, VenueName FROM Concerts ORDER BY ConcertNumber DESC LIMIT 5'),
-            // Discovery Trio - Query A: Random Active Band with Photo
-            database_js_1.default.query('SELECT BandNumber, BandName, PictureURL FROM Bands WHERE Active = 1 AND PictureURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
+            // Discovery Trio - Query A: Random active band with photo and at least one upcoming concert
+            database_js_1.default.query(`
+        SELECT b.BandNumber, b.BandName, b.PictureURL
+        FROM Bands b
+        INNER JOIN (
+          SELECT DISTINCT c.BandNumber
+          FROM Concerts c
+          WHERE c.BandNumber IS NOT NULL
+            AND c.ConcertDate >= CURDATE()
+        ) upcoming ON upcoming.BandNumber = b.BandNumber
+        WHERE b.Active = 1
+          AND b.PictureURL IS NOT NULL
+          AND TRIM(b.PictureURL) <> ''
+        ORDER BY RAND()
+        LIMIT 1
+      `),
             // Discovery Trio - Query B: Random Upcoming Festival with Featured Image
             database_js_1.default.query('SELECT FestivalNumber, FestivalName, StartDate, EndDate, FeaturedImageURL FROM Festivals WHERE StartDate >= CURDATE() AND FeaturedImageURL IS NOT NULL ORDER BY RAND() LIMIT 1'),
             // Discovery Trio - Query C: Random Upcoming Concert with Band Photo

@@ -80,8 +80,9 @@
             const isStandAloneForButton = concert.Festival && (concert.Festival.FestivalNumber === 'F00001' || (concert.ConcertName && concert.ConcertName.includes('In Concert')));
             if (concert.Festival && concert.Festival.FestivalNumber && !isStandAloneForButton) { 
           %>
-            <a href="/festivals/<%= concert.Festival.FestivalNumber %>" style="display:inline-block;background:var(--color-primary-teal);color:#fff;font-weight:700;border-radius:8px;padding:0.8rem 1.8rem;font-size:1rem;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-              📅 View Full Festival
+            <a href="/festivals/<%= concert.Festival.FestivalNumber %>" style="display:inline-flex;align-items:center;gap:0.6rem;background:var(--color-primary-teal);color:#fff;font-weight:700;border-radius:8px;padding:0.8rem 1.25rem;font-size:1rem;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+              <img src="https://images.lesterslist.com/media/lesterlogo_sq.png" alt="LestersList" style="width:40px;height:40px;border-radius:999px;object-fit:cover;border:1px solid rgba(255,255,255,0.75);background:#fff;">
+              <span>View Full Festival</span>
             </a>
           <% } %>
         </div>

@@ -43,7 +43,7 @@ export async function listConcerts(req, res) {
     });
 
     // Handle AJAX request for Infinite Scroll
-    if (req.xhr || req.headers.accept === 'application/json') {
+    if (req.query.ajax === '1' || req.xhr || (req.headers.accept || '').includes('application/json')) {
       return res.json({
         concerts: filteredConcerts,
         totalCount,
