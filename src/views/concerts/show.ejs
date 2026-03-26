@@ -24,6 +24,13 @@
       
       <!-- Right: Info -->
       <div style="flex:2 1 400px;min-width:260px;">
+        <!-- Extra Detail (event subtitle / special name) -->
+        <% if (concert.ExtraDetail) { %>
+          <div style="margin-bottom:0.6rem;font-size:1.1rem;color:#225675;font-weight:700;">
+            <strong><%= concert.ExtraDetail %></strong>
+          </div>
+        <% } %>
+
         <!-- Concert Date -->
         <div style="margin-bottom:1.2rem;font-size:1.3rem;color:#225675;font-weight:600;">
           <%= new Date(concert.ConcertDate).toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }) %>
@@ -87,12 +94,7 @@
           <% } %>
         </div>
 
-        <!-- Extra Detail (below buttons) -->
-        <% if (concert.ExtraDetail) { %>
-          <div style="margin-top:1.5rem;font-size:1rem;color:#225675;line-height:1.7;">
-            <%= concert.ExtraDetail %>
-          </div>
-        <% } %>
+
       </div>
     </div>
   </div>
