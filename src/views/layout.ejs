@@ -33,18 +33,6 @@
   </div>
   <div style="height:36px;"></div>
   <% } %>
-  <!-- Coming Soon Curtain Overlay with Password Unlock -->
-  <div id="curtain-overlay" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(34,86,117,0.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:'Inter',sans-serif;text-align:center;">
-    <img src="https://images.lesterslist.com/media/lesterlogo_sq.png" alt="Lesterslist Logo" style="width:120px;height:120px;margin-bottom:2rem;filter:drop-shadow(0 2px 8px #000);">
-    <h1 style="font-size:2.5rem;font-weight:700;margin-bottom:1rem;">Coming Soon</h1>
-    <p style="font-size:1.3rem;margin-bottom:2.5rem;max-width:480px;">We're working hard to launch the new Lesterslist directory. Please check back soon!</p>
-    <form id="curtain-form" style="margin-bottom:2rem;">
-      <input type="password" id="curtain-password" placeholder="Enter access code" style="padding:1rem;font-size:1.2rem;border-radius:8px;border:none;outline:none;width:220px;text-align:center;margin-bottom:1rem;">
-      <button type="submit" style="padding:0.8rem 2rem;font-size:1.1rem;border-radius:8px;background:#ff9800;color:#fff;font-weight:700;border:none;cursor:pointer;">Unlock</button>
-      <div id="curtain-error" style="color:#ffbdbd;font-size:1rem;margin-top:0.5rem;display:none;">Incorrect code. Please try again.</div>
-    </form>
-    <div style="font-size:1rem;opacity:0.7;">For questions, email <a href="mailto:info@lesterslist.com" style="color:#fff;text-decoration:underline;">info@lesterslist.com</a></div>
-  </div>
   <div class="boldwp-site-wrapper">
     <div class="boldwp-container">
       <%- include('_header') %>
@@ -55,28 +43,6 @@
     </div>
   </div>
   <script src="/js/main.js"></script>
-  <script>
-    // Curtain unlock logic
-    const curtainOverlay = document.getElementById('curtain-overlay');
-    const curtainForm = document.getElementById('curtain-form');
-    const curtainPassword = document.getElementById('curtain-password');
-    const curtainError = document.getElementById('curtain-error');
-    if (curtainForm) {
-      curtainForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (curtainPassword.value === 'lester747') {
-          curtainOverlay.style.display = 'none';
-          localStorage.setItem('curtainUnlocked', 'true');
-        } else {
-          curtainError.style.display = 'block';
-        }
-      });
-      // Hide curtain if previously unlocked
-      if (localStorage.getItem('curtainUnlocked') === 'true') {
-        curtainOverlay.style.display = 'none';
-      }
-    }
-  </script>
 </body>
 </html>
 
